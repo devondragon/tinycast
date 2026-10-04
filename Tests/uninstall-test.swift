@@ -659,7 +659,17 @@ struct UninstallTests {
             "receipts and keychains stay out of scope")
     }
 
+    static func testAppleScriptLiterals() {
+        expect(
+            AppleScriptLiteral.quoted("/Applications/Plain.app") == "\"/Applications/Plain.app\"",
+            "a plain path is quoted")
+        expect(
+            AppleScriptLiteral.quoted("/tmp/say \"hi\" \\ bye") == "\"/tmp/say \\\"hi\\\" \\\\ bye\"",
+            "quotes and backslashes are escaped so a path cannot end the literal")
+    }
+
     static func main() {
+        testAppleScriptLiterals()
         testBundleIDMatching()
         testExtensionStripping()
         testGroupContainers()

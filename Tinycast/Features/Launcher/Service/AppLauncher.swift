@@ -30,7 +30,7 @@ enum AppLauncher {
         let source = """
             tell application "Finder"
                 activate
-                open information window of (POSIX file "\(url.path)" as alias)
+                open information window of (POSIX file \(AppleScriptLiteral.quoted(url.path)) as alias)
             end tell
             """
         return await Task.detached(priority: .userInitiated) {
