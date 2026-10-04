@@ -194,7 +194,72 @@ struct ExtensionRefreshTests {
             "userInitiated matches LaunchType.UserInitiated")
     }
 
-    static func main() {
+    static func refreshNowExplainsARefusal() {
+        let mine = "extension:coffee/status"
+        expect(
+            ExtensionRefreshPolicy.refreshNowRefusal(
+                foregroundRunning: false, refreshingCommand: nil, command: mine) == nil,
+            "an idle runtime refreshes now")
+        expect(
+            ExtensionRefreshPolicy.refreshNowRefusal(
+                foregroundRunning: false, refreshingCommand: mine, command: mine)
+                == "Already refreshing.",
+            "the same command mid-refresh says so")
+        expect(
+            ExtensionRefreshPolicy.refreshNowRefusal(
+                foregroundRunning: false, refreshingCommand: "extension:other/tick", command: mine)
+                != nil,
+            "another command's tick refuses with a reason")
+        expect(
+            ExtensionRefreshPolicy.refreshNowRefusal(
+                foregroundRunning: true, refreshingCommand: nil, command: mine) != nil,
+            "an open foreground command refuses with a reason")
+    }
+
+    // MARK: - Run settlement
+
+    @MainActor final class SettlementBox {
+        var settlement = ExtensionRunSettlement()
+        var waiting = false
+
+        func wait() async -> Bool {
+            await withCheckedContinuation { continuation in
+                waiting = true
+                settlement.wait(continuation)
+            }
+        }
+    }
+
+    static func earlyResultIsKept() async {
+        let box = SettlementBox()
+        box.settlement.settle(true)
+        let early = await box.wait()
+        expect(early, "a run that settles before the wait still reports success")
+        let failed = SettlementBox()
+        failed.settlement.settle(false)
+        let failure = await failed.wait()
+        expect(failure == false, "a run that fails before the wait reports failure")
+    }
+
+    static func firstOutcomeWins() async {
+        let box = SettlementBox()
+        box.settlement.settle(true)
+        box.settlement.settle(false)
+        let kept = await box.wait()
+        expect(kept, "a late timeout cannot overwrite an early success")
+    }
+
+    static func lateResultReachesTheWaiter() async {
+        let box = SettlementBox()
+        let waiter = Task { await box.wait() }
+        while !box.waiting { await Task.yield() }
+        box.settlement.settle(true)
+        box.settlement.settle(false)
+        let delivered = await waiter.value
+        expect(delivered, "a result after the wait resumes it once, with the first outcome")
+    }
+
+    static func main() async {
         parseAcceptsAllUnits()
         parseClampsToTheFloor()
         parseRejectsGarbage()
@@ -209,6 +274,10 @@ struct ExtensionRefreshTests {
         ownerRestatementIsDropped()
         indicatorNamesTheState()
         launchTypesMatchTheJSContract()
+        refreshNowExplainsARefusal()
+        await earlyResultIsKept()
+        await firstOutcomeWins()
+        await lateResultReachesTheWaiter()
 
         print(failures == 0 ? "Extension refresh tests passed" : "\(failures) tests failed")
         exit(failures == 0 ? 0 : 1)

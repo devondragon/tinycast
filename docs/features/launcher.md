@@ -735,6 +735,11 @@ Application and System Settings results expose **Show in Finder** in their ⌘K 
 shortcut is available for them. `AppEntry.canRevealInFinder` is the one rule both the menu row and
 the key handler read, so the advertised chord can't drift from the behavior.
 
+`AppLauncher.showInFinder` is every feature's reveal. After `activateFileViewerSelecting` it also opens
+Finder, because the palette is a non-activating panel: Tinycast is not the active app when the reveal
+runs, and once Settings has switched it to the `.regular` policy, macOS 26's cooperative activation
+refuses Finder's own request to come forward, leaving its window behind the app in front.
+
 ## Dragging an application out
 
 An application row drags its bundle onto the Dock, into a System Settings privacy list, or anywhere

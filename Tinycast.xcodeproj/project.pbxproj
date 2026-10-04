@@ -559,6 +559,7 @@
 		B17B6FE6F8DE23D815E3C5BB /* InstalledCLIProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E08F20B0B823443E176F1566 /* InstalledCLIProvider.swift */; };
 		B2404EBFB52B8199DC2536F6 /* HotKeyBinding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85B00A698366E83C7352BC1E /* HotKeyBinding.swift */; };
 		B277075C16A5641C8F3E58C6 /* CameraAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DD86B3ABBB71BC6EA116D85 /* CameraAccess.swift */; };
+		B356C02EA3B931BF07648DA0 /* ExtensionRunSettlement.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBA4336428F5BA8E5865BD27 /* ExtensionRunSettlement.swift */; };
 		B374B57D0E9D902AF877153D /* MCPHTTPTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FD57D9B2C6C46B5ADDDE173 /* MCPHTTPTransport.swift */; };
 		B40434D581183863A23D7E86 /* DictionaryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7DE05BCC5E8CD91E8B0A26E /* DictionaryCoordinator.swift */; };
 		B566FC125D9D193F234EC1AB /* ExtensionFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 988EA3698EA86BA53590C24E /* ExtensionFetcher.swift */; };
@@ -1614,6 +1615,7 @@
 		F9044F107ADD5896746DBC35 /* Signposts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Signposts.swift; sourceTree = "<group>"; };
 		F93DC82C8E2CFC89CBA7FC8E /* DictationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationCoordinator.swift; sourceTree = "<group>"; };
 		FAC9CF39D803AEFC987B8317 /* SettingsFileValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsFileValue.swift; sourceTree = "<group>"; };
+		FBA4336428F5BA8E5865BD27 /* ExtensionRunSettlement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionRunSettlement.swift; sourceTree = "<group>"; };
 		FBF6EF3A2C35F45B82D40968 /* ClipboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardView.swift; sourceTree = "<group>"; };
 		FBFE3C41897391C14DB5A55C /* ShellCommandRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShellCommandRunner.swift; sourceTree = "<group>"; };
 		FC2B77DA46386E7E459406E4 /* NotesStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesStore.swift; sourceTree = "<group>"; };
@@ -2267,6 +2269,7 @@
 				CBD80BC6110C36450C2FF751 /* ExtensionPickerItem.swift */,
 				5133D376B62B69B9C8F03590 /* ExtensionRefreshPolicy.swift */,
 				582A70CF432F5E0144E57369 /* ExtensionRefreshState.swift */,
+				FBA4336428F5BA8E5865BD27 /* ExtensionRunSettlement.swift */,
 				4FBBC69BC9727C5E3FE77120 /* ExtensionSearchAccessory.swift */,
 				7732FB0ED92C8FBFE22599CE /* ExtensionStoreResponse.swift */,
 				08A1D354C1785923E612848C /* RenderNode.swift */,
@@ -4079,6 +4082,7 @@
 				D3C7265B00695CE274ED5A23 /* ExtensionRefreshIndicator.swift in Sources */,
 				45C35CBBED43903124081D00 /* ExtensionRefreshPolicy.swift in Sources */,
 				FDF43BE032A1CBFE76526E6F /* ExtensionRefreshState.swift in Sources */,
+				B356C02EA3B931BF07648DA0 /* ExtensionRunSettlement.swift in Sources */,
 				50A3CB2A348F8E03D467B169 /* ExtensionRuntime.swift in Sources */,
 				F51785CF5A6EC0B87D6802C9 /* ExtensionScreen.swift in Sources */,
 				CF59A1D1C7FE76558B638460 /* ExtensionSearchAccessory.swift in Sources */,

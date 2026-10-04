@@ -51,7 +51,9 @@ enum SystemActionRunner {
     {
         switch id {
         case .lockScreen:
-            try postKey(keyCode: CGKeyCode(kVK_ANSI_Q), flags: [.maskControl, .maskCommand])
+            try postKey(
+                keyCode: CGKeyCode(ASCIIKeyboardLayout.commandKeyCode(typing: "q") ?? kVK_ANSI_Q),
+                flags: [.maskControl, .maskCommand])
         case .sleep:
             try await runProcess("/usr/bin/pmset", arguments: ["sleepnow"])
         case .sleepDisplays:

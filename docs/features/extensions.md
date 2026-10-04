@@ -137,6 +137,7 @@ Two host-call flavours:
 | `UI/ExtensionMenuBarImage.swift` | small native icons with light/dark variants |
 | `Model/ExtensionManifest.swift` | `package.json` → commands, preferences, arguments |
 | `Model/ExtensionRefreshPolicy.swift` | background-refresh decisions: interval parsing, due dates, backoff |
+| `Model/ExtensionRunSettlement.swift` | one background run's outcome, kept when it settles before the wait starts |
 | `Model/ExtensionLaunchType.swift` | `userInitiated` / `background`, mirroring `@raycast/api` `LaunchType` |
 | `Model/RenderNode.swift` | the decoded render tree (`RenderTree` / `RenderNode` / `RenderValue`) |
 | `Model/ExtensionAppearance.swift` | the per-extension icon override and its tint palette |
@@ -618,9 +619,11 @@ Refresh is opt-in per command: off until the first manual run or the Settings to
 (Settings › Extensions › the command › Background refresh), which also shows the last refresh and the
 last error. The launcher row carries the state too: a dot while refresh is on, its dimmed twin
 while it is off, a warning with the error as its tooltip when the last background run failed, and
-the Actions menu offers Enable / Disable Background Refresh plus Refresh Now. The override lives in
-`extension-commands.json` — derived state, so no backup carries it — and uninstall removes an
-extension's records with everything else. Deliberately not in `extension-data/<name>.json`: drawing a
+the Actions menu offers Enable / Disable Background Refresh plus Refresh Now. Refresh Now never
+queues: while another command holds the runtime it shows a HUD saying so, since a deferred run could
+fire long after the click, when a foreground command finally closes, with nothing to show it ran.
+The override lives in `extension-commands.json` — derived state, so no backup carries it — and
+uninstall removes an extension's records with everything else. Deliberately not in `extension-data/<name>.json`: drawing a
 launcher row reads every command's metadata, and that file holds the extension's whole `Cache`.
 
 The scheduler is one loop doing date math, not one timer per command: close ticks run as a single
@@ -631,6 +634,9 @@ with nothing due costs a comparison. Three guards keep it cheap:
 - A tick never preempts a running command — foreground first, the tick waits for the next due.
 - A hung run dies before its successor is due, and a background run shows no toast, HUD, alert or
   window call, since those would fire on a timer.
+
+A run can finish while `runtime.start` is still returning, before anything waits on it, so
+`ExtensionRunSettlement` holds that first outcome for the wait instead of letting the run time out.
 
 `ExtensionRefreshPolicy` is where the parsing, due dates and backoff live, driven by
 `Tests/ext-refresh-test.swift`; `Tests/ext-metadata-test.swift` covers the store behind it. Menu-bar

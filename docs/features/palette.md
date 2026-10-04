@@ -582,6 +582,11 @@ app:
 
 Both require the Accessibility permission (`Permissions.ensureAccessibility()`).
 
+The synthetic chord's key is the one that types its letter under ⌘ in the current ASCII-capable
+layout (`ASCIIKeyboardLayout.commandKeyCode`), because the receiving app matches ⌘V by character, not
+by key position: Dvorak pastes from its own V key, "Dvorak – QWERTY ⌘" from QWERTY's. `kVK_ANSI_V` is
+only the fallback when no key types a V. Quick Actions' ⌘C and Lock Screen's ⌃⌘Q resolve the same way.
+
 The same show also mirrors that app into `PaletteState.pasteTarget` (a `PasteTarget`: localized
 name + bundle path), so Clipboard and Emoji can name it — the footer pill reads "Paste to Notes" and
 the ⌘K paste rows carry the app's icon. Resolved once per summon, never per render, and deliberately
