@@ -541,6 +541,7 @@ run ext-form-test          $E/Model/ExtensionFormMetrics.swift \
                            $E/UI/ExtensionListKey.swift \
                            Tests/ext-list-key-test.swift
 run ext-image-size-test   $E/Model/ExtensionImageSize.swift
+run ext-open-test         $E/Model/ExtensionApplicationLookup.swift
 run ext-accessory-test     $E/Model/RenderNode.swift \
                            $E/Model/ExtensionPickerItem.swift \
                            $E/Model/ExtensionSearchAccessory.swift \
@@ -597,6 +598,9 @@ run settings-history-test  Tinycast/Features/Settings/SettingsTab.swift \
                            $L/SearchRelevance.swift
 run updates-test           Tinycast/Features/Updates/Model/*.swift \
                            Tinycast/Features/Updates/Service/BundleSignature.swift
+run update-check-test      Tinycast/Features/Updates/Model/*.swift \
+                           Tinycast/Features/Updates/Service/UpdateCheckStore.swift \
+                           Tinycast/Platform/AppPaths.swift
 run support-test           Tinycast/Features/Support/Model/*.swift
 run ai-provider-test       Tinycast/Features/Settings/AppSettingsKey.swift \
                            Tinycast/Features/AI/Model/*.swift \
@@ -738,7 +742,7 @@ if [ "$ran" -eq 0 ]; then
 fi
 
 # `sort -s` is stable, so the slow harnesses lead and everything else keeps its declaration order.
-JOBS="${TINYCAST_TEST_JOBS:-$(sysctl -n hw.ncpu)}"
+JOBS="${TINYCAST_TEST_JOBS:-4}"
 export TINYCAST_TEST_TIMEOUT="${TINYCAST_TEST_TIMEOUT:-300}"
 started=$SECONDS
 

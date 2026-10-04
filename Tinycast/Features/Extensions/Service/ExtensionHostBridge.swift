@@ -376,7 +376,7 @@ final class ExtensionHostBridge: ExtensionHostAPI {
         switch method {
         case "open":
             guard let target = arguments.first?.stringValue else { return nil }
-            open(target: target, application: arguments[safe: 1]?.stringValue)
+            await open(target: target, application: arguments[safe: 1]?.stringValue)
             return nil
 
         case "openWith":
@@ -448,7 +448,7 @@ final class ExtensionHostBridge: ExtensionHostAPI {
         }
     }
 
-    private func open(target: String, application: String?) {
+    private func open(target: String, application: String?) async {
         let url =
             URL(string: target).flatMap { $0.scheme == nil ? nil : $0 }
             ?? URL(fileURLWithPath: (target as NSString).expandingTildeInPath)
@@ -461,10 +461,19 @@ final class ExtensionHostBridge: ExtensionHostAPI {
             NSWorkspace.shared.open(url)
             return
         }
-        let appURL =
-            appIdentifier.hasPrefix("/")
-            ? URL(fileURLWithPath: appIdentifier)
-            : NSWorkspace.shared.urlForApplication(withBundleIdentifier: appIdentifier)
+        let appURL: URL?
+        if appIdentifier.hasPrefix("/") {
+            appURL = URL(fileURLWithPath: appIdentifier)
+        } else if let byID = NSWorkspace.shared.urlForApplication(withBundleIdentifier: appIdentifier) {
+            appURL = byID
+        } else {
+            let installed = context?.applicationURLs ?? []
+            // The name pass reads every bundle's Info.plist; that part runs off the main actor.
+            appURL = await Task.detached(priority: .userInitiated) {
+                ExtensionApplicationLookup.url(
+                    named: appIdentifier, in: installed, displayName: { Bundle(url: $0)?.installedAppName })
+            }.value
+        }
         guard let appURL else {
             NSWorkspace.shared.open(url)
             return

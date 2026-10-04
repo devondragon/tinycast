@@ -344,7 +344,7 @@ final class AppCore {
             updateChecker.onUpdateAvailable = { [weak self] release in
                 self?.updateCoordinator.presentIfAvailable(release) ?? true
             }
-            updateChecker.start()
+            updateCoordinator.applyAutomaticChecking()
 
             hyperKeyTap.healthTicker = healthTicker
             hotKeys.modifierTapMonitor.healthTicker = healthTicker
@@ -615,6 +615,9 @@ final class AppCore {
     // MARK: - Feature switches
 
     private func observeFeatureSwitches() {
+        track(
+            { _ = $0.automaticallyCheckForUpdates },
+            reproject: { $0.updateCoordinator.applyAutomaticChecking() })
         track(
             {
                 _ = $0.windowManagementEnabled

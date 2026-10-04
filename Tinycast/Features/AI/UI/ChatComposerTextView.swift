@@ -86,6 +86,11 @@ struct ChatComposerTextView: NSViewRepresentable {
 
         /// Never called mid-composition, so Return confirming an input method's text stays its own.
         func textView(_ textView: NSTextView, doCommandBy selector: Selector) -> Bool {
+            // NSTextView would spend Escape on word completion; the window's Escape closes the chat.
+            if selector == #selector(NSResponder.cancelOperation(_:)) {
+                textView.window?.cancelOperation(nil)
+                return true
+            }
             guard selector == #selector(NSResponder.insertNewline(_:)) else { return false }
             if NSApp.currentEvent?.modifierFlags.contains(.shift) == true {
                 textView.insertNewlineIgnoringFieldEditor(nil)
