@@ -58,13 +58,17 @@ Within one folder, bundles are listed newest `CFBundleShortVersionString` first,
 so `26.6` outranks `9.4`. A tie or an unreadable version falls back to Finder's name order. Because
 the scan keeps a bundle ID's first copy, two Xcodes in `/Applications` resolve to the newest, every
 scan, and the embedded apps follow their parent. Scope order still comes first: listing an older
-copy as its own earlier scope pins it (#1288).
+copy as its own earlier scope pins it (#1288). The Settings list is drag-reorderable for that
+reason, and on this fork `~/Applications` leads the defaults: a wrapper bundle there whose
+`Contents` is a symlink to the real app, plus a custom `Icon` file, carries the real app's bundle ID,
+so putting it first is what makes the launcher open the wrapper and the Dock show its icon
+(`scopes-test` pins the order).
 
-The defaults cover `/Applications` and `/System/Applications` plus their `Utilities` folders,
-`/System/Library/CoreServices/Applications`, the cryptex apps under
+The defaults cover `~/Applications`, `/Applications` and `/System/Applications` plus their
+`Utilities` folders, `/System/Library/CoreServices/Applications`, the cryptex apps under
 `/System/Volumes/Preboot/Cryptexes/App/System/Applications` (this is the only place Safari really
 lives — `/Applications/Safari.app` is a symlink flagged hidden, so `.skipsHiddenFiles` never sees it),
-`~/Applications`, and `/System/Library/CoreServices/Finder.app`.
+and `/System/Library/CoreServices/Finder.app`.
 
 Finder ships as an individual bundle scope rather than by adding `/System/Library/CoreServices`, which
 holds ~120 background-agent bundles. There is no reliable way to filter those: `LSUIElement`,

@@ -19,6 +19,7 @@ struct SearchScopesSection: View {
                     settings.searchScopes.removeAll { $0 == scope }
                 }
             }
+            .onMove { from, to in settings.searchScopes.move(fromOffsets: from, toOffset: to) }
 
             HStack(spacing: Theme.Spacing.lg) {
                 Button("Add…", action: addScopes)
@@ -29,6 +30,8 @@ struct SearchScopesSection: View {
             }
         } header: {
             SettingsSectionHeader(.applicationsSearchScopes)
+        } footer: {
+            Text("Drag to reorder. When two folders hold the same app, the earlier one is the copy the launcher opens.")
         }
         .onAppear(perform: refreshMissing)
         .onChange(of: settings.searchScopes) { _, _ in refreshMissing() }

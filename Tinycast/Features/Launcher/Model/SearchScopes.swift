@@ -4,6 +4,8 @@ import Foundation
 enum SearchScopes {
     /// Seeded on a fresh install; order matters, the scan deduping by bundle ID.
     static let defaults: [String] = [
+        // First, so a wrapper there with a custom icon wins the scan over the copy it points at.
+        "~/Applications",
         "/Applications",
         "/Applications/Utilities",
         "/System/Applications",
@@ -12,8 +14,7 @@ enum SearchScopes {
         // Cryptex-delivered system apps; the `/Applications` Safari is a hidden symlink.
         "/System/Volumes/Preboot/Cryptexes/App/System/Applications",
         // The one user-facing app in CoreServices, so the directory itself is no default.
-        "/System/Library/CoreServices/Finder.app",
-        "~/Applications"
+        "/System/Library/CoreServices/Finder.app"
     ]
 
     /// Tilde-abbreviated and unslashed, so a settings backup stays portable across machines.

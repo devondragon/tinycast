@@ -52,6 +52,9 @@ seventy-odd PR branches stay out of `git branch -r`; tags still arrive with `--t
   not decode; Open With goes through `DialogController`; Get Info quotes its path with
   `AppleScriptLiteral`; `ExtensionFetcher` takes `http`, `https` and `data` only; a GitHub install is
   pinned to one commit.
+- `~/Applications` leads `SearchScopes.defaults` and the Search Scopes list in Settings is
+  drag-reorderable, so a wrapper bundle with a custom icon wins the scan over the app it points at
+  (upstream lists `~/Applications` last).
 - GitHub Actions is turned off for the whole fork (repo setting, not a file change). The remaining
   `release.yml` and `website*.yml` workflows are upstream's release and website deploys, which need
   his signing secrets and hosting; they are kept only so upstream merges stay clean. Rework or delete

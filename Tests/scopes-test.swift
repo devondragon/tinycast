@@ -157,6 +157,11 @@ struct ScopesTest {
         check(
             "defaults are already normalized",
             SearchScopes.normalize(SearchScopes.defaults) == SearchScopes.defaults)
+        // The scan keeps a bundle ID's first copy, so a wrapper in ~/Applications has to come first.
+        check(
+            "the user's Applications folder precedes the system ones in the defaults",
+            SearchScopes.defaults.firstIndex(of: "~/Applications")
+                .map { $0 < SearchScopes.defaults.firstIndex(of: "/Applications")! } == true)
 
         try? fm.removeItem(at: root)
         print(failures == 0 ? "\nALL PASSED" : "\n\(failures) FAILED")
