@@ -43,6 +43,12 @@ these merges stay easy.
   `coauthors.yml` workflows are deleted; the PR template, issue templates and `docs/release.md`'s
   review section are simplified. A merge that touches a deleted file shows a modify/delete
   conflict; keep it deleted.
+- Hardening from the 2026-10-04 review, kept on merge: extension and command names are
+  grammar-checked before `ExtensionCatalog.install` deletes or writes anything; `CustomCommandStore`,
+  `WindowLayoutStore`, `MCPSettingsStore` and `ExtensionStorage` refuse to write over data that will
+  not decode; Open With goes through `DialogController`; Get Info quotes its path with
+  `AppleScriptLiteral`; `ExtensionFetcher` takes `http`, `https` and `data` only; a GitHub install is
+  pinned to one commit.
 - GitHub Actions is turned off for the whole fork (repo setting, not a file change). The remaining
   `release.yml` and `website*.yml` workflows are upstream's release and website deploys, which need
   his signing secrets and hosting; they are kept only so upstream merges stay clean. Rework or delete
