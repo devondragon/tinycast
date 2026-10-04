@@ -166,7 +166,8 @@ run pasteboard-test        Tinycast/Platform/PasteboardFiles.swift \
                            Tinycast/Features/Clipboard/Model/ColorFormat.swift \
                            Tinycast/Features/Clipboard/Model/ColorSpaces.swift \
                            Tinycast/Features/Clipboard/Service/ClipboardManager.swift \
-                           Tinycast/Features/Clipboard/Service/Paster.swift
+                           Tinycast/Features/Clipboard/Service/Paster.swift \
+                           Tinycast/Platform/ASCIIKeyboardLayout.swift
 run index clipboard-file-performance \
                            Tinycast/Platform/PasteboardFiles.swift \
                            Tinycast/Features/Clipboard/Model/ClipboardStore.swift \
@@ -522,7 +523,8 @@ run ext-refresh-test       $E/Model/ExtensionManifest.swift \
                            Tinycast/Platform/AppDisplayName.swift \
                            $E/Model/ExtensionLaunchType.swift \
                            $E/Model/ExtensionRefreshPolicy.swift \
-                           $E/Model/ExtensionRefreshState.swift
+                           $E/Model/ExtensionRefreshState.swift \
+                           $E/Model/ExtensionRunSettlement.swift
 run ext-metadata-test      $E/Model/ExtensionCommandMetadata.swift \
                            $E/Model/ExtensionMenuBarSnapshot.swift \
                            $E/Service/ExtensionCommandMetadataStore.swift

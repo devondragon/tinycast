@@ -13,9 +13,16 @@ enum AppLauncher {
         NSWorkspace.shared.open(url)
     }
 
+    /// Finder's own activation is refused while Tinycast is inactive; opening Finder brings it up.
     @MainActor
     static func showInFinder(_ url: URL) {
         NSWorkspace.shared.activateFileViewerSelecting([url])
+        guard
+            let finder = NSWorkspace.shared.urlForApplication(
+                withBundleIdentifier: "com.apple.finder")
+        else { return }
+        NSWorkspace.shared.openApplication(
+            at: finder, configuration: NSWorkspace.OpenConfiguration())
     }
 
     /// No AppKit route for Get Info, so this drives Finder over Apple events — seconds when cold.

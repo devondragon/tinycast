@@ -9,12 +9,26 @@ enum ASCIIKeyboardLayout {
     }
 
     /// Every key's base character, translated against one lookup of the layout.
-    @MainActor static func baseCharacters(for keyCodes: Range<Int>) -> [Int: String] {
+    @MainActor static func baseCharacters(
+        for keyCodes: Range<Int>, modifiers: UInt32 = 0
+    ) -> [Int: String] {
         withCurrentLayout { layout in
             keyCodes.reduce(into: [:]) { characters, keyCode in
-                characters[keyCode] = character(for: keyCode, modifiers: 0, in: layout)
+                characters[keyCode] = character(for: keyCode, modifiers: modifiers, in: layout)
             }
         } ?? [:]
+    }
+
+    /// Under ⌘, as the target app matches key equivalents, so the layout's Command table decides.
+    @MainActor static func commandKeyCode(typing character: Character) -> Int? {
+        let commandCharacters = baseCharacters(for: 0..<128, modifiers: UInt32(cmdKey >> 8))
+        return keyCode(typing: character, in: commandCharacters)
+    }
+
+    /// The lowest code wins, so a keypad or duplicate key never outranks the main block's letter.
+    static func keyCode(typing character: Character, in characters: [Int: String]) -> Int? {
+        let wanted = String(character).lowercased()
+        return characters.filter { $0.value.lowercased() == wanted }.keys.min()
     }
 
     @MainActor private static func withCurrentLayout<Result>(

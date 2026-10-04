@@ -1,4 +1,5 @@
 import AppKit
+import Carbon.HIToolbox
 import SwiftUI
 
 /// `UCKeyTranslate` answers a named key's keycode with a control character the ASCII test admits.
@@ -73,6 +74,25 @@ struct ASCIILayoutTests {
             "a shifted letter is still spelled lower case",
             ASCIIKeyboardLayout.recovered(KeyEquivalent("C"), layoutCharacter: nil)
                 == KeyEquivalent("c"))
+
+        print("\n# a synthesized shortcut finds the key the layout types its letter on")
+        let qwerty = [9: "v", 8: "c", 40: "k"]
+        let dvorak = [47: "v", 34: "c", 9: "k"]
+        check(
+            "QWERTY types V on kVK_ANSI_V",
+            ASCIIKeyboardLayout.keyCode(typing: "v", in: qwerty) == kVK_ANSI_V)
+        check(
+            "Dvorak types V on QWERTY's period key",
+            ASCIIKeyboardLayout.keyCode(typing: "v", in: dvorak) == kVK_ANSI_Period)
+        check(
+            "an uppercase table still finds the letter",
+            ASCIIKeyboardLayout.keyCode(typing: "v", in: [9: "V"]) == kVK_ANSI_V)
+        check(
+            "the main block outranks a later duplicate",
+            ASCIIKeyboardLayout.keyCode(typing: "v", in: [90: "v", 9: "v"]) == kVK_ANSI_V)
+        check(
+            "a layout with no V leaves the caller its fallback",
+            ASCIIKeyboardLayout.keyCode(typing: "v", in: [9: "м"]) == nil)
 
         print("\n\(passes) passed, \(failures) failed")
         exit(failures == 0 ? 0 : 1)

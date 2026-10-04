@@ -149,13 +149,19 @@ enum Paster {
     /// Synthesize ⌘V, to `pid` alone when given, else through the system tap.
     @MainActor
     static func postCommandV(toPid pid: pid_t? = nil) {
-        postCommand(key: CGKeyCode(kVK_ANSI_V), toPid: pid)
+        postCommand(key: commandKey(typing: "v", fallback: kVK_ANSI_V), toPid: pid)
     }
 
     /// Synthesize ⌘C, for reading a selection an app will not surface over Accessibility.
     @MainActor
     static func postCommandC(toPid pid: pid_t? = nil) {
-        postCommand(key: CGKeyCode(kVK_ANSI_C), toPid: pid)
+        postCommand(key: commandKey(typing: "c", fallback: kVK_ANSI_C), toPid: pid)
+    }
+
+    /// Apps match ⌘V by the character the layout types, so QWERTY's V key is ⌘K on Dvorak.
+    @MainActor
+    private static func commandKey(typing character: Character, fallback: Int) -> CGKeyCode {
+        CGKeyCode(ASCIIKeyboardLayout.commandKeyCode(typing: character) ?? fallback)
     }
 
     @MainActor
