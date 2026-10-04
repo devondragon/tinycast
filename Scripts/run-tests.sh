@@ -522,7 +522,8 @@ run ext-refresh-test       $E/Model/ExtensionManifest.swift \
                            Tinycast/Platform/AppDisplayName.swift \
                            $E/Model/ExtensionLaunchType.swift \
                            $E/Model/ExtensionRefreshPolicy.swift \
-                           $E/Model/ExtensionRefreshState.swift
+                           $E/Model/ExtensionRefreshState.swift \
+                           $E/Model/ExtensionRunSettlement.swift
 run ext-metadata-test      $E/Model/ExtensionCommandMetadata.swift \
                            $E/Model/ExtensionMenuBarSnapshot.swift \
                            $E/Service/ExtensionCommandMetadataStore.swift

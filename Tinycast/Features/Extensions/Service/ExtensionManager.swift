@@ -55,7 +55,7 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
     @ObservationIgnored private var sessionID: String?
     @ObservationIgnored private var backgroundSessionID: String?
     @ObservationIgnored private var backgroundRef: ExtensionCommandRef?
-    @ObservationIgnored private var backgroundContinuation: CheckedContinuation<Bool, Never>?
+    @ObservationIgnored private var backgroundSettlement = ExtensionRunSettlement()
     @ObservationIgnored private var backgroundFailure: String?
     @ObservationIgnored private var backgroundTask: Task<Void, Never>?
     @ObservationIgnored private var nextToastID = 1
@@ -682,6 +682,7 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
         backgroundSessionID = session
         backgroundRef = reference
         backgroundFailure = nil
+        backgroundSettlement = ExtensionRunSettlement()
         var succeeded = false
         defer {
             // Gone mid-run means uninstalled: recording would resurrect its storage file.
@@ -694,7 +695,7 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
             backgroundSessionID = nil
             backgroundRef = nil
             backgroundFailure = nil
-            backgroundContinuation = nil
+            backgroundSettlement = ExtensionRunSettlement()
             publishLauncherEntries()
             storage.flush()
             commandMetadata.flush()
@@ -748,7 +749,7 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
 
     /// Suspends until the run settles, times out, or is preempted; `resumeBackground` is every exit.
     private func backgroundSettled() async -> Bool {
-        await withCheckedContinuation { continuation in backgroundContinuation = continuation }
+        await withCheckedContinuation { continuation in backgroundSettlement.wait(continuation) }
     }
 
     /// Ends the in-flight background run as a success so its schedule survives the preemption.
@@ -763,9 +764,7 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
 
     /// Main-actor serial, so no two of those exits can resume the same continuation.
     private func resumeBackground(with result: Bool) {
-        guard let continuation = backgroundContinuation else { return }
-        backgroundContinuation = nil
-        continuation.resume(returning: result)
+        backgroundSettlement.settle(result)
     }
 
     // MARK: - Events from the palette

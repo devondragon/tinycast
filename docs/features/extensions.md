@@ -137,6 +137,7 @@ Two host-call flavours:
 | `UI/ExtensionMenuBarImage.swift` | small native icons with light/dark variants |
 | `Model/ExtensionManifest.swift` | `package.json` → commands, preferences, arguments |
 | `Model/ExtensionRefreshPolicy.swift` | background-refresh decisions: interval parsing, due dates, backoff |
+| `Model/ExtensionRunSettlement.swift` | one background run's outcome, kept when it settles before the wait starts |
 | `Model/ExtensionLaunchType.swift` | `userInitiated` / `background`, mirroring `@raycast/api` `LaunchType` |
 | `Model/RenderNode.swift` | the decoded render tree (`RenderTree` / `RenderNode` / `RenderValue`) |
 | `Model/ExtensionAppearance.swift` | the per-extension icon override and its tint palette |
@@ -626,6 +627,9 @@ with nothing due costs a comparison. Three guards keep it cheap:
 - A tick never preempts a running command — foreground first, the tick waits for the next due.
 - A hung run dies before its successor is due, and a background run shows no toast, HUD, alert or
   window call, since those would fire on a timer.
+
+A run can finish while `runtime.start` is still returning, before anything waits on it, so
+`ExtensionRunSettlement` holds that first outcome for the wait instead of letting the run time out.
 
 `ExtensionRefreshPolicy` is where the parsing, due dates and backoff live, driven by
 `Tests/ext-refresh-test.swift`; `Tests/ext-metadata-test.swift` covers the store behind it. Menu-bar
