@@ -30,9 +30,9 @@ these merges stay easy.
   in-app updater reads GitHub Releases from that repo, so a fork build never offers an upstream
   release. The fork publishes no releases, so the updater stays idle.
 - `Tinycast/Palette/RootPaletteView.swift`: the "releases" link points at this fork.
-- Upstream's GitHub Actions (`triage.yml`, `coauthors.yml`, `release.yml`, `website*.yml`) should
-  stay disabled on the fork. The triage workflow auto-closes any PR that does not link an
-  `approved` issue.
+- GitHub Actions is turned off for the whole fork (repo setting, not a file change), so upstream's
+  workflows never run here. `triage.yml` would otherwise auto-close any PR that does not link an
+  `approved` issue. Re-enable Actions only after removing or replacing those workflows.
 
 ## Building and installing
 
