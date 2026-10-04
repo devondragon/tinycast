@@ -72,7 +72,21 @@ enum ExtensionFetchTests {
             "reused transport carries neither previous authorization nor response cookies")
     }
 
+    private static func refusesNonWebSchemes() async {
+        let fetcher = ExtensionFetcher()
+        for url in ["file:///etc/hosts", "ftp://example.com/x", "javascript:alert(1)"] {
+            var refused = false
+            do {
+                _ = try await request(fetcher, url: url)
+            } catch is ExtensionFetcher.FetchError {
+                refused = true
+            } catch {}
+            expect(refused, "\(url) is refused before a request is built")
+        }
+    }
+
     static func runChecks() async {
+        await refusesNonWebSchemes()
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
             "tinycast-fetch-\(UUID())")
         let stateFile = directory.appendingPathComponent("state.json")

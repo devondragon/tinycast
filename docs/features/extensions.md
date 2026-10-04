@@ -709,6 +709,9 @@ the thread that owns the VM, and the runtime's queue never spins one, so they st
 sql.js loads that way; Zotero is the reference case, whose Search Database sat on Loading… with no
 error.
 
+`ExtensionFetcher` takes `http`, `https` and `data` URLs only, as Node's fetch does; `file:` is
+refused because the fetcher would otherwise read any path the extension named.
+
 **Streams** — the stream core is Node's real contract, not a stand-in: an extension that ships
 `stream-chain` and `stream-json` to walk a package index builds object-mode pipelines out of it, and
 `Homebrew` is the reference case. `fetch` responses expose `body` as a `ReadableStream`, so
