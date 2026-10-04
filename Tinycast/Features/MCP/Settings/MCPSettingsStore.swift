@@ -4,7 +4,11 @@ import Observation
 @MainActor
 @Observable
 final class MCPSettingsStore {
+    enum StorageError: Error { case unavailable }
+
     private let defaults: UserDefaults
+    /// False when saved servers exist but won't decode; every mutation then refuses to write.
+    private(set) var isAvailable = true
 
     private(set) var servers: [MCPServer] {
         didSet { persist() }
@@ -12,7 +16,10 @@ final class MCPSettingsStore {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-        servers = Self.decode(defaults.data(forKey: AppSettingsKey.mcpServers.rawValue))
+        let data = defaults.data(forKey: AppSettingsKey.mcpServers.rawValue)
+        let decoded = data.flatMap { try? JSONDecoder().decode([MCPServer].self, from: $0) }
+        isAvailable = data == nil || decoded != nil
+        servers = decoded ?? []
     }
 
     func server(id: UUID) -> MCPServer? {
@@ -27,7 +34,8 @@ final class MCPSettingsStore {
         servers.filter(\.isEnabled)
     }
 
-    func save(_ server: MCPServer) {
+    func save(_ server: MCPServer) throws(StorageError) {
+        guard isAvailable else { throw .unavailable }
         let server = normalized(server)
         if let index = servers.firstIndex(where: { $0.id == server.id }) {
             servers[index] = server
@@ -36,12 +44,13 @@ final class MCPSettingsStore {
         }
     }
 
-    func remove(id: UUID) {
+    func remove(id: UUID) throws(StorageError) {
+        guard isAvailable else { throw .unavailable }
         servers.removeAll { $0.id == id }
     }
 
     func setTrust(_ trust: MCPTrust, for id: UUID) {
-        guard let index = servers.firstIndex(where: { $0.id == id }) else { return }
+        guard isAvailable, let index = servers.firstIndex(where: { $0.id == id }) else { return }
         servers[index].trust = trust
     }
 
@@ -58,13 +67,7 @@ final class MCPSettingsStore {
     }
 
     private func persist() {
-        guard let data = try? JSONEncoder().encode(servers) else { return }
+        guard isAvailable, let data = try? JSONEncoder().encode(servers) else { return }
         defaults.set(data, forKey: AppSettingsKey.mcpServers.rawValue)
-    }
-
-    private static func decode(_ data: Data?) -> [MCPServer] {
-        guard let data, let servers = try? JSONDecoder().decode([MCPServer].self, from: data)
-        else { return [] }
-        return servers
     }
 }

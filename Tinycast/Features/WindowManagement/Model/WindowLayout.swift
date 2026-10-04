@@ -175,6 +175,7 @@ enum WindowLayoutValidationError: LocalizedError, Equatable {
     case duplicateName
     case noEntries
     case invalidCharacter
+    case storageUnavailable
 
     var errorDescription: String? {
         switch self {
@@ -182,6 +183,8 @@ enum WindowLayoutValidationError: LocalizedError, Equatable {
         case .duplicateName: return "A window layout with this name already exists."
         case .noEntries: return "Add at least one app to the layout."
         case .invalidCharacter: return "Names cannot contain null characters."
+        case .storageUnavailable:
+            return "The saved window layouts couldn't be read, so Tinycast won't save over them."
         }
     }
 }

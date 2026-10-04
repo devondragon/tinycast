@@ -129,6 +129,7 @@ enum CustomCommandValidationError: LocalizedError {
     case emptyCommand
     case duplicateName
     case invalidCharacter
+    case storageUnavailable
 
     var errorDescription: String? {
         switch self {
@@ -136,6 +137,8 @@ enum CustomCommandValidationError: LocalizedError {
         case .emptyCommand: return "Enter a command to run."
         case .duplicateName: return "A custom command with this name already exists."
         case .invalidCharacter: return "Names and commands cannot contain null characters."
+        case .storageUnavailable:
+            return "The saved custom commands couldn't be read, so Tinycast won't save over them."
         }
     }
 }
@@ -147,15 +150,18 @@ final class CustomCommandStore {
 
     private let defaults: UserDefaults
     private(set) var commands: [CustomCommand]
+    /// False when saved commands exist but won't decode; every mutation then refuses to write.
+    private(set) var isAvailable = true
     @ObservationIgnored var onChange: (([CustomCommand]) -> Void)?
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-        let decoded =
-            defaults.data(forKey: Self.defaultsKey)
-            .flatMap { try? JSONDecoder().decode([CustomCommand].self, from: $0) } ?? []
-        commands = Self.sanitized(decoded)
-        if commands != decoded { persist() }
+        let data = defaults.data(forKey: Self.defaultsKey)
+        let decoded = data.flatMap { try? JSONDecoder().decode([CustomCommand].self, from: $0) }
+        isAvailable = data == nil || decoded != nil
+        let loaded = decoded ?? []
+        commands = Self.sanitized(loaded)
+        if isAvailable, commands != loaded { persist() }
     }
 
     func command(id: UUID) -> CustomCommand? {
@@ -169,6 +175,7 @@ final class CustomCommandStore {
     // Takes a whole draft, so adding an option doesn't churn every call site.
     @discardableResult
     func add(_ draft: CustomCommand) throws -> CustomCommand {
+        guard isAvailable else { throw CustomCommandValidationError.storageUnavailable }
         let value = try validated(draft, against: commands)
         commit(commands + [value])
         return value
@@ -188,6 +195,7 @@ final class CustomCommandStore {
     }
 
     func update(_ draft: CustomCommand) throws {
+        guard isAvailable else { throw CustomCommandValidationError.storageUnavailable }
         guard let index = commands.firstIndex(where: { $0.id == draft.id }) else { return }
         let value = try validated(draft, against: commands)
         var updated = commands
@@ -216,9 +224,8 @@ final class CustomCommandStore {
     /// Replaces the whole set on backup import, dropping invalid and duplicate records.
     @discardableResult
     func replace(with newCommands: [CustomCommand]) -> Int {
-        let updated = Self.sanitized(newCommands)
-        commit(updated)
-        return updated.count
+        commit(Self.sanitized(newCommands))
+        return commands.count
     }
 
     /// `existing` is what the name must be unique against: the library, or a batch in progress.
@@ -246,7 +253,7 @@ final class CustomCommandStore {
     }
 
     private func commit(_ updated: [CustomCommand]) {
-        guard updated != commands else { return }
+        guard isAvailable, updated != commands else { return }
         commands = updated
         persist()
         onChange?(updated)

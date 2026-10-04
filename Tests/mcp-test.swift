@@ -27,6 +27,7 @@ struct MCPTests {
         trustDecidesFromStandingAndChatGrants()
         addressingTakesOnlyAKnownHandle()
         settingsPersistAndKeepHandlesApart()
+        settingsNeverWriteOverWhatTheyCouldNotRead()
         serversBecomeWhatACLICanRunItself()
         onlyOneCopyOfALocalServerRuns()
 
@@ -215,9 +216,9 @@ struct MCPTests {
         defer { defaults.removePersistentDomain(forName: suite) }
 
         let store = MCPSettingsStore(defaults: defaults)
-        store.save(
+        try? store.save(
             MCPServer(name: "GitHub", transport: .http(url: "https://x/mcp", headerName: "Authorization")))
-        store.save(
+        try? store.save(
             MCPServer(name: "GitHub", transport: .stdio(command: "npx", arguments: [], environmentKeys: [])))
         expect(store.servers.count == 2, "two servers may honestly share a name")
         expect(
@@ -226,7 +227,7 @@ struct MCPTests {
 
         var edited = store.servers[0]
         edited.trust = .always
-        store.save(edited)
+        try? store.save(edited)
         expect(store.servers.count == 2, "saving an existing server updates it rather than adding")
         expect(store.server(id: edited.id)?.trust == .always, "and keeps what was edited")
 
@@ -236,11 +237,34 @@ struct MCPTests {
             "servers survive a relaunch")
         expect(reloaded.server(slug: "github") != nil, "and stay reachable by handle")
 
-        store.remove(id: edited.id)
+        try? store.remove(id: edited.id)
         expect(store.servers.count == 1, "removal takes exactly one")
     }
 
     /// The same servers, shaped for the routes whose own client runs them.
+    static func settingsNeverWriteOverWhatTheyCouldNotRead() {
+        let suite = "mcp-test-corrupt-\(UUID().uuidString)"
+        guard let defaults = UserDefaults(suiteName: suite) else {
+            expect(false, "the harness can open its own defaults")
+            return
+        }
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let corrupt = Data("not the json we wrote".utf8)
+        defaults.set(corrupt, forKey: "mcpServers")
+
+        let store = MCPSettingsStore(defaults: defaults)
+        expect(!store.isAvailable, "saved servers that won't decode leave the store unavailable")
+        expect(store.servers.isEmpty, "and nothing is pretended into the list")
+        var refused = false
+        do {
+            try store.save(MCPServer(name: "GitHub"))
+        } catch {
+            refused = true
+        }
+        expect(refused, "a save is refused rather than written over the data")
+        expect(defaults.data(forKey: "mcpServers") == corrupt, "and the stored data is untouched")
+    }
+
     static func serversBecomeWhatACLICanRunItself() {
         var remote = MCPServer(
             name: "Linear", slug: "linear",

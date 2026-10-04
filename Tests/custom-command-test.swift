@@ -118,6 +118,28 @@ struct CustomCommandTests {
             "a record written before the enabled flag loads as enabled",
             CustomCommandStore(defaults: defaults).commands.first?.isEnabled == true)
 
+        // MARK: Unreadable store
+
+        let corrupt = Data("not the json we wrote".utf8)
+        let corruptDefaults = isolatedDefaults("com.tinycast.custom-command-tests-corrupt")
+        corruptDefaults.set(corrupt, forKey: "customCommands")
+        let unreadable = CustomCommandStore(defaults: corruptDefaults)
+        check("saved commands that won't decode leave the store unavailable", !unreadable.isAvailable)
+        check("and nothing is pretended into the list", unreadable.commands.isEmpty)
+        var refused = false
+        do {
+            _ = try unreadable.add(CustomCommand(name: "Echo", command: "echo hi"))
+        } catch CustomCommandValidationError.storageUnavailable {
+            refused = true
+        } catch {}
+        check("a save is refused rather than written over the data", refused)
+        check(
+            "an import is refused too",
+            unreadable.replace(with: [CustomCommand(name: "Echo", command: "echo hi")]) == 0)
+        check(
+            "and the stored data is left exactly as it was",
+            corruptDefaults.data(forKey: "customCommands") == corrupt)
+
         // MARK: Batch add
 
         var commits = 0

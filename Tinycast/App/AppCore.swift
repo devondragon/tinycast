@@ -281,6 +281,17 @@ final class AppCore {
             pinnedEmoji.onPersistenceFailure = { [weak self] in
                 self?.showMessage("Couldn't save Emoji & Symbols pins", tone: .danger)
             }
+            // Authored data that won't read is said once and never written over; the stores refuse.
+            let unreadable = [
+                customCommands.isAvailable ? nil : "custom commands",
+                windowLayouts.isAvailable ? nil : "window layouts",
+                mcpSettings.isAvailable ? nil : "MCP servers",
+            ].compactMap { $0 }
+            if !unreadable.isEmpty {
+                showMessage(
+                    "Couldn't read saved \(unreadable.joined(separator: ", ")); nothing will be saved over them",
+                    tone: .danger)
+            }
 
             appIndex.start(settings: settings)
             clipboardCoordinator.applyEnabled()
