@@ -794,7 +794,12 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
 
     /// The row a pop restored for `query`; nil leaves the palette's own landing.
     func landingSelection(for query: String) -> Int? {
-        guard let restoredSearch, restoredSearch.query == query else { return nil }
+        guard let restoredSearch else { return nil }
+        // Typing away from the restored query ends the restore, so a retyped query lands on row 0.
+        guard restoredSearch.query == query else {
+            self.restoredSearch = nil
+            return nil
+        }
         return restoredSearch.selection
     }
 

@@ -468,7 +468,7 @@ final class ExtensionHostBridge: ExtensionHostAPI {
             appURL = byID
         } else {
             let installed = context?.applicationURLs ?? []
-            // A display-name match reads each bundle's Info.plist, so it stays off the main actor.
+            // The name pass reads every bundle's Info.plist; that part runs off the main actor.
             appURL = await Task.detached(priority: .userInitiated) {
                 ExtensionApplicationLookup.url(
                     named: appIdentifier, in: installed, displayName: { Bundle(url: $0)?.installedAppName })
