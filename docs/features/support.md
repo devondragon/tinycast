@@ -1,5 +1,9 @@
 # Support
 
+> **Fork:** this feature is switched off. `AppCore.start()` no longer starts the reminder pump, and
+> every route into the window (menu bar, palette menu, the launcher command, Settings → About) is
+> removed. The code below is kept unused so upstream merges stay clean.
+
 One window, one checkout link, and a checkbox deciding whether it may ever reopen itself. Every other
 surface — the website's hero and footer, the docs sidebar, the README badge — is a bare link to the
 same URL, so `SupportCoordinator.checkout` is the only place the destination is written down.

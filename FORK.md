@@ -30,6 +30,10 @@ these merges stay easy.
   in-app updater reads GitHub Releases from that repo, so a fork build never offers an upstream
   release. The fork publishes no releases, so the updater stays idle.
 - `Tinycast/Palette/RootPaletteView.swift`: the "releases" link points at this fork.
+- The in-app donation prompt is off: `AppCore` no longer starts the Support reminder, and the
+  menu bar, palette menu, launcher command (`CommandID.support`) and the Settings → About card are
+  gone. About links to this fork and to upstream, and its footer credits the fork. The
+  `Features/Support/` code and its settings key remain, unused, to keep merges small.
 - `Scripts/install-fork.sh`: build and install, described below.
 - `README.md`: fork notice and build-from-source install; upstream's private email, tip/support
   links, Discord, star history and Contributing section are removed. Expect conflicts here when
