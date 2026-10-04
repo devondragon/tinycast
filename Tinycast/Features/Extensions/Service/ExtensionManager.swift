@@ -1016,18 +1016,12 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
             NSWorkspace.shared.open(target)
             return
         }
-        let panel = NSAlert()
-        panel.messageText = "Open With"
-        panel.informativeText = target.lastPathComponent
-        for candidate in candidates.prefix(4) {
-            panel.addButton(withTitle: candidate.deletingPathExtension().lastPathComponent)
+        guard let chosen = await coordinator?.chooseApplication(for: target, among: candidates) else {
+            return
         }
-        panel.addButton(withTitle: "Cancel")
-        let response = panel.runModal().rawValue - NSApplication.ModalResponse.alertFirstButtonReturn.rawValue
-        guard response >= 0, response < min(candidates.count, 4) else { return }
         NSWorkspace.shared.open(
-            [target], withApplicationAt: candidates[Int(response)],
-            configuration: NSWorkspace.OpenConfiguration(), completionHandler: nil)
+            [target], withApplicationAt: chosen, configuration: NSWorkspace.OpenConfiguration(),
+            completionHandler: nil)
     }
 
     /// `launchCommand` from a running command: same extension unless it names another.
