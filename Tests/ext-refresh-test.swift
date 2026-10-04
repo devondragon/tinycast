@@ -194,6 +194,28 @@ struct ExtensionRefreshTests {
             "userInitiated matches LaunchType.UserInitiated")
     }
 
+    static func refreshNowExplainsARefusal() {
+        let mine = "extension:coffee/status"
+        expect(
+            ExtensionRefreshPolicy.refreshNowRefusal(
+                foregroundRunning: false, refreshingCommand: nil, command: mine) == nil,
+            "an idle runtime refreshes now")
+        expect(
+            ExtensionRefreshPolicy.refreshNowRefusal(
+                foregroundRunning: false, refreshingCommand: mine, command: mine)
+                == "Already refreshing.",
+            "the same command mid-refresh says so")
+        expect(
+            ExtensionRefreshPolicy.refreshNowRefusal(
+                foregroundRunning: false, refreshingCommand: "extension:other/tick", command: mine)
+                != nil,
+            "another command's tick refuses with a reason")
+        expect(
+            ExtensionRefreshPolicy.refreshNowRefusal(
+                foregroundRunning: true, refreshingCommand: nil, command: mine) != nil,
+            "an open foreground command refuses with a reason")
+    }
+
     // MARK: - Run settlement
 
     @MainActor final class SettlementBox {
@@ -252,6 +274,7 @@ struct ExtensionRefreshTests {
         ownerRestatementIsDropped()
         indicatorNamesTheState()
         launchTypesMatchTheJSContract()
+        refreshNowExplainsARefusal()
         await earlyResultIsKept()
         await firstOutcomeWins()
         await lateResultReachesTheWaiter()
