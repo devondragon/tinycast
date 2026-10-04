@@ -42,7 +42,7 @@ final class QuickActionPanel: NSPanel {
         }
         // ⌘C before the plain keys: the modifier is what separates Copy from anything else here.
         if event.modifierFlags.contains(.command) {
-            guard Int(event.keyCode) == kVK_ANSI_C else {
+            guard ASCIIKeyboardLayout.character(for: event)?.lowercased() == "c" else {
                 super.sendEvent(event)
                 return
             }
