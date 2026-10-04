@@ -187,10 +187,10 @@ it. `FileSearchPreviewKind` picks what draws the file, and `FileSearchSurface` m
 | everything else | `QuickLookSurface` | — |
 
 The extension decides without touching the disk, except where it cannot: an undeclared extension
-(`.jsx`, `.vue`) or `.ts`, which the system declares as MPEG-TS video. Those read their first 256 KB
+(`.astro`, `.mdx`) or `.ts`, which the system declares as MPEG-TS video. Those read their first 256 KB
 off the main actor once per selection — no NUL and valid UTF-8 is text, anything else falls back to
 what the extension declares. `PlainTextSurface` copies QuickLook's own text preview (fixed-pitch 11pt,
-3pt inset, unselectable), so a `.jsx` reads like a `.swift`.
+3pt inset, unselectable), so an `.astro` reads like a `.swift`.
 **Only the ⌘Y overlay autoplays.** `autoplays` is the surface's one parameter and the pane leaves it
 off: arrow-keying a list must not start a movie, while opening Quick Look on one is the ask itself.
 The player view is `KeyboardFocusRefusing` either way, so clicking its transport leaves the caret in
