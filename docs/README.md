@@ -52,7 +52,6 @@ open with an `## Invariants` section; read it before changing anything in that a
 [updates](features/updates.md) ·
 [support](features/support.md)
 
-## Contributing
+## Security
 
-[`CONTRIBUTING.md`](../CONTRIBUTING.md) covers the workflow — what to open, what to test, what a PR needs.
 [`SECURITY.md`](../SECURITY.md) covers vulnerability reports.

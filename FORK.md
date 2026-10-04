@@ -34,6 +34,9 @@ these merges stay easy.
 - `README.md`: fork notice and build-from-source install; upstream's private email, tip/support
   links, Discord, star history and Contributing section are removed. Expect conflicts here when
   merging upstream; keep the fork's version of those parts.
+- `CONTRIBUTING.md` and `docs/support-button.svg` are deleted, and the issue templates drop the
+  upstream "Contribution" checkbox. A merge that touches them shows a modify/delete conflict; keep
+  them deleted.
 - GitHub Actions is turned off for the whole fork (repo setting, not a file change), so upstream's
   workflows never run here. `triage.yml` would otherwise auto-close any PR that does not link an
   `approved` issue. Re-enable Actions only after removing or replacing those workflows.
