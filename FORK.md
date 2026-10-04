@@ -31,6 +31,9 @@ these merges stay easy.
   release. The fork publishes no releases, so the updater stays idle.
 - `Tinycast/Palette/RootPaletteView.swift`: the "releases" link points at this fork.
 - `Scripts/install-fork.sh`: build and install, described below.
+- `README.md`: fork notice and build-from-source install; upstream's private email, tip/support
+  links, Discord, star history and Contributing section are removed. Expect conflicts here when
+  merging upstream; keep the fork's version of those parts.
 - GitHub Actions is turned off for the whole fork (repo setting, not a file change), so upstream's
   workflows never run here. `triage.yml` would otherwise auto-close any PR that does not link an
   `approved` issue. Re-enable Actions only after removing or replacing those workflows.
