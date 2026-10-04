@@ -39,6 +39,7 @@ struct ExtensionSearchAccessoryTests {
         parsing()
         seeding()
         storageIsolation()
+        storageNeverFlushesOverWhatItCouldNotRead()
         print(failures == 0 ? "\nALL PASSED" : "\n\(failures) FAILED")
         print("\(passes) passed, \(failures) failed")
         exit(failures == 0 ? 0 : 1)
@@ -152,6 +153,26 @@ struct ExtensionSearchAccessoryTests {
                         "id":9,"type":"List.Dropdown","props":{},"children":[]}},"children":[]}
                     """
                 ).node("searchBarAccessory"))?.initialValue(stored: nil) == nil)
+    }
+
+    static func storageNeverFlushesOverWhatItCouldNotRead() {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("tinycast-ext-accessory-corrupt-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let file = directory.appendingPathComponent("coffee.json")
+        let corrupt = Data("{ not the json we wrote".utf8)
+        try? corrupt.write(to: file)
+
+        let storage = ExtensionStorage(directory: directory)
+        storage.setLocalStorage(extension: "coffee", key: "k", value: .string("v"))
+        check(
+            "the value is held in memory for this run",
+            storage.localStorageValue(extension: "coffee", key: "k") == .string("v"))
+        storage.flush()
+        check(
+            "but the file it could not read is left exactly as it was",
+            (try? Data(contentsOf: file)) == corrupt)
     }
 
     static func storageIsolation() {

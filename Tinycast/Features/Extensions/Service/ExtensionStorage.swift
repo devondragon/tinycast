@@ -179,16 +179,25 @@ final class ExtensionStorage {
 
     func removeAll(extension name: String) {
         stores.removeValue(forKey: name)
+        unreadable.remove(name)
         try? FileManager.default.removeItem(at: fileURL(for: name))
     }
 
     // MARK: - Persistence
 
+    /// Files that exist but won't decode: authored state, read as empty and never flushed over.
+    private var unreadable: Set<String> = []
+
     private func store(for name: String) -> Store {
         if let existing = stores[name] { return existing }
-        let loaded =
-            (try? Data(contentsOf: fileURL(for: name)))
-            .flatMap { try? JSONDecoder().decode(Store.self, from: $0) } ?? Store()
+        var loaded = Store()
+        if let data = try? Data(contentsOf: fileURL(for: name)) {
+            if let decoded = try? JSONDecoder().decode(Store.self, from: data) {
+                loaded = decoded
+            } else {
+                unreadable.insert(name)
+            }
+        }
         stores[name] = loaded
         return loaded
     }
@@ -214,7 +223,7 @@ final class ExtensionStorage {
         flushTask = nil
         let pending = dirty
         dirty.removeAll()
-        for name in pending {
+        for name in pending where !unreadable.contains(name) {
             guard let store = stores[name], let data = try? JSONEncoder().encode(store) else { continue }
             try? data.write(to: fileURL(for: name), options: .atomic)
         }

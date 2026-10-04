@@ -860,6 +860,9 @@ never shares with an installed copy.
 | Installed store version | `extension-versions.json` | yes |
 | `environment.supportPath` | `extension-support/<safe name>/` | yes |
 | OAuth tokens | macOS Keychain (`com.tinycast.extensions.oauth`) | yes |
+
+An `extension-data` file that exists but will not decode is read as empty for the run and never
+flushed over, so an extension's keys and tokens survive a bad write; `ext-accessory-test` pins it.
 | Menu-bar activation and snapshot | `extension-commands.json` | yes |
 | Icon override | `UserDefaults` → `extensionAppearances` | yes |
 | Command shortcuts | `UserDefaults` → `hotkey.extensionCommand.<entry id>` | yes |
