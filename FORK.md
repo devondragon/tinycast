@@ -22,13 +22,16 @@ git merge upstream/main
 ```
 
 Merge rather than rebase, since `main` is published. Keep fork-only changes small and isolated so
-these merges stay easy.
+these merges stay easy. The `upstream` remote's fetch refspec is narrowed to `main`
+(`git config remote.upstream.fetch '+refs/heads/main:refs/remotes/upstream/main'`), so upstream's
+seventy-odd PR branches stay out of `git branch -r`; tags still arrive with `--tags`.
 
 ## Fork-only changes
 
 - `Tinycast/Features/Updates/Model/ReleaseFeed.swift`: `repository` points at this fork. The
   in-app updater reads GitHub Releases from that repo, so a fork build never offers an upstream
-  release. The fork publishes no releases, so the updater stays idle.
+  release. The fork publishes no releases, so `automaticallyCheckForUpdates` defaults off here
+  (`AppSettings`); Check Now in Settings → General still works and finds nothing.
 - `Tinycast/Palette/RootPaletteView.swift`: the "releases" link points at this fork.
 - The in-app donation prompt is off: `AppCore` no longer starts the Support reminder, and the
   menu bar, palette menu, launcher command (`CommandID.support`) and the Settings → About card are
