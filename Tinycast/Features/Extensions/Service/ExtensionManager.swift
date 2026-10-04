@@ -701,10 +701,13 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
                     success: succeeded, error: succeeded ? nil : (backgroundFailure ?? "Timed out."),
                     now: Date())
             }
-            backgroundSessionID = nil
-            backgroundRef = nil
-            backgroundFailure = nil
-            backgroundSettlement = ExtensionRunSettlement()
+            // A run that started during an abort's teardown owns these now.
+            if backgroundSessionID == nil || backgroundSessionID == session {
+                backgroundSessionID = nil
+                backgroundRef = nil
+                backgroundFailure = nil
+                backgroundSettlement = ExtensionRunSettlement()
+            }
             publishLauncherEntries()
             storage.flush()
             commandMetadata.flush()
@@ -766,9 +769,10 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
         guard let session = backgroundSessionID else { return }
         backgroundSessionID = nil
         backgroundRef = nil
+        // Settled before the await, or a run started during it would replace the waiting one.
+        resumeBackground(with: true)
         await runtime.stop(session: session)
         runtime.shutdown()
-        resumeBackground(with: true)
     }
 
     /// Main-actor serial, so no two of those exits can resume the same continuation.

@@ -1,6 +1,6 @@
 import Foundation
 
-/// One background run's outcome, kept until its waiter arrives: a command can settle before the wait.
+/// One background run's outcome, held until its waiter arrives; a run can settle first.
 struct ExtensionRunSettlement {
     private enum State {
         case pending

@@ -617,8 +617,8 @@ while it is off, a warning with the error as its tooltip when the last backgroun
 the Actions menu offers Enable / Disable Background Refresh plus Refresh Now. Refresh Now never
 queues: while another command holds the runtime it shows a HUD saying so, since a deferred run could
 fire long after the click, when a foreground command finally closes, with nothing to show it ran.
-The override lives in `extension-commands.json` — derived state, so no backup carries it — and uninstall removes an
-extension's records with everything else. Deliberately not in `extension-data/<name>.json`: drawing a
+The override lives in `extension-commands.json` — derived state, so no backup carries it — and
+uninstall removes an extension's records with everything else. Deliberately not in `extension-data/<name>.json`: drawing a
 launcher row reads every command's metadata, and that file holds the extension's whole `Cache`.
 
 The scheduler is one loop doing date math, not one timer per command: close ticks run as a single
