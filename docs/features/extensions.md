@@ -870,6 +870,11 @@ never shares with an installed copy.
 `ExtensionCatalog.safeName` maps an npm-style name onto one path segment, and is the **only** copy of
 that mapping — a second one that drifts orphans every file the first one wrote.
 
+A manifest `name` has to match npm's package grammar and a command `name` has to be one plain path
+segment (`ExtensionManifest.isValidName`, `ExtensionCommand.isValidName`), checked before anything is
+read or written: the install directory, every storage file and every command bundle are named from
+them, and `install` deletes the directory it computes. `ext-test` pins what is refused.
+
 The last four rows are pruned by `ExtensionCoordinator.removeExtensionReferences`, reached through
 `ExtensionManager.onDidUninstall`. An extension's `preferenceKey` is its entry id, because it has no
 bundle id, so `extension:<name>/<command>` is what those stores are keyed by. `CustomCommandCoordinator`

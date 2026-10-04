@@ -171,9 +171,20 @@ struct ExtensionCommand: Sendable, Hashable, Identifiable {
         return complete
     }
 
+    /// Names a file inside the extension directory, so it must be one plain path segment.
+    static func isValidName(_ name: String) -> Bool {
+        guard let first = name.unicodeScalars.first, first.isASCII,
+            CharacterSet.alphanumerics.contains(first)
+        else { return false }
+        return name.unicodeScalars.allSatisfy(nameCharacters.contains)
+    }
+
+    private static let nameCharacters = CharacterSet(
+        charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._-")
+
     init?(json: Any) {
         guard let dict = json as? [String: Any], let name = dict["name"] as? String,
-            let title = dict["title"] as? String
+            Self.isValidName(name), let title = dict["title"] as? String
         else { return nil }
         self.name = name
         self.title = title
@@ -219,6 +230,7 @@ struct ExtensionManifest: Sendable, Hashable {
     enum ParseError: LocalizedError {
         case unreadable(URL)
         case notAnExtension(URL)
+        case invalidName(String)
 
         var errorDescription: String? {
             switch self {
@@ -226,6 +238,8 @@ struct ExtensionManifest: Sendable, Hashable {
                 return "Couldn't read \(url.lastPathComponent)."
             case .notAnExtension(let url):
                 return "\(url.lastPathComponent) doesn't contain a Raycast extension manifest."
+            case .invalidName(let name):
+                return "“\(name)” isn't a valid extension name."
             }
         }
     }
@@ -235,14 +249,41 @@ struct ExtensionManifest: Sendable, Hashable {
         guard let data = try? Data(contentsOf: manifestURL) else {
             throw ParseError.unreadable(manifestURL)
         }
-        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-            let manifest = ExtensionManifest(json: json)
-        else { throw ParseError.notAnExtension(directory) }
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw ParseError.notAnExtension(directory)
+        }
+        if let name = json["name"] as? String, !isValidName(name) {
+            throw ParseError.invalidName(name)
+        }
+        guard let manifest = ExtensionManifest(json: json) else {
+            throw ParseError.notAnExtension(directory)
+        }
         return manifest
     }
 
+    /// npm's package grammar, which `ray` enforces too; it rules out `..`, a bare `/` and empty.
+    static func isValidName(_ name: String) -> Bool {
+        guard !name.isEmpty, name.count <= 214 else { return false }
+        let parts = name.split(separator: "/", omittingEmptySubsequences: false)
+        switch parts.count {
+        case 1: return isValidSegment(parts[0])
+        case 2:
+            return parts[0].hasPrefix("@") && isValidSegment(parts[0].dropFirst())
+                && isValidSegment(parts[1])
+        default: return false
+        }
+    }
+
+    private static let segmentCharacters = CharacterSet(
+        charactersIn: "abcdefghijklmnopqrstuvwxyz0123456789._~-")
+
+    private static func isValidSegment(_ segment: Substring) -> Bool {
+        guard let first = segment.first, first != ".", first != "_" else { return false }
+        return segment.unicodeScalars.allSatisfy(segmentCharacters.contains)
+    }
+
     init?(json: [String: Any]) {
-        guard let name = json["name"] as? String else { return nil }
+        guard let name = json["name"] as? String, Self.isValidName(name) else { return nil }
         let commands = (json["commands"] as? [Any] ?? []).compactMap(ExtensionCommand.init(json:))
         guard !commands.isEmpty else { return nil }
         self.name = name
