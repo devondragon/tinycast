@@ -42,6 +42,9 @@ struct ExtensionStoreClient: Sendable {
     /// One recursive tree, then raw blobs: `contents` costs an API call per directory, and the
     /// anonymous budget is 60 an hour — an extension with 17 of them used to spend a third of it.
     func downloadFolder(_ source: ExtensionGitHubSource, to destination: URL) async throws {
+        guard let commitURL = source.commitURL else { throw ExtensionStoreError.malformedResponse }
+        let source = source.pinned(
+            to: try ExtensionGitHubSource.parseCommitSHA(try await get(commitURL)))
         guard let url = source.treeURL(sha: try await treeSHA(of: source), recursive: true) else {
             throw ExtensionStoreError.malformedResponse
         }

@@ -45,6 +45,23 @@ struct ExtensionGitHubSource: Hashable, Sendable {
         repository = parts[1]
     }
 
+    private init(owner: String, repository: String, path: String, ref: String) {
+        self.owner = owner
+        self.repository = repository
+        self.path = path
+        self.ref = ref
+    }
+
+    /// The same place at one commit, so the listing and every body come from one snapshot.
+    func pinned(to sha: String) -> ExtensionGitHubSource {
+        ExtensionGitHubSource(owner: owner, repository: repository, path: path, ref: sha)
+    }
+
+    /// Resolves a branch, tag or `HEAD` to its commit; one call, before the tree walk.
+    var commitURL: URL? {
+        URL(string: "https://api.github.com/repos/\(owner)/\(repository)/commits/\(ref)")
+    }
+
     var summary: String {
         let location = [owner, repository, path].filter { !$0.isEmpty }.joined(separator: "/")
         return ref == Self.defaultRef ? "\(location) on its default branch" : "\(location) at \(ref)"
@@ -89,6 +106,17 @@ struct ExtensionGitHubSource: Hashable, Sendable {
         func directorySHA(named name: String) -> String? {
             tree.first { $0.path == name && $0.isDirectory }?.sha
         }
+    }
+
+    /// A commit's sha, or a thrown message when GitHub answered with an error instead.
+    static func parseCommitSHA(_ data: Data) throws -> String {
+        struct Commit: Decodable { let sha: String }
+        if let commit = try? JSONDecoder().decode(Commit.self, from: data) { return commit.sha }
+        struct Message: Decodable { let message: String }
+        if let error = try? JSONDecoder().decode(Message.self, from: data) {
+            throw ExtensionStoreError.rejected(error.message)
+        }
+        throw ExtensionStoreError.malformedResponse
     }
 
     /// A tree listing, or a thrown message when GitHub answered with an error instead.

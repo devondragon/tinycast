@@ -497,9 +497,11 @@ install one extension would be absurd.
 **Downloading is a walk to the folder's tree, then one recursive listing.** The contents API caps a
 directory at 1000 entries without saying so, and costs a call per directory against GitHub's anonymous
 budget of 60 an hour per IP — Color Picker has 17 directories, so an install used to spend 18 calls and
-three of them exhausted the hour. Walking `<path>` to its sha and asking for that tree with
-`recursive=1` costs one call per path segment plus one, whatever the folder holds, and the file bodies
-come from `raw.githubusercontent.com`, which the API budget does not count. A `truncated` listing is a
+three of them exhausted the hour. The ref is first resolved to a commit with
+`GET /repos/<owner>/<repo>/commits/<ref>`, and the tree walk and every raw body use that sha, so a push
+between the listing and the bodies cannot mix two versions. Walking `<path>` to its sha and asking for
+that tree with `recursive=1` then costs one call per path segment plus one, whatever the folder holds,
+and the file bodies come from `raw.githubusercontent.com`, which the API budget does not count. A `truncated` listing is a
 prefix, so it throws rather than install part of an extension. A 404 from the API is reported as a
 missing repository or branch: anonymous requests cannot tell a private repository from no repository.
 

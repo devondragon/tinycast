@@ -100,6 +100,19 @@ struct ExtensionStoreTests {
             "a space is escaped",
             root.rawURL(for: "assets/my icon.png")?.absoluteString.hasSuffix("assets/my%20icon.png")
                 == true)
+
+        check(
+            "the commit lookup is built from the ref",
+            folder.commitURL?.absoluteString
+                == "https://api.github.com/repos/raycast/extensions/commits/main")
+        let pinned = folder.pinned(to: "0123abcd")
+        check(
+            "pinning swaps only the ref",
+            pinned.owner == "raycast" && pinned.path == "extensions/coffee")
+        check(
+            "a pinned source addresses bodies by commit",
+            pinned.rawURL(for: "package.json")?.absoluteString
+                == "https://raw.githubusercontent.com/raycast/extensions/0123abcd/extensions/coffee/package.json")
     }
 
     // MARK: - Raycast's store
@@ -178,6 +191,13 @@ struct ExtensionStoreTests {
 
     static func gitHubTree() {
         print("\n# github tree")
+        check(
+            "a commit answer yields its sha",
+            (try? ExtensionGitHubSource.parseCommitSHA(Data(#"{"sha":"0123abcd","commit":{}}"#.utf8)))
+                == "0123abcd")
+        check(
+            "a GitHub error is surfaced",
+            (try? ExtensionGitHubSource.parseCommitSHA(Data(#"{"message":"Not Found"}"#.utf8))) == nil)
         let payload = """
             {"tree":[{"path":"src","type":"tree","sha":"t1","mode":"040000"},
                      {"path":"package.json","type":"blob","sha":"b1","mode":"100644"},
