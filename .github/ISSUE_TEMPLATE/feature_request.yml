@@ -12,10 +12,7 @@ body:
   - type: textarea
     id: why
     attributes:
-      label: Why does it belong in Tinycast?
-      description: >
-        Tinycast stays small on purpose — quality over quantity. It has already borrowed what it
-        wanted from Raycast, so "Raycast has it" is not a reason. Tell us why this is worth its
-        weight.
+      label: Why do you want it?
+      description: The problem it solves or the workflow it improves.
     validations:
       required: true

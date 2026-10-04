@@ -34,12 +34,15 @@ these merges stay easy.
 - `README.md`: fork notice and build-from-source install; upstream's private email, tip/support
   links, Discord, star history and Contributing section are removed. Expect conflicts here when
   merging upstream; keep the fork's version of those parts.
-- `CONTRIBUTING.md` and `docs/support-button.svg` are deleted, and the issue templates drop the
-  upstream "Contribution" checkbox. A merge that touches them shows a modify/delete conflict; keep
-  them deleted.
-- GitHub Actions is turned off for the whole fork (repo setting, not a file change), so upstream's
-  workflows never run here. `triage.yml` would otherwise auto-close any PR that does not link an
-  `approved` issue. Re-enable Actions only after removing or replacing those workflows.
+- Upstream's contribution process is removed: `CONTRIBUTING.md`, the contributor agreement,
+  `.github/FUNDING.yml`, `.coderabbit.yaml`, `docs/support-button.svg`, and the `triage.yml` and
+  `coauthors.yml` workflows are deleted; the PR template, issue templates and `docs/release.md`'s
+  review section are simplified. A merge that touches a deleted file shows a modify/delete
+  conflict; keep it deleted.
+- GitHub Actions is turned off for the whole fork (repo setting, not a file change). The remaining
+  `release.yml` and `website*.yml` workflows are upstream's release and website deploys, which need
+  his signing secrets and hosting; they are kept only so upstream merges stay clean. Rework or delete
+  them before turning Actions on.
 
 ## Building and installing
 
