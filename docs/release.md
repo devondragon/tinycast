@@ -54,70 +54,19 @@ There is no CI workflow and no automated reviewer on this fork, so the whole bar
 
 ## Releasing
 
-`.github/workflows/release.yml` builds and publishes a DMG from GitHub Actions, no local machine
-needed. Run it from the **Actions** tab (`Release` → **Run workflow**) and pick:
+**This fork publishes no releases.** The in-app updater reads GitHub Releases from
+`devondragon/tinycast` (`ReleaseFeed.repository`), which has none, and automatic checking defaults
+off, so the only way a build reaches this Mac is `./Scripts/install-fork.sh`, described in
+[FORK.md](../FORK.md). It builds a signed Release from the checkout, stamps it with the newest
+upstream stable tag and the fork's commit count, verifies the signature, and swaps it into
+`/Applications`.
 
-- **channel** — `beta` or `stable`. Each builds a distinct app (`Tinycast Beta.app` / `Tinycast.app`)
-  with its own bundle id, alongside the local `Tinycast Dev.app`. Beta gets an auto-incrementing
-  `-beta.N` suffix (`N` = the Actions run number) so re-running never collides; stable ships the
-  version as-is.
-- **version** — base semver, e.g. `0.2.0`.
+`.github/workflows/release.yml`, `Scripts/release-notes.sh` and the Homebrew tap steps are upstream's
+pipeline, kept only so upstream merges stay clean. They need upstream's signing secret, tap token and
+Discord webhook, and GitHub Actions is turned off for the fork, so none of them runs here. Upstream's
+own description of that pipeline lives in its copy of this file.
 
-It builds on a `macos-26` runner with Xcode 26 and publishes a GitHub Release tagged
-`v<full-version>` with a versioned DMG and zip asset, marked prerelease for beta. On success it also
-bumps the matching cask in the tap and announces the release on Discord. A stable run also
-dispatches the Website workflow, because the site reads the latest version and the
-[changelog](https://tinycast.dev/changelog/) from GitHub at build time.
-
-A stable run then fans out to a second job, `universal`, which rebuilds the same commit with
-`ARCHS="arm64 x86_64"` and attaches `Tinycast-Universal-<version>.dmg` / `.zip` to the release the
-first job created, then bumps `tinycast-universal`. macOS 26 is the last release that boots on Intel,
-and those Macs need both slices. Both jobs pin `ARCHS` explicitly and assert the slices on *every*
-shipping binary — the app, `ClipboardTextHelper` and `Tinycast Dictation`: trusting `ARCHS_STANDARD` is what
-shipped a thin arm64 build to Intel users once already, and it also keeps the Apple silicon download
-from silently gaining a slice it never needs. A thin helper inside a universal app is the quiet form
-of the same bug: the app boots on Intel and only clipboard OCR or dictation stops working.
-
-Channel builds override `TINYCAST_BUNDLE_IDENTIFIER`, not the target-wide `PRODUCT_BUNDLE_IDENTIFIER`.
-The Dictation helper derives its own identifier with a `.dictation` suffix; signature verification
-checks that its bundle and signing identifiers agree and remain distinct from the main app.
-
-### Release notes
-
-`Scripts/release-notes.sh` composes the release body, and CI runs it just before `gh release create`.
-It is safe to run by hand against any tag — it only reads:
-
-```sh
-CHANNEL=beta TAG=v0.9.13-beta.61 ./Scripts/release-notes.sh /tmp/body.md /tmp/discord.md
-```
-
-The changelog itself comes from GitHub's own release-notes API, which lists every merged PR with its
-author and number — so contributors are credited without anyone maintaining a `CHANGELOG.md`, and
-without Conventional Commits. **Nothing is ever committed to this repo**: the tag is created
-server-side by `gh release create`, and no release, bot or version-bump commit exists.
-
-Two details the script exists for:
-
-- **The previous tag is picked per channel.** Beta and stable tags interleave on `main` — the same
-  commit can carry both — so "the previous release" is only ever right within one channel. A stable
-  release therefore spans every beta since the last stable.
-- **The body is split by `<!-- tinycast:install -->`.** Everything above it is the changelog;
-  everything below is the Homebrew and quarantine text, which only a download page needs. The update
-  window cuts at that marker — see [features/updates.md](features/updates.md). Full PR URLs are
-  shortened to `#304`, which still autolinks on the web and fits a 460pt window.
-
-The Discord announcement carries the same changelog, truncated to fit Discord's component limit, and
-pings `@everyone`.
-
-### Homebrew tap automation
-
-Each job's final step rewrites the `version` + `sha256` of its cask (`tinycast`, `tinycast@beta` or
-`tinycast-universal`) in the [`homebrew-tinycast`](https://github.com/abue-ammar/homebrew-tinycast) tap
-and pushes. It needs a `HOMEBREW_TAP_TOKEN` repo secret — a fine-grained PAT with **Contents:
-read/write** on the tap repo. Without the secret the step logs a warning and skips; the release still
-publishes. The `sed` is anchored to `^  version` / `^  sha256`, so a cask's two-space indent on those
-lines is load-bearing.
-
-Both stable casks install `Tinycast.app` under `com.tinycast.app`, so they `conflicts_with` one
-another and Homebrew routes each Mac by `depends_on`: `tinycast` requires `arch: :arm64`, and
-`tinycast-universal` takes the Intel Macs.
+Should the fork ever publish, three things the updater requires (above) still hold, plus one more:
+`BundleSignature.isTrusted` accepts a bundle signed by upstream's Developer ID team or by the same
+leaf certificate as the running app, so every fork release would have to be signed with one shared
+`Tinycast Self-Signed` key rather than a per-machine one.
