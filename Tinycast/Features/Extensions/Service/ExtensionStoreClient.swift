@@ -39,10 +39,15 @@ struct ExtensionStoreClient: Sendable {
     /// Never needed to build, and the heaviest thing in some extension folders.
     private static let skippedDirectories: Set<String> = ["node_modules", "metadata"]
 
-    /// One recursive tree, then raw blobs: `contents` costs an API call per directory, and the
-    /// anonymous budget is 60 an hour — an extension with 17 of them used to spend a third of it.
-    func downloadFolder(_ source: ExtensionGitHubSource, to destination: URL) async throws {
-        guard let url = source.treeURL(sha: try await treeSHA(of: source), recursive: true) else {
+    /// A commit lookup, one recursive tree, then raw blobs: `contents` costs an API call per
+    /// directory, and the anonymous budget is 60 an hour — 17 directories used to spend a third.
+    func downloadFolder(_ requested: ExtensionGitHubSource, to destination: URL) async throws {
+        guard let commitURL = requested.commitURL else { throw ExtensionStoreError.malformedResponse }
+        let source = requested.pinned(
+            to: try ExtensionGitHubSource.parseCommitSHA(
+                try await get(commitURL, accept: "application/vnd.github.sha")))
+        guard let url = source.treeURL(sha: try await treeSHA(of: source, named: requested), recursive: true)
+        else {
             throw ExtensionStoreError.malformedResponse
         }
         let tree = try ExtensionGitHubSource.parseTree(try await get(url))
@@ -68,7 +73,9 @@ struct ExtensionStoreClient: Sendable {
     }
 
     /// Walks a path to the tree it names: the trees API takes a sha, and a ref only for the root.
-    private func treeSHA(of source: ExtensionGitHubSource) async throws -> String {
+    private func treeSHA(
+        of source: ExtensionGitHubSource, named requested: ExtensionGitHubSource
+    ) async throws -> String {
         var sha = source.ref
         for segment in source.path.split(separator: "/").map(String.init) {
             guard let url = source.treeURL(sha: sha) else {
@@ -79,7 +86,7 @@ struct ExtensionStoreClient: Sendable {
                     .directorySHA(named: segment)
             else {
                 throw ExtensionStoreError.rejected(
-                    "\(source.owner)/\(source.repository) has no \(source.path) folder at \(source.ref).")
+                    "\(requested.owner)/\(requested.repository) has no \(requested.path) folder at \(requested.ref).")
             }
             sha = next
         }
@@ -88,13 +95,13 @@ struct ExtensionStoreClient: Sendable {
 
     // MARK: - Fetching
 
-    private func get(_ url: URL) async throws -> Data {
+    private func get(_ url: URL, accept: String = "application/vnd.github+json") async throws -> Data {
         let isGitHubAPI = url.host == "api.github.com"
         var request = URLRequest(url: url)
         // GitHub serves the old media type without it, and rejects a request with no user agent.
         request.setValue("Tinycast", forHTTPHeaderField: "User-Agent")
         if isGitHubAPI {
-            request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
+            request.setValue(accept, forHTTPHeaderField: "Accept")
         }
         let (data, response) = try await session.data(for: request)
         guard let http = response as? HTTPURLResponse else { return data }

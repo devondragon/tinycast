@@ -181,9 +181,12 @@ enum ExtensionCatalog {
         case noBuiltCommands(String)
         case wrongPlatform(String)
         case copyFailed(String)
+        case invalidName(String)
 
         var errorDescription: String? {
             switch self {
+            case .invalidName(let name):
+                return "“\(name)” isn't a valid extension name, so it can't be installed."
             case .notAnExtension(let url):
                 return
                     "\(url.lastPathComponent) doesn't contain a Raycast extension (no package.json with commands)."
@@ -201,7 +204,12 @@ enum ExtensionCatalog {
     /// Manifest, built commands and `assets/` only — never `node_modules` or `.js.map`s.
     @discardableResult
     static func install(from source: URL) throws -> InstalledExtension {
-        guard let manifest = try? ExtensionManifest.load(directory: source) else {
+        let manifest: ExtensionManifest
+        do {
+            manifest = try ExtensionManifest.load(directory: source)
+        } catch ExtensionManifest.ParseError.invalidName(let name) {
+            throw InstallError.invalidName(name)
+        } catch {
             throw InstallError.notAnExtension(source)
         }
         guard manifest.supportsMacOS else { throw InstallError.wrongPlatform(manifest.title) }
@@ -212,8 +220,13 @@ enum ExtensionCatalog {
         }
         guard !built.isEmpty else { throw InstallError.noBuiltCommands(manifest.title) }
 
-        let destination = extensionsDirectory().appendingPathComponent(
+        let root = extensionsDirectory().standardizedFileURL
+        let destination = root.appendingPathComponent(
             manifest.name.replacingOccurrences(of: "/", with: "-"), isDirectory: true)
+        // The manifest grammar already forbids this; the delete below is why it is checked twice.
+        guard destination.standardizedFileURL.path.hasPrefix(root.path + "/") else {
+            throw InstallError.invalidName(manifest.name)
+        }
         do {
             if fm.fileExists(atPath: destination.path) { try fm.removeItem(at: destination) }
             try fm.createDirectory(at: destination, withIntermediateDirectories: true)

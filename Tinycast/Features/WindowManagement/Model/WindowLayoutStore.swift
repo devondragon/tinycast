@@ -8,15 +8,18 @@ final class WindowLayoutStore {
 
     private let defaults: UserDefaults
     private(set) var layouts: [WindowLayout]
+    /// False when saved layouts exist but won't decode; every mutation then refuses to write.
+    private(set) var isAvailable = true
     @ObservationIgnored var onChange: (([WindowLayout]) -> Void)?
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-        let decoded =
-            defaults.data(forKey: Self.defaultsKey)
-            .flatMap { try? JSONDecoder().decode([WindowLayout].self, from: $0) } ?? []
-        layouts = Self.sanitized(decoded)
-        if layouts != decoded { persist() }
+        let data = defaults.data(forKey: Self.defaultsKey)
+        let decoded = data.flatMap { try? JSONDecoder().decode([WindowLayout].self, from: $0) }
+        isAvailable = data == nil || decoded != nil
+        let loaded = decoded ?? []
+        layouts = Self.sanitized(loaded)
+        if isAvailable, layouts != loaded { persist() }
     }
 
     func layout(id: UUID) -> WindowLayout? {
@@ -30,12 +33,14 @@ final class WindowLayoutStore {
     // Takes a whole draft, so adding a field doesn't churn every call site.
     @discardableResult
     func add(_ draft: WindowLayout) throws(WindowLayoutValidationError) -> WindowLayout {
+        guard isAvailable else { throw .storageUnavailable }
         let value = try validated(draft)
         commit(layouts + [value])
         return value
     }
 
     func update(_ draft: WindowLayout) throws(WindowLayoutValidationError) {
+        guard isAvailable else { throw .storageUnavailable }
         guard let index = layouts.firstIndex(where: { $0.id == draft.id }) else { return }
         let value = try validated(draft)
         var updated = layouts
@@ -69,9 +74,8 @@ final class WindowLayoutStore {
     /// Replaces the whole library on backup import, cleaning rather than rejecting.
     @discardableResult
     func replace(with incoming: [WindowLayout]) -> Int {
-        let updated = Self.sanitized(incoming)
-        commit(updated)
-        return updated.count
+        commit(Self.sanitized(incoming))
+        return layouts.count
     }
 
     private func validated(
@@ -95,7 +99,7 @@ final class WindowLayoutStore {
 
     private func commit(_ updated: [WindowLayout]) {
         let ordered = updated.sorted(by: WindowLayout.precedes)
-        guard ordered != layouts else { return }
+        guard isAvailable, ordered != layouts else { return }
         layouts = ordered
         persist()
         onChange?(ordered)

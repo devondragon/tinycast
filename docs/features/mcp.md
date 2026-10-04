@@ -23,7 +23,8 @@ nothing about MCP. `AIChatCoordinator.send` is the one place the two meet.
   arrive having connected one.
 - **Credentials live only in the login Keychain.** `MCPServer` persists the endpoint, authentication
   mode, the header *name*, the command, its arguments and its environment variable *names* in
-  `UserDefaults`; it never contains a secret. The HTTP header value, environment values, OAuth client
+  `UserDefaults`; it never contains a secret. A `mcpServers` blob that will not decode leaves the
+  store unavailable, and a save throws rather than overwrite it. The HTTP header value, environment values, OAuth client
   registration and tokens are one JSON item per server under `KeychainSecretStore.mcpSecrets`, and
   never enter logs, errors or backups.
 - **Remote endpoints require HTTPS**, through the same `AIEndpointPolicy.validate` the AI providers

@@ -281,6 +281,18 @@ final class ExtensionCoordinator {
         core.showMessage(message)
     }
 
+    /// At most four apps, since the dialog stacks its buttons; the last option is always Cancel.
+    func chooseApplication(for target: URL, among candidates: [URL]) async -> URL? {
+        let shown = Array(candidates.prefix(4))
+        var options = shown.map { DialogAction(title: $0.deletingPathExtension().lastPathComponent) }
+        options.append(DialogAction(title: "Cancel", role: .cancel))
+        NSApp.activate(ignoringOtherApps: true)
+        let index = await core.choose(
+            title: "Open With", message: target.lastPathComponent, symbol: "arrow.up.forward.app",
+            options: options, defaultIndex: 0)
+        return shown.indices.contains(index) ? shown[index] : nil
+    }
+
     /// The dialog outranks the palette, so a view command keeps its screen behind it.
     func confirmExtensionAlert(_ alert: ExtensionAlert) async -> Bool {
         NSApp.activate(ignoringOtherApps: true)

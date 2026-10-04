@@ -144,17 +144,20 @@ final class MCPCoordinator {
     func status(of id: UUID) -> MCPServerStatus { manager.status(of: id) }
 
     func save(_ server: MCPServer, secrets: MCPSecretStore.Secrets) throws {
+        // Refused up front: a secret saved for a server the store then declines would be orphaned.
+        guard store.isAvailable else { throw MCPSettingsStore.StorageError.unavailable }
         try MCPSecretStore().save(secrets, for: server.id)
         core.mcpOAuth.cancelSignIn(server.id)
         manager.disconnect(server.id)
-        store.save(server)
+        try store.save(server)
         applyEnabled()
     }
 
     func remove(_ id: UUID) throws {
+        guard store.isAvailable else { throw MCPSettingsStore.StorageError.unavailable }
         core.mcpOAuth.cancelSignIn(id)
         try MCPSecretStore().remove(for: id)
-        store.remove(id: id)
+        try store.remove(id: id)
         applyEnabled()
     }
 

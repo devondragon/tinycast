@@ -407,6 +407,33 @@ struct ExtensionTests {
                     "name": "w", "platforms": ["Windows"],
                     "commands": [["name": "c", "title": "C"]]
                 ])?.supportsMacOS == false)
+        // The install directory and every storage file are named from these, so they are checked.
+        let one = [["name": "c", "title": "C"]]
+        check("rejects a manifest named ..", ExtensionManifest(json: ["name": "..", "commands": one]) == nil)
+        check("rejects an empty name", ExtensionManifest(json: ["name": "", "commands": one]) == nil)
+        check(
+            "rejects a bare path separator",
+            ExtensionManifest(json: ["name": "a/b", "commands": one]) == nil)
+        check(
+            "rejects a name that starts with a dot",
+            ExtensionManifest(json: ["name": ".hidden", "commands": one]) == nil)
+        check(
+            "accepts a scoped npm name",
+            ExtensionManifest(json: ["name": "@org/coffee", "commands": one]) != nil)
+        check(
+            "accepts digits, dots and hyphens",
+            ExtensionManifest(json: ["name": "my-ext.v2", "commands": one]) != nil)
+        check(
+            "rejects a command named ../x",
+            ExtensionManifest(json: ["name": "ok", "commands": [["name": "../x", "title": "X"]]]) == nil)
+        check(
+            "rejects a command with a path separator",
+            ExtensionManifest(json: ["name": "ok", "commands": [["name": "a/b", "title": "X"]]]) == nil)
+        check(
+            "accepts a camelCase command",
+            ExtensionManifest(json: ["name": "ok", "commands": [["name": "searchItems", "title": "X"]]])
+                != nil)
+
         let commands = [["name": "c", "title": "C"]]
         check(
             "the store lists an organisation's extension under its owner",

@@ -497,9 +497,11 @@ install one extension would be absurd.
 **Downloading is a walk to the folder's tree, then one recursive listing.** The contents API caps a
 directory at 1000 entries without saying so, and costs a call per directory against GitHub's anonymous
 budget of 60 an hour per IP — Color Picker has 17 directories, so an install used to spend 18 calls and
-three of them exhausted the hour. Walking `<path>` to its sha and asking for that tree with
-`recursive=1` costs one call per path segment plus one, whatever the folder holds, and the file bodies
-come from `raw.githubusercontent.com`, which the API budget does not count. A `truncated` listing is a
+three of them exhausted the hour. The ref is first resolved to a commit with
+`GET /repos/<owner>/<repo>/commits/<ref>`, and the tree walk and every raw body use that sha, so a push
+between the listing and the bodies cannot mix two versions. Walking `<path>` to its sha and asking for
+that tree with `recursive=1` then costs one call per path segment plus two, whatever the folder holds,
+and the file bodies come from `raw.githubusercontent.com`, which the API budget does not count. A `truncated` listing is a
 prefix, so it throws rather than install part of an extension. A 404 from the API is reported as a
 missing repository or branch: anonymous requests cannot tell a private repository from no repository.
 
@@ -709,6 +711,9 @@ the thread that owns the VM, and the runtime's queue never spins one, so they st
 sql.js loads that way; Zotero is the reference case, whose Search Database sat on Loading… with no
 error.
 
+`ExtensionFetcher` takes `http`, `https` and `data` URLs only, as Node's fetch does; `file:` is
+refused because the fetcher would otherwise read any path the extension named.
+
 **Streams** — the stream core is Node's real contract, not a stand-in: an extension that ships
 `stream-chain` and `stream-json` to walk a package index builds object-mode pipelines out of it, and
 `Homebrew` is the reference case. `fetch` responses expose `body` as a `ReadableStream`, so
@@ -867,8 +872,17 @@ never shares with an installed copy.
 | User alias | `UserDefaults` → `launcherAliases` | yes |
 | Launch ranking | `launcher-ranking.json` | yes |
 
+An `extension-data` file that exists but will not decode is read as empty for the run and never
+flushed over, so an extension's preferences and `LocalStorage` survive a bad write; a HUD says so
+once per run, and `ext-accessory-test` pins it.
+
 `ExtensionCatalog.safeName` maps an npm-style name onto one path segment, and is the **only** copy of
 that mapping — a second one that drifts orphans every file the first one wrote.
+
+A manifest `name` has to match npm's package grammar and a command `name` has to be one plain path
+segment (`ExtensionManifest.isValidName`, `ExtensionCommand.isValidName`), checked before anything is
+read or written: the install directory, every storage file and every command bundle are named from
+them, and `install` deletes the directory it computes. `ext-test` pins what is refused.
 
 The last four rows are pruned by `ExtensionCoordinator.removeExtensionReferences`, reached through
 `ExtensionManager.onDidUninstall`. An extension's `preferenceKey` is its entry id, because it has no

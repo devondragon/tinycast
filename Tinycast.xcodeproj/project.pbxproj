@@ -689,6 +689,7 @@
 		DF45F095F4BE5E5BAF0A3DF8 /* ModifierTapMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 709C3F8952A500267E1D8242 /* ModifierTapMonitor.swift */; };
 		DFB25A4CDD35071B745F2EF9 /* DoubleTapModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72F0F0DDA5FC1F6ED59E73E9 /* DoubleTapModifier.swift */; };
 		DFED3F4C7B67FED3DBD016E5 /* FallbackActionsMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9AEDF156B61DD90C5ADA8FA /* FallbackActionsMenu.swift */; };
+		E018D8F39322BE97C0B1FBCB /* AppleScriptLiteral.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD5FA36590159628A8F88441 /* AppleScriptLiteral.swift */; };
 		E06AA23D307A8FBA62C950BA /* MCPOAuthRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19E96BEA3A5436619297675B /* MCPOAuthRequest.swift */; };
 		E078243555477EA5F02C9119 /* MenuSearchTarget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DFF1EF5B5DA85F78C040BD1 /* MenuSearchTarget.swift */; };
 		E0C0746AD3C7E2FED3C50374 /* WindowActionMemory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1E7B96668721F12170CD72 /* WindowActionMemory.swift */; };
@@ -1480,6 +1481,7 @@
 		CCA0FFBA690EF8846A934C64 /* CalcUnitCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalcUnitCatalog.swift; sourceTree = "<group>"; };
 		CCCBDD92DEAD780A1DC423CA /* ExtensionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionScreen.swift; sourceTree = "<group>"; };
 		CD0A6DDC1C30A6E2C6DF7E7D /* WindowManagementSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowManagementSettingsView.swift; sourceTree = "<group>"; };
+		CD5FA36590159628A8F88441 /* AppleScriptLiteral.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleScriptLiteral.swift; sourceTree = "<group>"; };
 		CD6B72A1A1FF3D08CFC3FA7D /* NoteCheckboxGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteCheckboxGeometry.swift; sourceTree = "<group>"; };
 		CD8BC47B03C5DFDC3FAE752D /* ChatComposerChips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatComposerChips.swift; sourceTree = "<group>"; };
 		CE8C8077B002AFD9A9C496EF /* ChatTitle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatTitle.swift; sourceTree = "<group>"; };
@@ -1659,6 +1661,7 @@
 				2575583134BE03EA9FA719CD /* ActivationPolicy.swift */,
 				5BBDB6A6CE9564ADA2D16F53 /* AppDisplayName.swift */,
 				8E5F9675F2090C3AA9EEBF65 /* Appearance.swift */,
+				CD5FA36590159628A8F88441 /* AppleScriptLiteral.swift */,
 				B6A96350EBE68EC79497FA2D /* AppPaths.swift */,
 				E2D1CA733FFAEF665D867A45 /* ASCIIKeyboardLayout.swift */,
 				B3085C57A94FFF35FF74EC86 /* BundleLocalization.swift */,
@@ -3830,6 +3833,7 @@
 				89B3CC1AB417D04CE39FB70C /* Appearance.swift in Sources */,
 				8477CC22949D92F8AC89DB7D /* AppleIntelligence.swift in Sources */,
 				F03DB7A7898F0388E821FDBB /* AppleIntelligenceProvider.swift in Sources */,
+				E018D8F39322BE97C0B1FBCB /* AppleScriptLiteral.swift in Sources */,
 				0CD06036347A6D96B1F7947F /* AppleShortcut.swift in Sources */,
 				050B0F0221560063469074EF /* AppleShortcutCoordinator.swift in Sources */,
 				0B57F477B21A81B22DAA5513 /* AppleShortcutRunner.swift in Sources */,

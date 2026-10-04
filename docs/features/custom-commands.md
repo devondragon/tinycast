@@ -30,7 +30,9 @@ without re-registering. "Show in launcher" only hides the section; shortcuts kee
 ## Ownership and persistence
 
 `CustomCommandStore` is owned by `AppCore` and persists the ordered command array as JSON in
-bundle-scoped `UserDefaults`. Each command has a stable UUID. Its launcher entry id is
+bundle-scoped `UserDefaults`. Saved data that will not decode is authored data: the store reports
+`isAvailable` false, every mutation refuses with `.storageUnavailable`, and `AppCore.start` says so
+once, as `CustomQuickActionStore` does. Each command has a stable UUID. Its launcher entry id is
 `custom-command:<uuid>`, and its hotkey uses
 `hotkey.customCommand.<uuid>` plus the `boundCustomCommandIDs` index.
 

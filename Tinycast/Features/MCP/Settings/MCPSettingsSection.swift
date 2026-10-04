@@ -71,6 +71,8 @@ struct MCPSettingsSection: View {
     private func save(_ server: MCPServer, _ secrets: MCPSecretStore.Secrets) -> String? {
         do {
             try coordinator.save(server, secrets: secrets)
+        } catch MCPSettingsStore.StorageError.unavailable {
+            return "The saved MCP servers couldn't be read, so Tinycast won't save over them."
         } catch {
             return "The credentials could not be saved to your login Keychain."
         }

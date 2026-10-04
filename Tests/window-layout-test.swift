@@ -103,6 +103,7 @@ struct WindowLayoutTests {
         storeValidation()
         storeSanitization()
         storePersistence()
+        storeNeverWritesOverWhatItCouldNotRead()
         fuzzSweep()
         customSizeRecord()
         customSizeDimensions()
@@ -571,6 +572,27 @@ struct WindowLayoutTests {
         }
         defer { defaults.removePersistentDomain(forName: name) }
         body(WindowLayoutStore(defaults: defaults))
+    }
+
+    static func storeNeverWritesOverWhatItCouldNotRead() {
+        let name = "tinycast-window-layout-test-corrupt-\(UUID().uuidString)"
+        guard let defaults = UserDefaults(suiteName: name) else {
+            expect(false, "a scratch defaults suite opens")
+            return
+        }
+        defer { defaults.removePersistentDomain(forName: name) }
+        let corrupt = Data("not the json we wrote".utf8)
+        defaults.set(corrupt, forKey: "windowLayouts")
+
+        let store = WindowLayoutStore(defaults: defaults)
+        expect(!store.isAvailable, "saved layouts that won't decode leave the store unavailable")
+        expect(store.layouts.isEmpty, "and nothing is pretended into the library")
+        let draft = WindowLayout(name: "Office", entries: [entry()])
+        expectThrows(.storageUnavailable, "a save is refused rather than written over the data") {
+            _ = try store.add(draft)
+        }
+        expect(store.replace(with: [draft]) == 0, "an import is refused too")
+        expect(defaults.data(forKey: "windowLayouts") == corrupt, "and the stored data is untouched")
     }
 
     static func storeCRUD() {

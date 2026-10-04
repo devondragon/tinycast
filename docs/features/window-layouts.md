@@ -44,7 +44,7 @@ resolution-independent by construction.
 | `Model/WindowLayoutDisplay.swift` | Foundation | **Pure.** The stored display identity |
 | `Model/WindowLayoutGeometry.swift` | Foundation + CoreGraphics | **Pure.** `resolve` and its inverse |
 | `Model/WindowLayoutPlan.swift` | Foundation + CoreGraphics | **Pure.** What a run will do, decided before any write |
-| `Model/WindowLayoutStore.swift` | Foundation | The library, as JSON in `UserDefaults` |
+| `Model/WindowLayoutStore.swift` | Foundation | The library, as JSON in `UserDefaults`; a blob that will not decode leaves it unavailable rather than overwritten |
 | `Model/WindowLayoutDraft.swift` | Foundation + CoreGraphics | One in-flight edit, owned by the panel |
 | `Service/AXWindowAccess.swift` | AppKit + ApplicationServices | Every `AXUIElement` call, shared with the mover |
 | `Service/AXScreens.swift` | AppKit + ColorSync | `AXGeometry`, and displays with their UUIDs |
