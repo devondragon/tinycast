@@ -108,8 +108,12 @@ struct ExtensionGitHubSource: Hashable, Sendable {
         }
     }
 
-    /// A commit's sha, or a thrown message when GitHub answered with an error instead.
+    /// A commit's sha, bare or in JSON, or a thrown message when GitHub answered with an error.
     static func parseCommitSHA(_ data: Data) throws -> String {
+        let text = String(decoding: data, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
+        if !text.isEmpty, text.unicodeScalars.allSatisfy(CharacterSet(charactersIn: "0123456789abcdef").contains) {
+            return text
+        }
         struct Commit: Decodable { let sha: String }
         if let commit = try? JSONDecoder().decode(Commit.self, from: data) { return commit.sha }
         struct Message: Decodable { let message: String }

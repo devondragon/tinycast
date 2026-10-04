@@ -407,7 +407,7 @@ struct ExtensionTests {
                     "name": "w", "platforms": ["Windows"],
                     "commands": [["name": "c", "title": "C"]]
                 ])?.supportsMacOS == false)
-        // The install directory and every storage file are named from these, so they are grammar-checked.
+        // The install directory and every storage file are named from these, so they are checked.
         let one = [["name": "c", "title": "C"]]
         check("rejects a manifest named ..", ExtensionManifest(json: ["name": "..", "commands": one]) == nil)
         check("rejects an empty name", ExtensionManifest(json: ["name": "", "commands": one]) == nil)

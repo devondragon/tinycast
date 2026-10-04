@@ -79,6 +79,12 @@ struct WindowManagementSettingsFile {
                 guard let decoded = WindowManagementFileFormat.layouts(from: json) else {
                     return [.invalidValue(key)]
                 }
+                guard layouts.isAvailable else {
+                    return [
+                        .invalidEntry(
+                            key, "the saved layouts couldn't be read, so these were not applied")
+                    ]
+                }
                 let kept = layouts.replace(with: decoded.records)
                 let rule = "a name is empty or used twice, or it has no apps"
                 return report(decoded, kept: kept, kind: "layout", rule: rule, key: key)

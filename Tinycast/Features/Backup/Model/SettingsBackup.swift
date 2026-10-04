@@ -120,6 +120,8 @@ struct SettingsBackup: Codable {
         var windowLayouts = 0
         var windowRooms = 0
         var customWindowSizes = 0
+        /// Categories whose store would not read, so the backup's records were left unapplied.
+        var notRestored: [String] = []
     }
 }
 
@@ -237,9 +239,10 @@ extension SettingsBackup {
             })
         backup.hotkeys = hotkeys
 
-        backup.customCommands = core.customCommands.commands
+        // Omitted when unreadable: an empty list restored later would wipe what the store protects.
+        backup.customCommands = core.customCommands.isAvailable ? core.customCommands.commands : nil
         backup.quicklinks = core.quicklinks.quicklinks
-        backup.windowLayouts = core.windowLayouts.layouts
+        backup.windowLayouts = core.windowLayouts.isAvailable ? core.windowLayouts.layouts : nil
         backup.windowRooms = core.rooms.rooms
         backup.customWindowSizes = core.customWindowSizes.sizes
         backup.favoriteApps = core.favorites.keys
@@ -255,7 +258,12 @@ extension SettingsBackup {
         var summary = ApplySummary()
         if let s = settings { summary.settingsFields = applySettings(s, to: core) }
         if let customCommands {
-            summary.customCommands = core.customCommandCoordinator.replaceCustomCommands(customCommands)
+            if core.customCommands.isAvailable {
+                summary.customCommands =
+                    core.customCommandCoordinator.replaceCustomCommands(customCommands)
+            } else {
+                summary.notRestored.append("custom commands")
+            }
         }
         // Before the hotkeys, so a restored binding has its quicklink to attach to.
         if let quicklinks {
@@ -263,8 +271,12 @@ extension SettingsBackup {
         }
         // Before the hotkeys too, for the same reason: a binding needs its layout to attach to.
         if let windowLayouts {
-            summary.windowLayouts =
-                core.windowLayoutCoordinator.replaceWindowLayouts(windowLayouts)
+            if core.windowLayouts.isAvailable {
+                summary.windowLayouts =
+                    core.windowLayoutCoordinator.replaceWindowLayouts(windowLayouts)
+            } else {
+                summary.notRestored.append("window layouts")
+            }
         }
         if let windowRooms {
             summary.windowRooms = core.roomCoordinator.replaceRooms(windowRooms)

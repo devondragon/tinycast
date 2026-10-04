@@ -196,6 +196,9 @@ struct ExtensionStoreTests {
             (try? ExtensionGitHubSource.parseCommitSHA(Data(#"{"sha":"0123abcd","commit":{}}"#.utf8)))
                 == "0123abcd")
         check(
+            "a bare sha answer is taken as it is",
+            (try? ExtensionGitHubSource.parseCommitSHA(Data("0123abcd\n".utf8))) == "0123abcd")
+        check(
             "a GitHub error is surfaced",
             (try? ExtensionGitHubSource.parseCommitSHA(Data(#"{"message":"Not Found"}"#.utf8))) == nil)
         let payload = """

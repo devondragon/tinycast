@@ -76,6 +76,9 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
         bridge = ExtensionHostBridge(clipboardStore: clipboardStore)
         runtime = ExtensionRuntime(hostAPI: bridge)
         bridge.context = self
+        storage.onUnreadable = { [weak self] name in
+            self?.coordinator?.showHUD("Couldn't read \(name)'s saved data; it won't be written over")
+        }
     }
 
     /// Wires collaborators only; the coordinator decides whether anything scans.

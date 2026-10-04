@@ -187,6 +187,8 @@ final class ExtensionStorage {
 
     /// Files that exist but won't decode: authored state, read as empty and never flushed over.
     private var unreadable: Set<String> = []
+    /// Called once per extension per run, so the person learns why its settings don't stick.
+    var onUnreadable: ((String) -> Void)?
 
     private func store(for name: String) -> Store {
         if let existing = stores[name] { return existing }
@@ -196,6 +198,7 @@ final class ExtensionStorage {
                 loaded = decoded
             } else {
                 unreadable.insert(name)
+                onUnreadable?(name)
             }
         }
         stores[name] = loaded

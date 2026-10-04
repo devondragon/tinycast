@@ -137,6 +137,9 @@ struct CustomCommandTests {
             "an import is refused too",
             unreadable.replace(with: [CustomCommand(name: "Echo", command: "echo hi")]) == 0)
         check(
+            "and a script import reports nothing added",
+            unreadable.add(contentsOf: [CustomCommand(name: "Echo", command: "echo hi")]) == 0)
+        check(
             "and the stored data is left exactly as it was",
             corruptDefaults.data(forKey: "customCommands") == corrupt)
 

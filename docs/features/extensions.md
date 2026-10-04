@@ -500,7 +500,7 @@ budget of 60 an hour per IP — Color Picker has 17 directories, so an install u
 three of them exhausted the hour. The ref is first resolved to a commit with
 `GET /repos/<owner>/<repo>/commits/<ref>`, and the tree walk and every raw body use that sha, so a push
 between the listing and the bodies cannot mix two versions. Walking `<path>` to its sha and asking for
-that tree with `recursive=1` then costs one call per path segment plus one, whatever the folder holds,
+that tree with `recursive=1` then costs one call per path segment plus two, whatever the folder holds,
 and the file bodies come from `raw.githubusercontent.com`, which the API budget does not count. A `truncated` listing is a
 prefix, so it throws rather than install part of an extension. A 404 from the API is reported as a
 missing repository or branch: anonymous requests cannot tell a private repository from no repository.
@@ -865,15 +865,16 @@ never shares with an installed copy.
 | Installed store version | `extension-versions.json` | yes |
 | `environment.supportPath` | `extension-support/<safe name>/` | yes |
 | OAuth tokens | macOS Keychain (`com.tinycast.extensions.oauth`) | yes |
-
-An `extension-data` file that exists but will not decode is read as empty for the run and never
-flushed over, so an extension's keys and tokens survive a bad write; `ext-accessory-test` pins it.
 | Menu-bar activation and snapshot | `extension-commands.json` | yes |
 | Icon override | `UserDefaults` → `extensionAppearances` | yes |
 | Command shortcuts | `UserDefaults` → `hotkey.extensionCommand.<entry id>` | yes |
 | Favorites, hidden items | `UserDefaults` → `favoriteApps`, `hiddenItemKeys` | yes |
 | User alias | `UserDefaults` → `launcherAliases` | yes |
 | Launch ranking | `launcher-ranking.json` | yes |
+
+An `extension-data` file that exists but will not decode is read as empty for the run and never
+flushed over, so an extension's preferences and `LocalStorage` survive a bad write; a HUD says so
+once per run, and `ext-accessory-test` pins it.
 
 `ExtensionCatalog.safeName` maps an npm-style name onto one path segment, and is the **only** copy of
 that mapping — a second one that drifts orphans every file the first one wrote.

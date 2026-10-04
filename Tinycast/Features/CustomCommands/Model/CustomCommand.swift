@@ -191,7 +191,7 @@ final class CustomCommandStore {
             updated.append(value)
         }
         commit(updated)
-        return updated.count - existing
+        return commands.count - existing
     }
 
     func update(_ draft: CustomCommand) throws {

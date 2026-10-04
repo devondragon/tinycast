@@ -165,7 +165,11 @@ struct ExtensionSearchAccessoryTests {
         try? corrupt.write(to: file)
 
         let storage = ExtensionStorage(directory: directory)
+        var reported: [String] = []
+        storage.onUnreadable = { reported.append($0) }
         storage.setLocalStorage(extension: "coffee", key: "k", value: .string("v"))
+        storage.setLocalStorage(extension: "coffee", key: "k2", value: .string("v2"))
+        check("the unreadable file is reported once, by extension", reported == ["coffee"])
         check(
             "the value is held in memory for this run",
             storage.localStorageValue(extension: "coffee", key: "k") == .string("v"))

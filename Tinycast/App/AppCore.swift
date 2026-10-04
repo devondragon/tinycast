@@ -421,13 +421,17 @@ final class AppCore {
             SystemActionRunner.onAsyncFailure = { [weak self] id, failure in
                 self?.systemActionCoordinator.presentSystemActionFailure(id: id, failure: failure)
             }
+            // An unreadable store keeps its shortcuts: pruning against an empty list would drop them.
             hotKeys.start(
-                customCommandIDs: Set(customCommands.commands.map(\.id)),
+                customCommandIDs: customCommands.isAvailable
+                    ? Set(customCommands.commands.map(\.id)) : Set(hotKeys.boundCustomCommandIDs),
                 quicklinkIDs: Set(quicklinks.quicklinks.map(\.id)),
-                windowLayoutIDs: Set(windowLayouts.layouts.map(\.id)),
+                windowLayoutIDs: windowLayouts.isAvailable
+                    ? Set(windowLayouts.layouts.map(\.id)) : Set(hotKeys.boundWindowLayoutIDs),
                 windowRoomIDs: Set(rooms.rooms.map(\.id)),
                 customWindowSizeIDs: Set(customWindowSizes.sizes.map(\.id)),
-                quickActionIDs: Set(customQuickActions.actions.map(\.id)))
+                quickActionIDs: customQuickActions.isAvailable
+                    ? Set(customQuickActions.actions.map(\.id)) : Set(hotKeys.boundQuickActionIDs))
             // Keeps running while Carbon pauses: the recorder needs its rewritten flags.
             hyperKeyTap.start(settings: settings)
 

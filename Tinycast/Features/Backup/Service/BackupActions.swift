@@ -306,8 +306,14 @@ enum BackupActions {
         if s.customWindowSizes > 0 {
             parts.append("\(s.customWindowSizes) custom window sizes")
         }
-        guard !parts.isEmpty else { return nil }
-        return "Applied " + parts.joined(separator: ", ") + "."
+        var sentences: [String] = []
+        if !parts.isEmpty { sentences.append("Applied " + parts.joined(separator: ", ") + ".") }
+        if !s.notRestored.isEmpty {
+            sentences.append(
+                "Couldn't restore \(s.notRestored.joined(separator: " or ")): the saved ones couldn't be read."
+            )
+        }
+        return sentences.isEmpty ? nil : sentences.joined(separator: " ")
     }
 
     // MARK: - Settings file
