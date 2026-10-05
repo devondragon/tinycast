@@ -67,9 +67,13 @@ real Raycast extensions**, rendered as native SwiftUI. Free, open source, and st
 This fork publishes no releases or Homebrew cask. Build it from source on macOS 26+ with Xcode 26 or
 newer:
 
-1. Create the `Tinycast Self-Signed` code-signing identity once
+1. Point the toolchain at Xcode and accept its license, once:
+   `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer && sudo xcodebuild -license accept`.
+   `xcodebuild` refuses to run while `xcode-select` points at the Command Line Tools.
+2. Install XcodeGen (`brew install xcodegen`), which the install script uses to generate the project.
+3. Create the `Tinycast Self-Signed` code-signing identity once
    ([docs/signing.md](docs/signing.md), section 1).
-2. Clone this repo and run `./Scripts/install-fork.sh`. It builds a signed Release, replaces
+4. Clone this repo and run `./Scripts/install-fork.sh`. It builds a signed Release, replaces
    `/Applications/Tinycast.app` and relaunches it.
 
 If the upstream Homebrew cask is installed, remove it first with `brew uninstall --cask tinycast`

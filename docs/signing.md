@@ -26,8 +26,9 @@ openssl req -x509 -newkey rsa:2048 -nodes -days 3650 \
   -addext "keyUsage=critical,digitalSignature" \
   -addext "extendedKeyUsage=critical,codeSigning"
 
-# Bundle it as a .p12 (the non-empty password keeps `security import` happy).
-openssl pkcs12 -export -inkey /tmp/tc-key.pem -in /tmp/tc-cert.pem \
+# Bundle it as a .p12. `-legacy` keeps OpenSSL 3 from using a MAC `security import` rejects,
+# and the non-empty password keeps `security import` happy.
+openssl pkcs12 -export -legacy -inkey /tmp/tc-key.pem -in /tmp/tc-cert.pem \
   -name "Tinycast Self-Signed" -out /tmp/tc.p12 -passout pass:tinycast
 
 # Import into the login keychain so codesign can use it without prompting.

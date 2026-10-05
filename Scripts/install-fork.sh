@@ -18,6 +18,8 @@ fi
 # Tags live on upstream, not origin, so a fresh clone has none until it fetches them.
 if ! git describe --tags --abbrev=0 --match 'v[0-9]*.[0-9]*.[0-9]*' --exclude '*-*' >/dev/null 2>&1; then
     echo "Fetching upstream tags for the version number…"
+    git remote get-url upstream >/dev/null 2>&1 \
+        || git remote add upstream https://github.com/abue-ammar/tinycast.git
     git fetch -q upstream --tags
 fi
 VERSION="$(git describe --tags --abbrev=0 --match 'v[0-9]*.[0-9]*.[0-9]*' --exclude '*-*' 2>/dev/null | sed 's/^v//')" || true
