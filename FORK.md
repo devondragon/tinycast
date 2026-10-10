@@ -77,6 +77,6 @@ Debug builds (`Tinycast Dev.app`, `com.tinycast.app.dev`) run side by side with 
 ## Tests
 
 `./Scripts/run-tests.sh` and `./Scripts/lint.sh`. On macOS 27 a few harnesses fail
-intermittently on unmodified upstream code (file-search, icon-cache, clipboard-text,
-installed-ai), so compare against a run on `upstream/main` before treating a failure as a
-regression.
+intermittently on unmodified upstream code (file-search, icon-cache, clipboard-text), and
+form-input's text-rendering checks fail on every run, so compare against a run on
+`upstream/main` before treating a failure as a regression.
