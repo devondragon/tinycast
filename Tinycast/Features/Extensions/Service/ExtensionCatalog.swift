@@ -201,9 +201,11 @@ enum ExtensionCatalog {
         }
     }
 
-    /// Manifest, built commands and `assets/` only — never `node_modules` or `.js.map`s.
+    /// Manifest, built commands, `assets/` and any bundled `node_modules` — never `.js.map`s.
     @discardableResult
-    static func install(from source: URL) throws -> InstalledExtension {
+    static func install(
+        from source: URL, in directory: URL = ExtensionCatalog.extensionsDirectory()
+    ) throws -> InstalledExtension {
         let manifest: ExtensionManifest
         do {
             manifest = try ExtensionManifest.load(directory: source)
@@ -220,7 +222,7 @@ enum ExtensionCatalog {
         }
         guard !built.isEmpty else { throw InstallError.noBuiltCommands(manifest.title) }
 
-        let root = extensionsDirectory().standardizedFileURL
+        let root = directory.standardizedFileURL
         let destination = root.appendingPathComponent(
             manifest.name.replacingOccurrences(of: "/", with: "-"), isDirectory: true)
         // The manifest grammar already forbids this; the delete below is why it is checked twice.
@@ -242,6 +244,11 @@ enum ExtensionCatalog {
             let assets = source.appendingPathComponent("assets")
             if fm.fileExists(atPath: assets.path) {
                 try fm.copyItem(at: assets, to: destination.appendingPathComponent("assets"))
+            }
+            let nodeModules = source.appendingPathComponent("node_modules")
+            if fm.fileExists(atPath: nodeModules.path) {
+                try fm.copyItem(
+                    at: nodeModules, to: destination.appendingPathComponent("node_modules"))
             }
             try restoreExecutablePermissions(in: destination)
         } catch {

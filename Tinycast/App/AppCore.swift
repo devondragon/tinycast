@@ -35,6 +35,8 @@ final class AppCore {
     let settings: AppSettings
     /// Mirrors settings into settings.json; nil while the Backup pane's switch is off.
     @ObservationIgnored private var settingsFile: SettingsFileRepository?
+    /// The file's launcher items, kept to apply a waiting record once its app is installed.
+    @ObservationIgnored private var launcherSettingsFile: LauncherSettingsFile?
     @ObservationIgnored private var appearanceObservation: NSKeyValueObservation?
     /// The last verdict `trackChatRoute` acted on; nil until it has read one.
     @ObservationIgnored private var chatsRunTheirOwnTools: Bool?
@@ -77,19 +79,16 @@ final class AppCore {
     let installedAI = InstalledAIManager()
     @ObservationIgnored private var appliedLaunchRevisions: [InstalledAIKind: Int] = [:]
 
-    /// Set when a quicklink editor should open with Settings; the pane consumes it.
-    var pendingQuicklinkEdit: QuicklinkEditRequest?
-    /// Set when a snippet editor should open with Settings; the pane consumes it.
-    var pendingSnippetEdit: SnippetEditRequest?
     /// Set when a layout editor should open with Settings; the pane consumes it.
     var pendingWindowLayoutEdit: WindowLayoutEditRequest?
+    var pendingExtensionStoreInstall: ExtensionDeepLink.StoreInstall?
 
     @ObservationIgnored private(set) lazy var snippetCoordinator = SnippetCoordinator(
         store: snippetsStore, listener: snippetListener, injector: textInjector,
         clipboardStore: clipboardStore, appIndex: appIndex, settings: settings,
         windowController: windowController, paletteCoordinator: paletteCoordinator,
-        settingsCoordinator: settingsCoordinator,
-        showMessage: { [unowned self] in self.showMessage($0) }, core: self)
+        palette: palette,
+        showMessage: { [unowned self] in self.showMessage($0, tone: $1) }, core: self)
     @ObservationIgnored private(set) lazy var dictationCoordinator = DictationCoordinator(
         settings: settings, hotKeys: hotKeys, models: dictationModels, injector: textInjector,
         audioDucker: dictationAudioDucker,
@@ -107,7 +106,7 @@ final class AppCore {
         appIndex: appIndex, injector: textInjector, hotKeys: hotKeys, favorites: favorites,
         visibility: visibility, ranking: launcherRanking, aliases: aliases,
         windowController: windowController,
-        paletteCoordinator: paletteCoordinator, settingsCoordinator: settingsCoordinator,
+        paletteCoordinator: paletteCoordinator,
         clipboardHistory: { [unowned self] in self.snippetCoordinator.clipboardHistoryForExpansion() },
         core: self)
 
@@ -405,6 +404,12 @@ final class AppCore {
             appIndex.onScan = { [weak self] in
                 guard let self else { return }
                 hotKeys.removeAppBindings(where: appIndex.isUninstalled)
+                // After the first scan, so the file's apps and panes have entries to match.
+                if settings.settingsFileEnabled, settingsFile == nil {
+                    startSettingsFile(importing: true)
+                } else if let launcherSettingsFile {
+                    reportSettingsFileIssues(launcherSettingsFile.applyInstalled())
+                }
             }
             hotKeys.displayName = { [weak self] action in self?.hotKeyDisplayName(for: action) }
             hotKeys.allowsAction = { [weak self] action in
@@ -450,8 +455,6 @@ final class AppCore {
             snippetCoordinator.applySnippetsLauncherPresence()
 
             observeFeatureSwitches()
-            // Last, so an edit made while Tinycast was quit reaches every sink wired above.
-            if settings.settingsFileEnabled { startSettingsFile(importing: true) }
 
             // First launch binds no hotkey, so guide once; the marker is written at show-time.
             if !OnboardingState.hasOnboarded {
@@ -472,22 +475,17 @@ final class AppCore {
     }
 
     func handleOpenURL(_ url: URL) {
-        switch ExtensionOAuthSession.handleCallbackURL(url) {
-        case .delivered:
-            paletteCoordinator.showPalette(mode: .extensionCommand, restoreAnyMode: true)
-            return
-        case .expired:
-            showMessage("Sign-in expired — run the command again", tone: .danger)
-            return
-        case .ignored:
-            break
-        }
         guard ExtensionDeepLink.claims(url) else { return }
-        guard let link = ExtensionDeepLink.parse(url: url) else {
+        guard let route = ExtensionDeepLink.route(url: url) else {
             paletteCoordinator.showPalette(mode: .launcher, restoreAnyMode: true)
             return
         }
-        extensionCoordinator.runDeepLink(link)
+        switch route {
+        case .command(let link):
+            extensionCoordinator.runDeepLink(link)
+        case .storeInstall(let install):
+            extensionCoordinator.showStoreInstall(install)
+        }
     }
 
     /// The store-backed half of the conflict message; `HotKeyManager` names the catalogs itself.
@@ -830,17 +828,21 @@ final class AppCore {
     /// Mirrors settings into settings.json from now on; `importing` applies the file's own first.
     func startSettingsFile(importing: Bool) {
         guard settingsFile == nil else { return }
+        let shortcuts = HotKeySettingsFile(hotKeys: hotKeys)
+        let launcher = LauncherSettingsFile(
+            appIndex: appIndex, aliases: aliases, visibility: visibility, shortcuts: shortcuts)
         let file = SettingsFileRepository(
             fileURL: AppPaths.settingsFile(),
             bindings: SettingsFileSchema.bindings(
                 settings: settings, ai: aiSettings, quickActions: quickActionSettings,
+                shortcuts: shortcuts, launcher: launcher,
                 windowManagement: WindowManagementSettingsFile(
-                    sizes: customWindowSizes, layouts: windowLayouts, rooms: rooms, hotKeys: hotKeys)))
-        file.onIssues = { [weak self] issues in
-            guard let summary = SettingsFileIssue.summary(issues) else { return }
-            self?.showMessage(summary, tone: .danger)
-        }
+                    sizes: customWindowSizes, layouts: windowLayouts, rooms: rooms, aliases: aliases,
+                    shortcuts: shortcuts)),
+            commit: shortcuts.commit)
+        file.onIssues = { [weak self] issues in self?.reportSettingsFileIssues(issues) }
         settingsFile = file
+        launcherSettingsFile = launcher
         settings.settingsFileEnabled = true
         file.start(importing: importing)
     }
@@ -849,7 +851,13 @@ final class AppCore {
     func stopSettingsFile() {
         settingsFile?.flush()
         settingsFile = nil
+        launcherSettingsFile = nil
         settings.settingsFileEnabled = false
+    }
+
+    private func reportSettingsFileIssues(_ issues: [SettingsFileIssue]) {
+        guard let summary = SettingsFileIssue.summary(issues) else { return }
+        showMessage(summary, tone: .danger)
     }
 
     // MARK: - Interruption
@@ -922,11 +930,6 @@ final class AppCore {
     /// The volume slider, so `dialogs` stays the single owner of every prompt in the app.
     func pickVolume(current: Float32) async -> Float32? {
         await dialogs.pickVolume(current: current)
-    }
-
-    /// The new-event prompt, for the same reason.
-    func createEvent() async -> EventDraft? {
-        await dialogs.createEvent()
     }
 
     /// The snippet argument prompt, for the same reason.

@@ -30,18 +30,10 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
     /// Each search-bar dropdown's choice, keyed by node so a pushed screen keeps its own.
     private(set) var accessoryValues: [Int: String] = [:]
 
-    /// One screen's search field: the palette owns a single query, so each depth keeps its own here.
-    struct Search {
-        var query: String
-        var selection: Int
-    }
-
     /// Off means nothing scanned, published or held: the feature costs an unused stored property.
     private(set) var isEnabled = false
     /// Whether the commands reach the launcher at all; independent of `isEnabled`.
     private(set) var showsInLauncher = true
-
-    var isAuthorizing: Bool { oauthSession.isAuthorizing }
 
     let storage: ExtensionStorage
     /// Extension-scoped state the launcher and Settings read through here, like `storage`.
@@ -51,7 +43,6 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
     private let storeVersions = ExtensionVersionStore(fileURL: ExtensionCatalog.storeVersionsFile())
     @ObservationIgnored private let runtime: ExtensionRuntime
     @ObservationIgnored private let bridge: ExtensionHostBridge
-    @ObservationIgnored private let oauthSession = ExtensionOAuthSession()
     @ObservationIgnored private weak var appIndex: AppIndex?
     @ObservationIgnored private weak var coordinator: ExtensionCoordinator?
 
@@ -65,11 +56,7 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
     @ObservationIgnored private var backgroundFailure: String?
     @ObservationIgnored private var backgroundTask: Task<Void, Never>?
     @ObservationIgnored private var nextToastID = 1
-    @ObservationIgnored private var lastOAuthExtensionName: String?
-    /// The search under each pushed screen, root first.
-    @ObservationIgnored private var parentSearches: [Search] = []
-    /// What the last pop handed back, so the palette's reset on a new query lands on its row.
-    @ObservationIgnored private var restoredSearch: Search?
+    @ObservationIgnored private var searchState = ExtensionSearchState()
 
     init(clipboardStore: ClipboardStore) {
         storage = ExtensionStorage(directory: ExtensionCatalog.storageDirectory())
@@ -123,7 +110,6 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
                             hostAPI: bridge,
                             priority: type == .background ? .utility : .userInitiated),
                         stop: {
-                            host.stop()
                             bridge.context = nil
                         }, enableInteraction: { host.enableInteraction() })
                 },
@@ -363,7 +349,6 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
                 extensionName: installedExtension.manifest.name, commandName: $0.name
             ).entryID
         }
-        ExtensionOAuthKeychain.removeAllTokens(extensionName: installedExtension.manifest.name)
         try? ExtensionCatalog.uninstall(installedExtension)
         storage.removeAll(extension: installedExtension.manifest.name)
         commandMetadata.removeAll(extension: installedExtension.manifest.name)
@@ -437,8 +422,6 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
 
         running = ExtensionCommandRef(extensionName: owner.manifest.name, commandName: command.name)
         navigationDepth = 1
-        parentSearches = []
-        restoredSearch = nil
         state = .launching
 
         // The runtime holds one context: a background tick in flight yields to the manual run.
@@ -507,7 +490,6 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
     }
 
     func stop() async {
-        oauthSession.cancel()
         guard let sessionID else {
             resetSessionState()
             return
@@ -526,8 +508,7 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
         toasts = []
         navigationDepth = 1
         accessoryValues = [:]
-        parentSearches = []
-        restoredSearch = nil
+        searchState = ExtensionSearchState()
     }
 
     // MARK: - Background refresh
@@ -805,39 +786,12 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
         Task { await runtime.dispatch(session: sessionID, handler: handler, payload: payload) }
     }
 
-    // MARK: - Per-screen search
-
-    /// The row a pop restored for `query`; nil leaves the palette's own landing.
-    func landingSelection(for query: String) -> Int? {
-        guard let restoredSearch else { return nil }
-        // Typing away from the restored query ends the restore, so a retyped query lands on row 0.
-        guard restoredSearch.query == query else {
-            self.restoredSearch = nil
-            return nil
-        }
-        return restoredSearch.selection
+    func searchQueryChanged(to query: String) {
+        searchState.queryChanged(to: query)
     }
 
-    /// As in Raycast, a push opens on an empty search field and a pop hands the parent its own back.
-    private func setNavigationDepth(_ depth: Int) {
-        let old = navigationDepth
-        navigationDepth = depth
-        guard depth != old, let current = coordinator?.extensionSearch else { return }
-        restoredSearch = nil
-        if depth > old {
-            parentSearches.removeLast(max(0, parentSearches.count - (old - 1)))
-            parentSearches.append(current)
-            while parentSearches.count < depth - 1 {
-                parentSearches.append(Search(query: "", selection: 0))
-            }
-            coordinator?.showExtensionSearch(Search(query: "", selection: 0))
-            return
-        }
-        guard depth >= 1, parentSearches.count >= depth else { return }
-        let parent = parentSearches[depth - 1]
-        parentSearches.removeLast(parentSearches.count - (depth - 1))
-        restoredSearch = parent
-        coordinator?.showExtensionSearch(parent)
+    func landingSelection(for query: String, rowCount: Int) -> Int {
+        searchState.landingSelection(for: query, rowCount: rowCount)
     }
 
     // MARK: - Search-bar dropdowns
@@ -890,8 +844,13 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
 
     func runtime(_ runtime: ExtensionRuntime, session: String, didRender tree: RenderTree) {
         guard session == sessionID else { return }
+        if let current = coordinator?.extensionSearch,
+            let search = searchState.navigate(to: tree.depth, current: current)
+        {
+            coordinator?.showExtensionSearch(search, tree: tree)
+        }
         state = .rendered(tree)
-        setNavigationDepth(tree.depth)
+        navigationDepth = tree.depth
         seedSearchBarAccessory(in: tree)
     }
 
@@ -907,7 +866,7 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
 
     func runtime(_ runtime: ExtensionRuntime, session: String, navigationDepth depth: Int) {
         guard session == sessionID else { return }
-        setNavigationDepth(depth)
+        navigationDepth = depth
     }
 
     func runtime(_ runtime: ExtensionRuntime, session: String, didFinish: Void) {
@@ -1052,26 +1011,5 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
         coordinator?.runExtensionCommand(
             entry(for: command, in: owner), arguments: link.arguments,
             fallbackText: link.fallbackText, launchType: link.launchType)
-    }
-
-    func authorizeOAuth(options: ExtensionOAuthAuthorizeOptions) async throws -> ExtensionOAuthAuthorizeResult
-    {
-        lastOAuthExtensionName = running?.extensionName
-        return try await oauthSession.authorize(options: options)
-    }
-
-    func getOAuthTokens(providerId: String) -> String? {
-        guard let extName = running?.extensionName ?? lastOAuthExtensionName else { return nil }
-        return ExtensionOAuthKeychain.getTokens(extensionName: extName, providerId: providerId)
-    }
-
-    func setOAuthTokens(providerId: String, tokens: String) {
-        guard let extName = running?.extensionName ?? lastOAuthExtensionName else { return }
-        ExtensionOAuthKeychain.setTokens(tokens, extensionName: extName, providerId: providerId)
-    }
-
-    func removeOAuthTokens(providerId: String) {
-        guard let extName = running?.extensionName ?? lastOAuthExtensionName else { return }
-        ExtensionOAuthKeychain.removeTokens(extensionName: extName, providerId: providerId)
     }
 }
