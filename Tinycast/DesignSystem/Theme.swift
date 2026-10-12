@@ -483,7 +483,7 @@ enum Theme {
         static var layoutPreviewWindow: Color { ThemeStore.active.palette.color(.layoutPreviewWindow) }
         /// The selected one, lifted enough to read as chosen before the accent stroke is seen.
         static var layoutPreviewWindowSelected: Color { ThemeStore.active.palette.color(.layoutPreviewWindowSelected) }
-        /// The preview's plate: a display is dark in both appearances, so `adaptive`, not `ramp`.
+        /// The preview's plate: a display is dark in both appearances.
         static var layoutPreviewGround: Color { ThemeStore.active.palette.color(.layoutPreviewGround) }
         /// The blurred desk behind a room preview, darkened so only the new layout reads.
         static var roomPreviewDim: Color { ThemeStore.active.palette.color(.roomPreviewDim) }

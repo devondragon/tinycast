@@ -5,7 +5,7 @@ import Observation
 @Observable
 final class ThemeStore {
     /// Global like `IconCache.style`: a missed injection in a menu or list would be silent staleness.
-    static var active = ThemeStore()
+    static let active = ThemeStore()
 
     private(set) var palette = ThemePalette(ThemeCatalog.standard)
     /// For AppKit views that copied a color or font: a new value means reapply.
