@@ -74,12 +74,12 @@ private struct RoomPreviewCardView: View {
                 }
             }
             Text(card.appName)
-                .font(.headline)
+                .font(Theme.Typography.panelTitle)
                 .foregroundStyle(.primary)
                 .layoutPriority(1)
             if !card.title.isEmpty {
                 Text("—  \(card.title)")
-                    .font(.body)
+                    .font(Theme.Typography.rowTitle)
                     .foregroundStyle(.secondary)
             }
             Spacer(minLength: 0)

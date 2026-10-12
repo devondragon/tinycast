@@ -312,7 +312,7 @@ struct ClipboardPreview: View {
             } else {
                 ScrollView {
                     Text(item.text ?? "")
-                        .font(.system(.subheadline, design: .monospaced))
+                        .font(metrics.typography.codeSmall)
                         .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .topLeading)
                 }
@@ -391,7 +391,7 @@ private struct ClipboardInfoSection: View {
                         }
                         Text(row.value).lineLimit(1).truncationMode(.middle)
                     }
-                    .font(.callout)
+                    .font(metrics.typography.detail)
                     .padding(.vertical, metrics.spacing.sm)
                 }
             }

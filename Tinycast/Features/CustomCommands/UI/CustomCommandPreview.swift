@@ -47,7 +47,7 @@ struct CustomCommandPreview: View {
             VStack(alignment: .leading, spacing: 0) {
                 ScrollView {
                     Text(command.command)
-                        .font(metrics.typography.rowTitle.monospaced())
+                        .font(metrics.typography.inlineCode)
                         .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .topLeading)
                         .padding(metrics.spacing.xl)

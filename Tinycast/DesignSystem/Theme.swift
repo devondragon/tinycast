@@ -403,6 +403,13 @@ enum Theme {
         /// A staged chat attachment's name beside the search text; the NSFont measures the chip.
         static let chip = Font.callout
         @MainActor static let chipNSFont = NSFont.preferredFont(forTextStyle: .callout)
+        /// Metadata under a title, at caption size.
+        static let caption = Font.caption
+        /// Body-adjacent text one step down: a chat card's lines, a preview's caption row.
+        static let detail = Font.callout
+        /// A tiny uppercase-feeling label over a value.
+        static let microLabel = Font.caption2.weight(.semibold)
+        static let codeSmall = Font.system(.subheadline, design: .monospaced)
         /// A dropdown control's trailing chevron, deliberately smaller than the label it follows.
         static let disclosure = Font.caption.weight(.semibold)
         static let menuRow = Font.body

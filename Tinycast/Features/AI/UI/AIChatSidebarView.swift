@@ -182,7 +182,7 @@ private struct ChatSidebarRow: View {
                     .accessibilityLabel("Answering")
             } else if conversation.isPinned {
                 Image(systemName: "pin.fill")
-                    .font(.caption)
+                    .font(Theme.Typography.caption)
                     .foregroundStyle(.tertiary)
                     .accessibilityLabel("Pinned")
             }

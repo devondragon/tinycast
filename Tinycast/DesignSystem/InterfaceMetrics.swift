@@ -178,6 +178,14 @@ struct InterfaceMetrics: Equatable, Sendable {
         var bar: Font { font(Theme.Typography.bar, .callout, .medium) }
         var chip: Font { font(Theme.Typography.chip, .callout) }
         @MainActor var chipNSFont: NSFont { scale == 1 ? Theme.Typography.chipNSFont : nsFont(.callout) }
+        var caption: Font { font(Theme.Typography.caption, .caption1) }
+        var detail: Font { font(Theme.Typography.detail, .callout) }
+        var microLabel: Font { font(Theme.Typography.microLabel, .caption2, .semibold) }
+        var codeSmall: Font {
+            scale == 1
+                ? Theme.Typography.codeSmall
+                : .system(size: nsFont(.subheadline).pointSize, design: .monospaced)
+        }
         var disclosure: Font { font(Theme.Typography.disclosure, .caption1, .semibold) }
         var menuRow: Font { font(Theme.Typography.menuRow, .body) }
         var menuShortcut: Font { font(Theme.Typography.menuShortcut, .callout) }

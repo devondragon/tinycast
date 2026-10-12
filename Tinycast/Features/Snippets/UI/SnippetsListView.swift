@@ -101,7 +101,7 @@ struct SnippetPreview: View {
                 // The raw template: expanding here would read the clipboard on every arrow key.
                 ScrollView {
                     Text(record.snippet.text)
-                        .font(.system(.subheadline, design: .monospaced))
+                        .font(Theme.Typography.codeSmall)
                         .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .topLeading)
                 }
