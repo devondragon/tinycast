@@ -33,7 +33,7 @@ struct QuicklinkEditorView: View {
                         if let errorMessage = editor.errorMessage {
                             Text(errorMessage)
                                 .font(metrics.typography.rowTrailing)
-                                .foregroundStyle(.orange)
+                                .foregroundStyle(Theme.Colors.warning)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                     }
@@ -107,7 +107,7 @@ struct QuicklinkEditorView: View {
                 }
             } else {
                 Text("This doesn't look like a URL, file path, or deeplink.")
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(Theme.Colors.warning)
             }
         }
         .font(metrics.typography.rowTrailing)

@@ -369,14 +369,14 @@ private struct PopoverMenuRow: View {
                             )
                             .symbolRenderingMode(.monochrome)
                             .foregroundStyle(
-                                item.isDestructive ? Color.red : Theme.Colors.menuSymbol
+                                item.isDestructive ? Theme.Colors.destructive : Theme.Colors.menuSymbol
                             )
                             .frame(width: metrics.size.menuIcon, height: metrics.size.menuIcon)
                     case .asset(let name):
                         Image(name)
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                            .foregroundStyle(item.isDestructive ? Color.red : Color.secondary)
+                            .foregroundStyle(item.isDestructive ? Theme.Colors.destructive : Color.secondary)
                             .frame(width: metrics.size.menuBrandIcon, height: metrics.size.menuBrandIcon)
                             .frame(width: metrics.size.menuIcon, height: metrics.size.menuIcon)
                     case .file(let path):
@@ -387,7 +387,7 @@ private struct PopoverMenuRow: View {
                 }
                 Text(item.title)
                     .font(metrics.typography.menuRow)
-                    .foregroundStyle(item.isDestructive ? Color.red : Color.primary)
+                    .foregroundStyle(item.isDestructive ? Theme.Colors.destructive : Color.primary)
                     .lineLimit(1)
                 Spacer(minLength: metrics.spacing.sm)
                 if let detail = item.detail {

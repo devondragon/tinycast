@@ -120,7 +120,7 @@ private struct RoomPickerRowView: View {
             if let place {
                 Text("\(place)")
                     .font(metrics.typography.rowTrailing.weight(.semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Theme.Colors.onAccent)
             }
         }
         .frame(width: metrics.size.resultRowIcon, height: metrics.size.resultRowIcon)

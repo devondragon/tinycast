@@ -205,7 +205,7 @@ private struct ExtensionActionRow: View {
                     resolved: item.icon, size: metrics.size.menuIcon, usesMenuSymbolStyle: true)
                 Text(item.title)
                     .font(metrics.typography.menuRow)
-                    .foregroundStyle(item.isDestructive ? Color.red : Color.primary)
+                    .foregroundStyle(item.isDestructive ? Theme.Colors.destructive : Color.primary)
                     .lineLimit(1)
                 Spacer(minLength: metrics.spacing.sm)
                 if let shortcut = item.shortcut {

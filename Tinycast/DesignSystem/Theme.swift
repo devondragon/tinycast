@@ -510,6 +510,12 @@ enum Theme {
         static let dropGuideArmed = Color.blue
         /// A dialog's standard default action; destructive defaults keep their semantic red.
         static let primaryAction = Color.blue
+        /// Focus rings, selected outlines and accent glyphs: the system accent until a theme sets one.
+        static let accent = Color.accentColor
+        /// Ink on a solid accent or status fill.
+        static let onAccent = Color.white
+        /// Link text in the AppKit text views.
+        static let link = Color(nsColor: .linkColor)
         /// Destructive tint: a destructive label, and a `.danger` dialog's glyph.
         static let destructive = Color.red
         /// Success tint: the leading glyph of a `.success` dialog.

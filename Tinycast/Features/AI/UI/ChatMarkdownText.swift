@@ -90,7 +90,7 @@ final class ChatSelectableTextView: NSTextView {
         isVerticallyResizable = false
         isHorizontallyResizable = false
         allowsUndo = false
-        linkTextAttributes = [.foregroundColor: NSColor.linkColor, .cursor: NSCursor.pointingHand]
+        linkTextAttributes = [.foregroundColor: NSColor(Theme.Colors.link), .cursor: NSCursor.pointingHand]
     }
 
     /// AppKit's own designated initializer; `NSTextView(frame:)` routes through it.

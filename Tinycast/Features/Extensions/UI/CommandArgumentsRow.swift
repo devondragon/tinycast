@@ -75,7 +75,7 @@ private struct ArgumentField: View {
         )
         .textFieldStyle(.plain)
         .font(metrics.typography.rowTrailing)
-        .tint(.white)
+        .tint(Theme.Colors.onAccent)
         .onSubmit(onSubmit)
         // Sized to the placeholder so a three-argument command still fits.
         .frame(width: CommandArgumentsRow.fieldWidth(for: argument, metrics: metrics))
@@ -95,7 +95,7 @@ private struct ArgumentField: View {
 
     private var stroke: Color {
         if isFocused { return ExtensionColors.fieldStroke }
-        if argument.required && text.isEmpty { return Color.orange.opacity(0.45) }
+        if argument.required && text.isEmpty { return Theme.Colors.warning.opacity(0.45) }
         return ExtensionColors.fieldStroke
     }
 }

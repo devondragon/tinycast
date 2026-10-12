@@ -45,7 +45,7 @@ private struct TooltipModifier: ViewModifier {
         return chip(label)
             .padding(metrics.spacing.xs)
             .background {
-                shape.fill(Color(nsColor: .windowBackgroundColor))
+                shape.fill(Theme.Colors.windowSurface)
                 shape.fill(Theme.Colors.controlSurface)
             }
             .shadow(

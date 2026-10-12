@@ -69,6 +69,11 @@ struct AppearanceTests {
         // VolumeHUDView draws white 0.85; textPrimary is alpha 1, so opacity must reproduce it.
         dark("textPrimary at 0.85", c.textPrimary.opacity(0.85), is: Color.white.opacity(0.85))
 
+        print("# tokens that absorbed a system color from a view")
+        dark("accent", c.accent, is: Color.accentColor)
+        dark("onAccent", c.onAccent, is: Color.white)
+        dark("link", c.link, is: Color(nsColor: .linkColor))
+
         print("# every surface token resolves per appearance")
         for (label, token) in [
             ("panelScrim", c.panelScrim), ("selection", c.selection), ("rowHover", c.rowHover),

@@ -383,7 +383,7 @@ private struct DictationButton: View {
                 } else if session != nil {
                     ComposerSymbol(name: "waveform")
                         .symbolEffect(.variableColor.iterative)
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Theme.Colors.accent)
                 } else {
                     ComposerSymbol(name: "mic")
                         .foregroundStyle(Theme.Colors.textSecondary)
@@ -420,7 +420,7 @@ private struct WebSearchPill: View {
                     .frame(width: Theme.Size.aiChatComposerGlyph, height: Theme.Size.aiChatComposerGlyph)
                 if !isCompact { Text("Search").font(.callout) }
             }
-            .foregroundStyle(Color.accentColor)
+            .foregroundStyle(Theme.Colors.accent)
             .padding(.horizontal, isCompact ? 0 : Theme.Spacing.md)
             .frame(minWidth: Theme.Size.aiChatComposerControl)
             .frame(height: Theme.Size.aiChatComposerControl)

@@ -229,7 +229,7 @@ struct NoteEditorView: NSViewRepresentable {
         textView.smartInsertDeleteEnabled = false
         textView.usesFindBar = true
         textView.allowsUndo = true
-        textView.linkTextAttributes = [.foregroundColor: NSColor.linkColor, .cursor: NSCursor.pointingHand]
+        textView.linkTextAttributes = [.foregroundColor: NSColor(Theme.Colors.link), .cursor: NSCursor.pointingHand]
         textView.typingAttributes = NoteMarkdownStyler.literal
     }
 }
