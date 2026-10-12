@@ -46,7 +46,7 @@ struct ThemePalette {
     /// Hairlines a high-contrast reader cannot see at the usual stop; Default leaves it to macOS.
     private static let raisedUnderIncreasedContrast: Set<ColorToken> = [.separator, .border, .cardStroke]
 
-    static func raisesHairlines(_ appearance: NSAppearance, increaseContrast: Bool) -> Bool {
+    nonisolated static func raisesHairlines(_ appearance: NSAppearance, increaseContrast: Bool) -> Bool {
         increaseContrast
             || appearance.bestMatch(from: [
                 .aqua, .darkAqua, .accessibilityHighContrastAqua, .accessibilityHighContrastDarkAqua,
@@ -55,8 +55,7 @@ struct ThemePalette {
 
     private static func raisable(_ pair: RGBAPair, dark: Double, light: Double, floor: ColorRecipe) -> Color {
         guard case .ink(let floorDark, let floorLight) = floor else { return tinted(pair, dark: dark, light: light) }
-        IncreasedContrastFlag.start()
-        return Color(nsColor: NSColor(name: nil) { appearance in
+        return Color(nsColor: NSColor(name: nil) { @Sendable appearance in
             let high = raisesHairlines(appearance, increaseContrast: IncreasedContrastFlag.isOn)
             let isDark = appearance.isDark
             let stop = isDark ? (high ? max(dark, floorDark) : dark) : (high ? max(light, floorLight) : light)
@@ -94,7 +93,7 @@ struct ThemePalette {
         }
     }
 
-    static func nsColor(_ value: RGBA) -> NSColor {
+    nonisolated static func nsColor(_ value: RGBA) -> NSColor {
         NSColor(srgbRed: value.red, green: value.green, blue: value.blue, alpha: value.alpha)
     }
 }
@@ -102,22 +101,7 @@ struct ThemePalette {
 /// The system's Increase Contrast setting, readable from a color provider on any thread.
 enum IncreasedContrastFlag {
     private static let value = Mutex(false)
-    @MainActor private static var observer: (any NSObjectProtocol)?
-
     static var isOn: Bool { value.withLock { $0 } }
 
-    @MainActor
-    static func start() {
-        guard observer == nil else { return }
-        value.withLock { $0 = NSWorkspace.shared.accessibilityDisplayShouldIncreaseContrast }
-        observer = NSWorkspace.shared.notificationCenter.addObserver(
-            forName: NSWorkspace.accessibilityDisplayOptionsDidChangeNotification,
-            object: nil, queue: .main
-        ) { _ in
-            MainActor.assumeIsolated {
-                value.withLock { $0 = NSWorkspace.shared.accessibilityDisplayShouldIncreaseContrast }
-                ThemeStore.active.reload()
-            }
-        }
-    }
+    static func set(_ on: Bool) { value.withLock { $0 = on } }
 }

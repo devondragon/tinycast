@@ -146,8 +146,23 @@ struct AppearanceTests {
             adapts("tron \(token)", ThemeStore.active.palette.color(token))
         }
         let plain = [NSAppearance(named: .aqua)!, NSAppearance(named: .darkAqua)!]
+        let accessible = ["NSAppearanceNameAccessibilityAqua", "NSAppearanceNameAccessibilityDarkAqua"]
+            .compactMap { NSAppearance(appearanceNamed: NSAppearance.Name($0), bundle: nil) }
+        check("both accessibility appearances build", accessible.count == 2)
         check(
-            "Increase Contrast raises hairlines",
+            "an accessibility appearance raises hairlines without the flag",
+            accessible.allSatisfy { ThemePalette.raisesHairlines($0, increaseContrast: false) },
+            accessible.map { "\($0.name.rawValue) \(String(describing: $0.bestMatch(from: [.aqua, .darkAqua, .accessibilityHighContrastAqua, .accessibilityHighContrastDarkAqua])))" }.joined(separator: "; "))
+        let separator = Theme.Colors.separator
+        nonisolated(unsafe) var offMain: CGFloat = 0
+        DispatchQueue.global().sync {
+            NSAppearance(named: .darkAqua)!.performAsCurrentDrawingAppearance {
+                offMain = NSColor(separator).usingColorSpace(.sRGB)!.alphaComponent
+            }
+        }
+        check("a themed hairline resolves off the main thread", offMain > 0)
+        check(
+            "the flag raises hairlines on a plain appearance",
             plain.allSatisfy { ThemePalette.raisesHairlines($0, increaseContrast: true) })
         check(
             "plain appearances do not raise hairlines",
