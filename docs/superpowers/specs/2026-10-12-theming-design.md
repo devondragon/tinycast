@@ -13,12 +13,14 @@ Decisions already made:
 - Themes are a curated, compiled-in set. No user-authored theme files.
 - Every theme has a dark and a light variant and follows the existing System / Light / Dark setting.
 - Backdrops are animated with SwiftUI `TimelineView` + `Canvas`. No Metal shaders.
-- Every borderless surface is themed. The Settings window stays native macOS.
+- Every Tinycast-styled surface is themed: the palette, notes, HUDs, dialogs, menus, the quick
+  action result, the camera panels and the AI chat window. The standard titled windows (Settings,
+  About, Updates, Support, Onboarding and the command output window) stay native macOS.
 - Themes may use bundled display fonts under the SIL Open Font License.
 
 ## Non-goals
 
-- Theming the Settings window, system menus, or the menu-bar icon.
+- Theming the native titled windows listed above, system menus, or the menu-bar icon.
 - Per-theme geometry: `Spacing`, `Radius`, `Size` and `InterfaceMetrics` stay shared.
 - Themes changing behavior, motion timing, or layout.
 - Editing `EdgeDissolve.swift` or `ThinScrollbar.swift`. The dissolve is a luminance mask and
@@ -40,9 +42,16 @@ keeps pinning them.
 No AppKit or SwiftUI import, per the Model rule.
 
 - `ThemeID`: `standard`, `tron`, `matrix`, `synthwave`, `amber`. `String` raw values, used as the
-  persisted setting.
+  persisted setting. A case is added in the PR that ships its theme, so the picker never lists a
+  theme that does not exist yet.
 - `ThemeDefinition`: plain values for one theme.
-  - `colors`: one `ColorPair(dark: RGBA, light: RGBA)` per color token in `Theme.Colors`.
+  - `ink` and `surface`: the two colors the alpha ramp is built from, per appearance. Every ramp
+    token (`selection`, `textSecondary`, ...) is the theme's ink at the token's existing alpha
+    stops, and every scrim-like token is the theme's surface at its stops. Default's ink is
+    white over dark and black over light, which reproduces today's values exactly.
+  - `roles`: accent, onAccent, primaryAction, destructive, success, warning, progress, link and
+    highlight, each either a macOS system color or an RGBA pair.
+  - `overrides`: per-token recipes for the few tokens a theme restates outright.
   - `fonts`: one `FontRole` per typography token. `FontRole` is `.system(design:)` or
     `.bundled(postScriptName:)`, plus the weight. Sizes stay those of the Default token, scaled
     by Dynamic Type via `relativeTo:`.
@@ -56,26 +65,29 @@ No AppKit or SwiftUI import, per the Model rule.
 
 ### Store: `ThemeStore`
 
-`@Observable @MainActor final class ThemeStore`, owned by `AppCore` and created in `start()`.
+`@Observable @MainActor final class ThemeStore`, one global instance (`ThemeStore.active`) that
+`AppCore` drives: `start()` applies the stored theme and a settings track re-applies it.
 
 - Holds `palette: ThemePalette`, the resolved SwiftUI `Color`s and `Font`s for the active theme.
   Resolution happens once per theme change, never per render.
 - Reads `AppSettings.theme` and re-resolves when it changes.
 - On change, calls `IconCache.invalidateStyled()`, because a tinted surface changes how icons
   are flattened.
-- Exposes `isSurfaceVisible` per window through an environment value, fed from each window's
-  `NSWindow.didChangeOcclusionStateNotification`, so backdrops pause when hidden.
+- Bumps a `generation` counter per switch, so AppKit views that copied a color or font know to
+  reapply it.
 
-`Theme.Colors`, `Theme.Typography`, `Theme.Effects` and `Theme.Surfaces` read it through one
-static handle, `ThemeStore.active`, assigned by `AppCore` at startup. This is the same kind of
+`Theme.Colors`, `Theme.Typography`, `Theme.Effects` and `Theme.Surfaces` read it through that
+static handle. This is the same kind of
 exception `IconCache` already has (see `docs/ui.md`): tokens are read from every list, menu and
 popover, so a missed injection would be a silent staleness bug. `docs/architecture.md` records
 the exception.
 
 ### Tokens
 
-- `Theme.Colors.*` and `Theme.Typography.*` change from `static let` to `static var` that return
-  `ThemeStore.active.palette.<token>`. Observation tracks the read inside each view's `body`, so
+- `Theme.Colors.*` change from `static let` to `static var` that return
+  `ThemeStore.active.palette.color(.<token>)`, and `Theme.Typography.*` resolve through the
+  active theme's faces. Fonts reach most views through `InterfaceMetrics.Typography`, which reads
+  the same faces, so Interface Size scaling and theme faces compose. Observation tracks the read inside each view's `body`, so
   views redraw on a theme switch without any change at the call site.
 - Each palette color is still built with `adaptive(dark:light:)`, so the System / Light / Dark
   setting keeps working inside every theme.
@@ -88,8 +100,11 @@ the exception.
 
 ### Setting
 
-- `AppSettings.theme: ThemeID`, default `.standard`.
-- `SettingsFileKey.theme`, bound in `SettingsFileSchema`. A theme grants no capability, so it is
+- `AppSettings.theme: ThemeID`, default `.standard`, stored under the UserDefaults key
+  `visualTheme`.
+- `SettingsFileKey.visualTheme` as `appearance.visualTheme`, bound in `SettingsFileSchema`. The
+  existing `appearance.theme` key already means System / Light / Dark and keeps that meaning.
+  The existing picker labeled "Theme" is relabeled "Appearance". A theme grants no capability, so it is
   carried by settings backups.
 - The General pane gets a Theme picker next to Appearance: a row of cards, each showing a still
   frame of that theme's backdrop and a sample row. Selecting one applies it live to any open
@@ -139,10 +154,12 @@ Each kind is one view in `DesignSystem/Backdrops/`:
 Rules for every backdrop:
 
 - `TimelineView(.animation(minimumInterval: 1.0 / 30, paused: ...))` around a `Canvas`.
-- Paused when the window is hidden or occluded, and under Reduce Motion, where it draws one still
+- Paused when the window is hidden or occluded (each backdrop watches its own window's
+  `didChangeOcclusionStateNotification`), and under Reduce Motion, where it draws one still
   frame.
-- Glyphs and paths are resolved once per size and reused. Per-frame state lives in a fixed-size
-  array allocated at setup.
+- Stateless per frame: every glyph, trace and column position is a pure function of time and a
+  fixed integer hash, so nothing is stored or allocated between frames.
+- Glyphs are resolved once as `Canvas` symbols and reused.
 - Budget while the palette is visible: under 5% of one core on Apple silicon, under 8 MB extra
   resident memory. Zero CPU while hidden. Measured with `Signposts` and the recipes in
   `docs/testing.md` before a backdrop is considered done.
@@ -150,8 +167,16 @@ Rules for every backdrop:
 ## Glow
 
 `Theme.Effects.glowRadius` is 0 in Default. When non-zero, glow is a `.shadow` on a stroked shape
-in three places: the panel edge stroke, the selected-row fill (one shared row background, so
-every list gets it), and the focused search field. Text is never blurred.
+in two places: the panel edge stroke and the selected-row fill. The search field has no outline
+of its own to glow, so it only takes the theme's ink and display face. Text is never blurred. Today each of 14 lists computes its own selection and hover fill; they
+move to one shared `RowHighlight` view, which is where the selection glow is drawn.
+
+## Secondary text
+
+Most secondary and tertiary text uses SwiftUI's hierarchical `.secondary` and `.tertiary`
+styles, which derive from the current foreground style. The panel surface sets the foreground to
+`Theme.Colors.textPrimary` for non-Default themes, so those 170 call sites follow the theme ink
+without being edited. Default does not set it, so Default renders exactly as today.
 
 ## Fonts
 
@@ -216,8 +241,9 @@ scanlines.
 
 Each step is its own PR, and the first three change nothing visible.
 
-1. Token consolidation: move the about 45 ad hoc colors and about 60 ad hoc fonts in views into
-   `Theme` tokens.
+1. Token consolidation: move the roughly 70 non-hierarchical color and font literals on themed
+   surfaces (system orange, red, green, accent and white; text-style fonts; AppKit link colors
+   and fonts) into `Theme` tokens.
 2. Theme model, `ThemeStore`, computed tokens, the setting and schema key, with Default only.
 3. Surface roles: `themedSurface`, call-site migration, the Extensions copy.
 4. Font bundling and typography roles.
