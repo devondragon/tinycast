@@ -186,6 +186,20 @@ struct AppearanceTests {
             components(Theme.Colors.ramp(dark: 0.3, light: 0.2), .aqua)
                 == components(Color.black.opacity(0.2), .aqua))
 
+        let tronBackdrop = ThemeCatalog.definition(for: .tron).backdrop
+        var drawn = 0
+        for (size, time, isDark) in [
+            (CGSize(width: 720, height: 480), 0.0, true), (CGSize(width: 320, height: 200), 1234.5, false),
+            (CGSize(width: 1, height: 1), 3599.9, true),
+        ] {
+            let canvas = Canvas { context, canvasSize in
+                BackdropRenderer.draw(tronBackdrop, in: &context, size: canvasSize, time: time, dark: isDark)
+            }
+            .frame(width: size.width, height: size.height)
+            if ImageRenderer(content: canvas).cgImage != nil { drawn += 1 }
+        }
+        check("the grid backdrop renders at several sizes and times", drawn == 3)
+
         print("\n\(passes) passed, \(failures) failed")
         exit(failures == 0 ? 0 : 1)
     }

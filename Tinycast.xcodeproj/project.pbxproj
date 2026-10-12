@@ -722,6 +722,7 @@
 		DD0A7B02D15113A3D8712413 /* ExtensionListKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA90C7C0B97C4745B8F94C4B /* ExtensionListKey.swift */; };
 		DD0DE9D16B0BAA8126EE9DB6 /* SettingsAnchor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C41B7D28CD2AF8AD14DA6FC3 /* SettingsAnchor.swift */; };
 		DD25D0E22E5729CF612FA1AE /* WindowDragHandle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F1545635C1E94D5E7DFECF1 /* WindowDragHandle.swift */; };
+		DD6F4068E85B92408CE30399 /* GridBackdrop.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE477920D9F817832C4BFA65 /* GridBackdrop.swift */; };
 		DDFA439EA7942183414375DC /* AppPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6A96350EBE68EC79497FA2D /* AppPaths.swift */; };
 		DDFF8A9F420A4733DFA32A07 /* ReleaseFeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = D28281DFC434C75F8A594635 /* ReleaseFeed.swift */; };
 		DE758DAC622ED85257335805 /* WindowLayoutEditorPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17C22B5CE1449E12331FA94 /* WindowLayoutEditorPanel.swift */; };
@@ -1573,6 +1574,7 @@
 		CD6B72A1A1FF3D08CFC3FA7D /* NoteCheckboxGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteCheckboxGeometry.swift; sourceTree = "<group>"; };
 		CD6FEDC16D215918AD2DA76D /* CustomCommandEditorScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomCommandEditorScreen.swift; sourceTree = "<group>"; };
 		CD8BC47B03C5DFDC3FAE752D /* ChatComposerChips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatComposerChips.swift; sourceTree = "<group>"; };
+		CE477920D9F817832C4BFA65 /* GridBackdrop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridBackdrop.swift; sourceTree = "<group>"; };
 		CE8C8077B002AFD9A9C496EF /* ChatTitle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatTitle.swift; sourceTree = "<group>"; };
 		CEE5FA2E56073002C2DA6D6A /* ClipboardTextHelper */ = {isa = PBXFileReference; includeInIndex = 0; path = ClipboardTextHelper; sourceTree = BUILT_PRODUCTS_DIR; };
 		CEEF20B209EEEAB7ED97DF36 /* QuickActionPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickActionPanel.swift; sourceTree = "<group>"; };
@@ -2164,6 +2166,7 @@
 		390CD46058B84A482F5E89D7 /* Theming */ = {
 			isa = PBXGroup;
 			children = (
+				A527E64EA47449D79B568FEA /* Backdrops */,
 				E3B5F2A6DCCC92D7339F37B8 /* PanelBackdrop.swift */,
 				8DBFE753A9050DB01FE6B08C /* ThemedSurface.swift */,
 				EDB594D3E1506F90FCD7A33E /* ThemeFonts.swift */,
@@ -3165,6 +3168,14 @@
 				82B5E917A4EFDC153C6780E8 /* ModifierKeyDetector.swift */,
 			);
 			path = Model;
+			sourceTree = "<group>";
+		};
+		A527E64EA47449D79B568FEA /* Backdrops */ = {
+			isa = PBXGroup;
+			children = (
+				CE477920D9F817832C4BFA65 /* GridBackdrop.swift */,
+			);
+			path = Backdrops;
 			sourceTree = "<group>";
 		};
 		A5D554D42B6D1C622146578A /* UI */ = {
@@ -4330,6 +4341,7 @@
 				7833FD6E0A6036954FE285CE /* FrequentEmojiStore.swift in Sources */,
 				C5F60D8681235B95DAA3314F /* GeneralSettingsView.swift in Sources */,
 				BA81211D8B660F2DD03A20EA /* GlassEffectView.swift in Sources */,
+				DD6F4068E85B92408CE30399 /* GridBackdrop.swift in Sources */,
 				35D8AA4E6FE6FD020A56BD8A /* HIDEventSystem.swift in Sources */,
 				8F001DE9D2EF3429B351EFF5 /* HIDKeyMapping.swift in Sources */,
 				9F50314FD939DE2B6C5434A1 /* HTTPAIProvider.swift in Sources */,
