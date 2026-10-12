@@ -53,5 +53,8 @@ enum QuickAction: Hashable, Identifiable, Sendable {
 
     var showsDiff: Bool { builtInAction?.showsDiff ?? false }
 
+    /// A custom prompt is answered in Markdown; an edit or translation is the literal text.
+    var rendersMarkdown: Bool { builtInAction.map { $0 == .summarize } ?? true }
+
     var usesTranslationFramework: Bool { builtInAction?.usesTranslationFramework ?? false }
 }
