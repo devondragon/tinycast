@@ -3,12 +3,23 @@ import AppKit
 /// The editor's `NSFont`s: the system text styles one step up, since a note is for reading.
 @MainActor
 enum NoteMarkdownTypography {
-    static let body = NSFont.systemFont(ofSize: size(.title3))
-    static let heading1 = NSFont.systemFont(ofSize: size(.largeTitle), weight: .bold)
-    static let heading2 = NSFont.systemFont(ofSize: size(.title1), weight: .bold)
-    static let heading3 = NSFont.systemFont(ofSize: size(.title2), weight: .semibold)
-    static let inlineCode = NSFont.monospacedSystemFont(ofSize: body.pointSize, weight: .regular)
-    static let codeBlock = NSFont.monospacedSystemFont(ofSize: body.pointSize - 1, weight: .regular)
+    static var body: NSFont { ThemeFonts.nsFont(.body, base: .systemFont(ofSize: size(.title3))) }
+    static var heading1: NSFont {
+        ThemeFonts.nsFont(.display, base: .systemFont(ofSize: size(.largeTitle), weight: .bold))
+    }
+    static var heading2: NSFont {
+        ThemeFonts.nsFont(.display, base: .systemFont(ofSize: size(.title1), weight: .bold))
+    }
+    static var heading3: NSFont {
+        ThemeFonts.nsFont(.display, base: .systemFont(ofSize: size(.title2), weight: .semibold))
+    }
+    static var inlineCode: NSFont {
+        ThemeFonts.nsFont(.mono, base: .monospacedSystemFont(ofSize: size(.title3), weight: .regular))
+    }
+    static var codeBlock: NSFont {
+        ThemeFonts.nsFont(
+            .mono, base: .monospacedSystemFont(ofSize: size(.title3) - 1, weight: .regular))
+    }
     /// Small enough that a hidden marker leaves no visible gap, while staying a real glyph run.
     static let hidden = NSFont.systemFont(ofSize: 0.01)
 
@@ -33,6 +44,7 @@ enum NoteMarkdownTypography {
 
     static func inlineCode(matching font: NSFont) -> NSFont {
         font.pointSize == body.pointSize
-            ? inlineCode : NSFont.monospacedSystemFont(ofSize: font.pointSize, weight: .regular)
+            ? inlineCode
+            : ThemeFonts.nsFont(.mono, base: .monospacedSystemFont(ofSize: font.pointSize, weight: .regular))
     }
 }

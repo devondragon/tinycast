@@ -310,6 +310,7 @@
 		5970306ABC24B03028E66D45 /* FileSearchIgnoreList.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBFF39C46E98D0808B188E2E /* FileSearchIgnoreList.swift */; };
 		5988C5F5629CE78FB6692BB3 /* SettingsEditorPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607E7B669817BFC39B12C12D /* SettingsEditorPresenter.swift */; };
 		59C5304752BB9245F76AADDC /* CodexMCPLaunch.swift in Sources */ = {isa = PBXBuildFile; fileRef = F31FB61E6F6969851D3874FA /* CodexMCPLaunch.swift */; };
+		59D92CE5591D524F0CFB874F /* ThemeFonts.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDB594D3E1506F90FCD7A33E /* ThemeFonts.swift */; };
 		5A91C58340D02ED0939BCAE2 /* CurrencyFeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE35B5E7B1CC94F759116097 /* CurrencyFeed.swift */; };
 		5B42E560E21E016CEFC33BAF /* ExtensionLaunchError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB40137D0539CB3BB9A305C8 /* ExtensionLaunchError.swift */; };
 		5B5BCDD482A9058D38C49314 /* CalcUnits.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC67BADEB6FEC76C88585361 /* CalcUnits.swift */; };
@@ -1672,6 +1673,7 @@
 		ECE4D3633895F0E27FE3252D /* NoteInlineScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteInlineScanner.swift; sourceTree = "<group>"; };
 		ED5AAA98FFF7A4D34D7B490D /* ExtensionBootConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionBootConfig.swift; sourceTree = "<group>"; };
 		ED866D346B2D97A12AD15CE9 /* DictationSpectrum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationSpectrum.swift; sourceTree = "<group>"; };
+		EDB594D3E1506F90FCD7A33E /* ThemeFonts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeFonts.swift; sourceTree = "<group>"; };
 		EDBAD3F666C10A869A4EAADB /* MeetingDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetingDetailsView.swift; sourceTree = "<group>"; };
 		EE1C64977153EF104F583008 /* CalcTokenizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalcTokenizer.swift; sourceTree = "<group>"; };
 		EE21578FB7500CB744855654 /* FileSearchFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileSearchFilter.swift; sourceTree = "<group>"; };
@@ -2156,6 +2158,7 @@
 			children = (
 				E3B5F2A6DCCC92D7339F37B8 /* PanelBackdrop.swift */,
 				8DBFE753A9050DB01FE6B08C /* ThemedSurface.swift */,
+				EDB594D3E1506F90FCD7A33E /* ThemeFonts.swift */,
 				CCD9703657C3D32E5BDBD39E /* ThemePalette.swift */,
 				FCE25D2A3BA041D86E21F8F8 /* ThemeStore.swift */,
 				4E87260B8490123415A0385A /* WindowOcclusionReader.swift */,
@@ -4674,6 +4677,7 @@
 				36968DFA1E201E681F0BCD42 /* Theme.swift in Sources */,
 				76D3635F68EAE4F3439C4234 /* ThemeCatalog.swift in Sources */,
 				F3EF04B1C5812B0A9EB7B938 /* ThemeDefinition.swift in Sources */,
+				59D92CE5591D524F0CFB874F /* ThemeFonts.swift in Sources */,
 				2F8F68447A08C62CCF023A86 /* ThemePalette.swift in Sources */,
 				399BDA54C1BDE11A889B32EF /* ThemeStore.swift in Sources */,
 				B534B5B9D62570B43B4857DC /* ThemedSurface.swift in Sources */,
