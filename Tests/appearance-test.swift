@@ -97,6 +97,13 @@ struct AppearanceTests {
         check("dark is darkAqua", AppAppearance.dark.nsAppearance?.isDark == true)
         check("an unknown stored value is rejected", AppAppearance(rawValue: "sepia") == nil)
 
+        print("# the store resolves Default from the catalog")
+        let store = ThemeStore.active
+        check("active theme is Default", store.id == .standard)
+        check("re-applying Default is not a change", store.apply(.standard) == false)
+        check("generation starts at zero", store.generation == 0)
+        dark("palette selection", store.palette.color(.selection), is: Color.white.opacity(0.10))
+
         print("\n\(passes) passed, \(failures) failed")
         exit(failures == 0 ? 0 : 1)
     }

@@ -718,6 +718,7 @@ private struct ContextCard: View {
     }
 }
 
+@MainActor
 extension ChatContextReport {
     fileprivate var tint: Color {
         if fill >= 1 { return Theme.Colors.destructive }

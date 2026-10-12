@@ -11,6 +11,7 @@ struct ChatTextHighlight: Equatable {
 
     func isCurrent(_ leaf: [Int]) -> Bool { current?.leaf == leaf }
 
+    @MainActor
     func attributed(_ string: String, leaf: [Int]) -> AttributedString {
         var text = AttributedString(string)
         apply(to: &text, leaf: leaf)
@@ -18,6 +19,7 @@ struct ChatTextHighlight: Equatable {
     }
 
     /// Marks every match in place, so Markdown's own runs — code, emphasis — stay as they are.
+    @MainActor
     func apply(to text: inout AttributedString, leaf: [Int]) {
         let plain = String(text.characters)
         for (index, range) in ChatFindIndex.ranges(of: query, in: plain).enumerated() {

@@ -224,27 +224,32 @@ run palette-selection-test Tinycast/Features/PaletteRowIndex.swift \
                            Tinycast/Features/Emoji/Model/EmojiGridGeometry.swift
 run appearance-test        Tinycast/Platform/Appearance.swift \
                            Tinycast/DesignSystem/Theme.swift \
+                           Tinycast/Features/Theming/Model/*.swift Tinycast/DesignSystem/Theming/*.swift Tinycast/DesignSystem/GlassEffectView.swift \
                            Tinycast/DesignSystem/InterfaceMetrics.swift \
                            Tinycast/Features/Settings/AppAppearance.swift
 run theme-test             Tinycast/Features/Theming/Model/*.swift
 run interface-size-test    Tinycast/Platform/Appearance.swift \
                            Tinycast/DesignSystem/Theme.swift \
+                           Tinycast/Features/Theming/Model/*.swift Tinycast/DesignSystem/Theming/*.swift Tinycast/DesignSystem/GlassEffectView.swift \
                            Tinycast/DesignSystem/InterfaceMetrics.swift \
                            Tinycast/Features/Settings/InterfaceSize.swift \
                            Tinycast/Features/Extensions/Model/ExtensionFormMetrics.swift
 run palette-placement-test Tinycast/Platform/Appearance.swift \
                            Tinycast/DesignSystem/Theme.swift \
+                           Tinycast/Features/Theming/Model/*.swift Tinycast/DesignSystem/Theming/*.swift Tinycast/DesignSystem/GlassEffectView.swift \
                            Tinycast/DesignSystem/InterfaceMetrics.swift \
                            Tinycast/Features/Settings/InterfaceSize.swift \
                            Tinycast/Palette/PalettePlacement.swift
 run palette-menu-click-test Tinycast/Platform/Appearance.swift \
                            Tinycast/DesignSystem/Theme.swift \
+                           Tinycast/Features/Theming/Model/*.swift Tinycast/DesignSystem/Theming/*.swift Tinycast/DesignSystem/GlassEffectView.swift \
                            Tinycast/Platform/WindowLevel.swift \
                            Tinycast/Platform/NotificationToken.swift \
                            Tinycast/DesignSystem/Interaction/KeyboardFocus.swift \
                            Tinycast/Palette/PalettePanel.swift
 run form-input-test        Tinycast/Platform/Appearance.swift \
                            Tinycast/DesignSystem/Theme.swift \
+                           Tinycast/Features/Theming/Model/*.swift Tinycast/DesignSystem/Theming/*.swift Tinycast/DesignSystem/GlassEffectView.swift \
                            Tinycast/DesignSystem/InterfaceMetrics.swift \
                            Tinycast/DesignSystem/FormTextInput.swift \
                            Tinycast/DesignSystem/FormTextArea.swift
@@ -311,7 +316,8 @@ run dictation-field-test   Tinycast/Features/Dictation/Model/DictationModel.swif
                            Tinycast/Features/Snippets/Model/*.swift \
                            Tinycast/Platform/AccessibilityText.swift \
                            Tinycast/Platform/PasteboardFiles.swift \
-                           Tinycast/Platform/Appearance.swift Tinycast/DesignSystem/Theme.swift
+                           Tinycast/Platform/Appearance.swift Tinycast/DesignSystem/Theme.swift \
+                           Tinycast/Features/Theming/Model/*.swift Tinycast/DesignSystem/Theming/*.swift Tinycast/DesignSystem/GlassEffectView.swift
 run dictation-volume-test  Tinycast/Features/Dictation/Model/DictationVolumeSnapshot.swift \
                            Tinycast/Features/Dictation/Service/DictationAudioDucker.swift \
                            Tinycast/Platform/AppPaths.swift
@@ -351,6 +357,7 @@ run hotkey-test            Tinycast/Features/HotKeys/Model/DoubleTapModifier.swi
                            Tinycast/Features/Snippets/Model/Snippet.swift
 run callout-test          Tinycast/Platform/Appearance.swift \
                            Tinycast/DesignSystem/Theme.swift \
+                           Tinycast/Features/Theming/Model/*.swift Tinycast/DesignSystem/Theming/*.swift Tinycast/DesignSystem/GlassEffectView.swift \
                            Tinycast/DesignSystem/InterfaceMetrics.swift \
                            Tinycast/Features/HotKeys/UI/CalloutPlacement.swift
 run icon-cache-test        Tinycast/Platform/Appearance.swift \
@@ -363,6 +370,7 @@ run ext-icon-test          Tinycast/Platform/Appearance.swift \
                            Tinycast/Platform/Images/IconCache.swift \
                            Tinycast/Platform/Compression/Zlib.swift \
                            Tinycast/DesignSystem/Theme.swift \
+                           Tinycast/Features/Theming/Model/*.swift Tinycast/DesignSystem/Theming/*.swift Tinycast/DesignSystem/GlassEffectView.swift \
                            Tinycast/DesignSystem/InterfaceMetrics.swift \
                            Tinycast/Features/Extensions/Model/ExtensionBootConfig.swift \
                            Tinycast/Features/Extensions/Model/ExtensionLaunchType.swift \
@@ -489,6 +497,7 @@ run notes-test             Tinycast/Platform/Signposts.swift \
 run notes-editor-test      Tinycast/Platform/Signposts.swift \
                            Tinycast/Platform/Appearance.swift \
                            Tinycast/DesignSystem/Theme.swift \
+                           Tinycast/Features/Theming/Model/*.swift Tinycast/DesignSystem/Theming/*.swift Tinycast/DesignSystem/GlassEffectView.swift \
                            Tinycast/DesignSystem/InterfaceMetrics.swift \
                            Tinycast/Platform/NotificationToken.swift \
                            Tinycast/Features/TextInjection/Service/InjectableTextView.swift \
@@ -515,6 +524,7 @@ run -O index notes-editor-performance \
                            Tinycast/Platform/Signposts.swift \
                            Tinycast/Platform/Appearance.swift \
                            Tinycast/DesignSystem/Theme.swift \
+                           Tinycast/Features/Theming/Model/*.swift Tinycast/DesignSystem/Theming/*.swift Tinycast/DesignSystem/GlassEffectView.swift \
                            Tinycast/DesignSystem/InterfaceMetrics.swift \
                            Tinycast/Platform/NotificationToken.swift \
                            Tinycast/Features/TextInjection/Service/InjectableTextView.swift \
@@ -626,6 +636,7 @@ run slow ext-test          -parse-as-library \
                            Tinycast/Platform/AppDisplayName.swift \
                            Tinycast/Platform/Images/IconCache.swift \
                            Tinycast/DesignSystem/Theme.swift \
+                           Tinycast/Features/Theming/Model/*.swift Tinycast/DesignSystem/Theming/*.swift Tinycast/DesignSystem/GlassEffectView.swift \
                            Tinycast/DesignSystem/InterfaceMetrics.swift \
                            $E/Model/ExtensionBootConfig.swift \
                            $E/Model/ExtensionDeepLink.swift \
@@ -697,6 +708,7 @@ run ai-chat-test           Tinycast/Features/AI/Model/AIRequest.swift \
                            Tinycast/Features/AI/UI/ChatFindState.swift
 run chat-markdown-test     Tinycast/Platform/Appearance.swift \
                            Tinycast/DesignSystem/Theme.swift \
+                           Tinycast/Features/Theming/Model/*.swift Tinycast/DesignSystem/Theming/*.swift Tinycast/DesignSystem/GlassEffectView.swift \
                            Tinycast/DesignSystem/InterfaceMetrics.swift \
                            Tinycast/Features/Settings/InterfaceSize.swift \
                            Tinycast/Features/AI/Model/AIRequest.swift \

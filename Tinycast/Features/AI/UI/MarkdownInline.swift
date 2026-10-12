@@ -1,6 +1,7 @@
 import SwiftUI
 
 /// Inline markdown for one block. `Text` renders emphasis on its own but not code or strikethrough.
+@MainActor
 enum MarkdownInline {
     static func attributed(_ source: String, _ metrics: InterfaceMetrics) -> AttributedString {
         var text = MarkdownBlock.inline(source)

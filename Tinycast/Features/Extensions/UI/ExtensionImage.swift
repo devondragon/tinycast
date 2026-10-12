@@ -6,6 +6,7 @@ extension EnvironmentValues {
     var isDarkAppearance: Bool { colorScheme == .dark }
 }
 
+@MainActor
 enum ExtensionImage {
     /// A resolved icon: a symbol, an image file, a Finder icon, a URL, or a bare glyph.
     enum Source: Equatable {
@@ -366,6 +367,7 @@ extension ExtensionImage {
 
 /// A resolved icon at row size; an unresolvable one draws the faint tile, so rows never jump.
 struct ExtensionIconView: View {
+    @MainActor
     private enum MenuSymbolStyle {
         static let size: CGFloat = 14
         static let color = Theme.Colors.ramp(dark: 0.70, light: 0.70)

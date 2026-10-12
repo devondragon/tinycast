@@ -36,7 +36,7 @@ Five load-bearing ideas, in priority order:
 These are the things that quietly break the look if changed. Preserve them unless the task is explicitly to change them.
 
 - **Dark is the baseline and its values are frozen.** Every `Theme.Colors` token resolves per appearance, and its **dark branch is the literal the forced-dark build shipped** — restated, never recomputed. Retune a light branch freely; touch a dark one only when the task is to change Dark. `AppCore.applyAppearance()` is the only place an appearance is assigned, from `AppSettings.appearance`; `.system` assigns `nil` so AppKit follows macOS.
-- **New colors go through `Theme.Colors.ramp(dark:light:)`** (an alpha that inverts) or `adaptive(dark:light:)` (two explicit `NSColor`s, for anything that isn't a plain inversion — `panelScrim`, `layoutPreviewGround`). Never a bare `Color.white.opacity(…)` in a view: it disappears in Light.
+- **A new `Theme.Colors` token is a `ColorToken` case with a `baseRecipe`** (`.ink` for an alpha that inverts, `.surface` for its inverse, `.role`, `.system` or `.fixed` for the rest), plus a computed `static var` that reads `ThemeStore.active.palette`, so it follows the active theme. `Theme.Colors` is `@MainActor`: off-main code resolves a color on main and passes the value in. `ramp(dark:light:)` and `adaptive(dark:light:)` remain for colors a feature owns outside `Theme`, such as `ExtensionColors`. Never a bare `Color.white.opacity(…)` in a view: it disappears in Light.
 - **No grays, no opaque fills on the surface.** Reach for `Theme.Colors.*` instead of `.gray`, `NSColor.windowBackground`, etc.
 - **Three things stay fixed in both appearances, on purpose.** The `EdgeDissolve`/`OverflowFade` gradients are **mask luminance, not color** — inverting them breaks the dissolve everywhere. `ExtensionTintColors` and a tinted `IconCache` tile keep white ink, because a saturated tile carries its own contrast. And `IconCache` cannot use a dynamic `NSColor` at all: it rasterizes off-main, so the surface is carried explicitly and is part of the cache key.
 - **An icon is drawn for a surface *and* a system icon style, and both move under you.** macOS restyles the icons `NSWorkspace` hands out when System Settings → Appearance → **Icon & widget style** changes, so `IconStyleMonitor` and Tinycast's own appearance both call `IconCache.invalidateStyled()`. **The monitor may not invalidate on the notification itself.** AppKit posts `NSWorkspaceIconAppearanceConfigurationDidChange` before IconServices has swapped what `NSWorkspace` vends — measured at 25–120ms behind, jittering run to run — and the images it hands back are live objects macOS restyles in place, so flattening one on the signal freezes the *outgoing* style into a bitmap nothing ever invalidates again. `IconStyleMonitor` therefore polls `IconCache.styleFingerprint()` until the pixels actually move, and only then invalidates. Waiting also sidesteps the cost: re-flattening every icon the instant a restyle begins forces a cold IconServices regeneration, measured at 160× the settled draw cost. That drops the cached bitmaps, bumps every cache key so an in-flight decode cannot repopulate a stale one, and moves `IconCache.style.generation`. **Any view that draws an icon must key its fetch on that generation** — wrap the view's own key in `IconRequest`, or call `IconCache.observeStyle()` where the icon is resolved synchronously in a `body`. It is reached through `IconCache` rather than injected precisely because icons are drawn in menus, popovers and every list, where a missed injection would be a silent staleness bug.
@@ -232,8 +232,8 @@ shipped. Light is the same stop with the ink inverted, and is the only column op
 | `dropGuide`       | white 0.35     | black 0.35     | the palette's drop guides while dragging         |
 | `composerSend`    | white 0.92     | black 0.92     | AI Chat's Send disc                              |
 
-`panelScrim` is the ramp's inverse — it darkens the dark surface and lightens the light one — so it
-is an `adaptive` pair, not a `ramp`. So is `composerSendInk`, black 0.85 on the dark disc and white
+`panelScrim` is the ramp's inverse: it darkens the dark surface and lightens the light one, so its
+recipe is `.surface`, not `.ink`. So is `composerSendInk`, black 0.85 on the dark disc and white
 on the light one.
 `brand`, `primaryAction`, `destructive`, `success` and `dropGuideArmed` are fixed hues and adapt on
 their own.
@@ -832,8 +832,8 @@ anywhere in the cell lands — a bare stroke is hittable only on the line itself
 takes half a pinned axis and all of a spanned one, which is what makes nine cells nine silhouettes
 rather than nine identical rectangles.
 
-`layoutPreviewGround` is **`adaptive`, never `ramp`**: a drawn display is dark in both appearances,
-and a ramp would invert it in Light. `layoutPreviewWindow` is white in both for the same reason — it
+`layoutPreviewGround` is **`.fixed`, never `.ink`**: a drawn display is dark in both appearances,
+and an ink recipe would invert it in Light. `layoutPreviewWindow` is white in both for the same reason — it
 sits on that always-dark plate. `Radius.glyph` (2) exists because `thumbnail` rounds a 10 pt square
 into a circle.
 

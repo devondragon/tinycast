@@ -76,6 +76,7 @@ struct CalculatorCard: View {
 }
 
 /// Dims the words that join an expression, so the values they join read first.
+@MainActor
 private enum CalcSyntax {
     static func highlighted(_ text: String) -> AttributedString {
         var attributed = AttributedString()

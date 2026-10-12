@@ -162,8 +162,8 @@ moment an app is picked, and a panel sized to its content would resize under the
   `didChangeScreenParameters`. Resolving displays inside `body` would cost an AX round trip per
   keystroke.
 - **The plate is the display**, drawn at its own aspect ratio and letterboxed inside the box — fit,
-  never fill, or every rect inside it is misdrawn. It stays dark in both appearances, so its token is
-  `adaptive`, never `ramp`.
+  never fill, or every rect inside it is misdrawn. It stays dark in both appearances, so its token's
+  recipe is `.fixed`, never `.ink`.
 - **No coordinate flip in the view.** `resolve` works in AX space (top-left origin, +Y down) and
   SwiftUI's y also points down. This is the one place the two conventions agree.
 - **The tabs sit on the caption row, not over the canvas**, so a tab can never cover a window rect.
