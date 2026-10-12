@@ -155,11 +155,16 @@ struct AppearanceTests {
             accessible.map { "\($0.name.rawValue) \(String(describing: $0.bestMatch(from: [.aqua, .darkAqua, .accessibilityHighContrastAqua, .accessibilityHighContrastDarkAqua])))" }.joined(separator: "; "))
         let separator = Theme.Colors.separator
         nonisolated(unsafe) var offMain: CGFloat = 0
-        DispatchQueue.global().sync {
+        nonisolated(unsafe) var ranOffMain = false
+        let group = DispatchGroup()
+        DispatchQueue.global().async(group: group) {
+            ranOffMain = !Thread.isMainThread
             NSAppearance(named: .darkAqua)!.performAsCurrentDrawingAppearance {
                 offMain = NSColor(separator).usingColorSpace(.sRGB)!.alphaComponent
             }
         }
+        group.wait()
+        check("the hairline probe ran off the main thread", ranOffMain)
         check("a themed hairline resolves off the main thread", offMain > 0)
         check(
             "the flag raises hairlines on a plain appearance",
