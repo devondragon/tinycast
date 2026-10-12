@@ -7,8 +7,8 @@ extension View {
     }
 
     /// A borderless window's body: scrim over glass in Default, fill and backdrop in a theme.
-    func themedPanel(in shape: some Shape) -> some View {
-        modifier(ThemedPanelModifier(shape: shape))
+    func themedPanel(in shape: some Shape, scrim: Color = Theme.Colors.panelScrim) -> some View {
+        modifier(ThemedPanelModifier(shape: shape, scrim: scrim))
     }
 }
 
@@ -37,6 +37,7 @@ private struct ThemedSurfaceModifier<S: Shape>: ViewModifier {
 
 private struct ThemedPanelModifier<S: Shape>: ViewModifier {
     let shape: S
+    let scrim: Color
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     @ViewBuilder
@@ -44,25 +45,25 @@ private struct ThemedPanelModifier<S: Shape>: ViewModifier {
         switch Theme.Surfaces.style(.panel) {
         case .glass:
             content
-                .background(Theme.Colors.panelScrim)
+                .background(scrim)
                 .background(GlassEffectView())
         case .tintedGlass(let tint) where reduceTransparency:
             content
                 .foregroundStyle(Theme.Colors.textPrimary)
-                .background(Theme.Colors.panelScrim)
+                .background(scrim)
                 .background(PanelBackdrop(backdrop: ThemeStore.active.palette.definition.backdrop))
                 .background { SolidSurface(fill: .color(tint.opaque), stroke: nil, glows: false, shape: shape) }
         case .tintedGlass(let tint):
             content
                 .foregroundStyle(Theme.Colors.textPrimary)
-                .background(Theme.Colors.panelScrim)
+                .background(scrim)
                 .background(PanelBackdrop(backdrop: ThemeStore.active.palette.definition.backdrop))
                 .background(ThemePalette.color(tint))
                 .background(GlassEffectView())
         case .solid(let fill, let stroke, let glows):
             content
                 .foregroundStyle(Theme.Colors.textPrimary)
-                .background(Theme.Colors.panelScrim)
+                .background(scrim)
                 .background(PanelBackdrop(backdrop: ThemeStore.active.palette.definition.backdrop))
                 .background { SolidSurface(fill: fill, stroke: stroke, glows: glows, shape: shape) }
         }

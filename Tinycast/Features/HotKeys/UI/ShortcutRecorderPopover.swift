@@ -69,8 +69,8 @@ struct ShortcutRecorderPopover: View {
                         + (placement.caretEdge == .top ? Theme.Size.calloutCaretHeight : 0))
         }
         // Stock glass owns its elevation, as in `PopoverMenu` — no hand-tuned shadow.
-        .glassEffect(
-            .regular, in: CalloutShape(caretEdge: placement.caretEdge, caretX: placement.caretX))
+        .themedSurface(
+            .overlay, in: CalloutShape(caretEdge: placement.caretEdge, caretX: placement.caretX))
     }
 
     private var state: State {
