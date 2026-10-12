@@ -21,7 +21,9 @@ That paragraph describes **Dark**, which is the design. Light is the same design
 inverted: a white scrim over the same blur, and a black-alpha ramp at matched stops. Nothing about
 geometry, type, motion or state changes between them.
 
-That is the Default theme. Other themes (see `docs/features/theming.md`) may replace the scrim-over-glass surface with an opaque fill, a backdrop and a glow, but only through `themedPanel` and `themedSurface`; a view never styles itself for a theme.
+That is the Default theme. Other themes (see `docs/features/theming.md`) may replace the
+scrim-over-glass surface with an opaque fill, a backdrop and a glow, but only through `themedPanel`
+and `themedSurface`; a view never styles itself for a theme.
 
 Five load-bearing ideas, in priority order:
 
@@ -54,7 +56,7 @@ These are the things that quietly break the look if changed. Preserve them unles
 - **In the palette, a hover label is Tinycast's `tooltip`, never `.help()`**: an AppKit tooltip never appears while the app sits inactive behind the non-activating panel. A Settings window activates the app, so `.help()` shows there and stays the label to use. The tooltip hangs above its control by default; a control in the palette header passes `edge: .bottom`, since above it is off the window, and a label may run to several lines — the chat's attachment pill lists every staged name.
   Native form controls opt into `dismissOnPress` to hide the label until the next hover.
 - **A transient readout is a HUD, not a dialog.** `VolumeHUDController`'s box is volume and mute only, since that one needs an actual level and number; every other success or info confirmation goes through `MessageHUDController`'s pill, whose leading glyph *is* its `DialogTone`. A pill has no subject to name, so the icon rule above does not apply to it — and that mapping stays file-scoped so nothing can reach for it when building a `DialogRequest`. A new HUD means a new presenter, not a second shape bolted onto an existing controller.
-- **Glass is for floating controls, with dialogs as the deliberate modal exception.** The action capsule, menu circle and `PopoverMenu` use it inside the palette; dialogs apply one system `.glassEffect(.regular)` to their root surface. Dialog buttons stay matte so their roles remain legible. Both HUDs use `themedPanel(in:)` (the pill passes its hover scrim) and then `clipShape`. All glass is applied through `themedSurface`/`frosted(in:)`, never a bare `glassEffect` in a feature.
+- **Glass is for floating controls, with dialogs as the deliberate modal exception.** The action capsule, menu circle and `PopoverMenu` use it inside the palette; dialogs draw their root with `themedSurface(.overlay, ...)`, whose Default is one system `.glassEffect(.regular)`. Dialog buttons stay matte so their roles remain legible. Both HUDs use `themedPanel(in:)` (the pill passes its hover scrim) and then `clipShape`. All glass is applied through `themedSurface`/`frosted(in:)`, never a bare `glassEffect` in a feature.
 
 ---
 
@@ -446,7 +448,7 @@ Source: `Theme.frosted(in:)`, `DesignSystem/PopoverMenu.swift`.
 
 Glass is normally for floating controls. The dialog root is the one modal-surface exception.
 
-- `View.frosted(in:)` = `themedSurface(.control, in:, glass: .regular.interactive())`, which is `glassEffect(.regular.interactive(), in:)` in Default — regular, interactive glass, so it follows the system Liquid Glass (clear ↔ tinted) setting; `.clear` ignores that setting. Used on the action-group capsule and the menu circle. Dialogs intentionally use untinted, non-interactive `.glassEffect(.regular)` on their root instead; HUDs retain the panel recipe (see "Dialogs & HUD"). Retune it in `frosted(in:)`, not per call site.
+- `View.frosted(in:)` = `themedSurface(.control, in:, glass: .regular.interactive())`, which is `glassEffect(.regular.interactive(), in:)` in Default — regular, interactive glass, so it follows the system Liquid Glass (clear ↔ tinted) setting; `.clear` ignores that setting. Used on the action-group capsule and the menu circle. Dialogs intentionally use `themedSurface(.overlay, ...)` on their root instead, which in Default is untinted, non-interactive `.glassEffect(.regular)`; HUDs retain the panel recipe (see "Dialogs & HUD"). Retune it in `frosted(in:)`, not per call site.
 - **Menus are in-window overlays, not system popovers.** `.contextMenu`/`NSMenu` stall clicks for seconds inside a `LazyVStack` and spill outside the panel. Use `PopoverMenu` anchored to a corner via `.overlay`, inset `menuInset` (8pt) so its own corner isn't clipped by the panel's. A menu hung off a control instead of a corner — the clipboard type filter, `.topTrailing` — insets by that control's own metrics so their edges line up.
 - **A menu's `width` is fixed, never intrinsic**, so it can't jitter as its rows change. Every header menu states its own at its `RootPaletteView.menuContent` case — `menuWidth 276`, or a token of its own where that reads too wide (`clipboardFilterMenuWidth`, `fileSearchFilterMenuWidth`, `emojiCategoryMenuWidth`) — so retuning one never moves another. Native footer menus add 30pt without changing those header widths; extension Actions owns its nearby 310pt width inside the feature.
 - **`PopoverMenu`** uses `glassEffect(.regular)` with `menuPanel 16` corners and **no hand-tuned shadow** — Tahoe glass carries its own elevation; adding a drop shadow reads heavy and non-native. A footer menu raises only its attached bottom corner to the controls' 18-point radius, so the two silhouettes meet exactly.
@@ -494,8 +496,8 @@ sole owner rule) and is the only presenter, so every confirmation in the app loo
   red-glyph security warning can carry a plain white button — "Import executable commands?" does,
   since importing a file destroys nothing — and running a shell command the user wrote themselves is
   `.neutral` + `.standard` rather than a red alarm.
-- **Surface.** A dialog applies one system `.glassEffect(.regular)` to a
-  `RoundedRectangle(panel 26)`. Confirmations and notices use `dialogCompactWidth 290`, including the
+- **Surface.** A dialog draws `themedSurface(.overlay, ...)` on a
+  `RoundedRectangle(panel 26)`; in Default that is one system `.glassEffect(.regular)`. Confirmations and notices use `dialogCompactWidth 290`, including the
   volume slider; form dialogs use `dialogWidth 420`. `panelScrim` sits beneath the glass so the dialog
   keeps the launcher's darker density without losing the system material. `DialogPanel` clips its
   `NSHostingView` layer to the same continuous radius, then lets AppKit draw the native window shadow;

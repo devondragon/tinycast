@@ -35,6 +35,9 @@ produces, rendered natively into the palette. No Electron, no browser, no Node.j
   the installed set and clears the launcher rows;
   `refresh()` returns early while it is off, so nothing is scanned and nothing is held. Enabling is also
   consent to run third-party code, so it confirms first and never rides a settings backup.
+- **Extensions read theme surfaces as data and draw them locally.** `ExtensionSurface.swift` reads
+  `Theme.Surfaces.style(_:)` and `Theme.Effects` and paints the result itself; nothing under
+  `Features/Extensions/` calls `themedSurface`, `themedPanel` or a DesignSystem surface view.
 - **`SymbolCatalog` reads a system bundle, not API.** The list comes from `CoreGlyphs.bundle` at
   runtime; every read stays optional and falls back to `SymbolCatalog.suggested`, and Apple's restricted
   marks are never offered.
