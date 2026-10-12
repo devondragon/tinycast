@@ -30,7 +30,6 @@ struct PanelBackdrop: View {
 }
 
 /// One `draw` per kind; each lives in its own file and lands with its theme.
-@MainActor
 enum BackdropRenderer {
     static func draw(
         _ backdrop: Backdrop, in context: inout GraphicsContext, size: CGSize, time: Double, dark: Bool
