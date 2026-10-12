@@ -376,7 +376,7 @@ private struct PopoverMenuRow: View {
                         Image(name)
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                            .foregroundStyle(item.isDestructive ? Theme.Colors.destructive : Color.secondary)
+                            .foregroundStyle(item.isDestructive ? AnyShapeStyle(Theme.Colors.destructive) : AnyShapeStyle(.secondary))
                             .frame(width: metrics.size.menuBrandIcon, height: metrics.size.menuBrandIcon)
                             .frame(width: metrics.size.menuIcon, height: metrics.size.menuIcon)
                     case .file(let path):
@@ -387,7 +387,7 @@ private struct PopoverMenuRow: View {
                 }
                 Text(item.title)
                     .font(metrics.typography.menuRow)
-                    .foregroundStyle(item.isDestructive ? Theme.Colors.destructive : Color.primary)
+                    .foregroundStyle(item.isDestructive ? AnyShapeStyle(Theme.Colors.destructive) : AnyShapeStyle(.primary))
                     .lineLimit(1)
                 Spacer(minLength: metrics.spacing.sm)
                 if let detail = item.detail {
