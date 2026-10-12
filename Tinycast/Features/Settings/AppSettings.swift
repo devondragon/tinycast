@@ -222,6 +222,11 @@ final class AppSettings {
         didSet { defaults.set(appearance.rawValue, forKey: Key.appearance.rawValue) }
     }
 
+    /// Which built-in look Tinycast draws with. Applied by `AppCore.applyTheme()`.
+    var theme: ThemeID {
+        didSet { defaults.set(theme.rawValue, forKey: Key.visualTheme.rawValue) }
+    }
+
     /// Which separators the calculator reads and writes; `.system` follows Language & Region.
     var calcNumberStyle: CalcNumberStyle {
         didSet { defaults.set(calcNumberStyle.rawValue, forKey: Key.calcNumberStyle.rawValue) }
@@ -677,6 +682,7 @@ final class AppSettings {
             ?? .navigateBackOrClose
         appearance =
             defaults.string(forKey: Key.appearance.rawValue).flatMap(AppAppearance.init) ?? .system
+        theme = defaults.string(forKey: Key.visualTheme.rawValue).flatMap(ThemeID.init) ?? .standard
         calcNumberStyle =
             defaults.string(forKey: Key.calcNumberStyle.rawValue).flatMap(CalcNumberStyle.init)
             ?? .system

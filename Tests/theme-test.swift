@@ -36,6 +36,10 @@ struct ThemeTests {
         check("no glow", standard.glow == .none)
         check("system faces", standard.faces == .system)
 
+        print("# a stored value from a newer build falls back")
+        check("unknown theme id is rejected", ThemeID(rawValue: "vaporwave") == nil)
+        check("Default's stored spelling is stable", ThemeID.standard.rawValue == "standard")
+
         print("# custom themes are opaque and legible")
         for id in ThemeID.allCases where id != .standard {
             let theme = ThemeCatalog.definition(for: id)
