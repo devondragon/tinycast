@@ -210,7 +210,8 @@ body for the rest. A face equal to Default's returns the system font untouched, 
 exactly as before. Symbol fonts (`headerIcon`, `menuIcon`, `disclosure`, the composer glyphs) stay
 system in every theme. `Theme.Typography` and `InterfaceMetrics.Typography` are `@MainActor`, since
 both read `ThemeStore`. The search field's bundled face is pinned to `searchFieldSize` points so the
-`NSFont` twin that measures it always agrees.
+`NSFont` twin that measures it always agrees. A themed face takes the weight its text style implies (`.headline`
+Bold, `.caption2` Medium, read from SF's `wght` axis) unless the token names one.
 
 `InterfaceMetrics.Typography` scales a style by rebuilding its `NSFont` **from that font's own
 descriptor** at the scaled point size. Never reconstruct one as `.system(size:weight:)` from a

@@ -395,9 +395,7 @@ enum Theme {
                 .display, base: Font.subheadline.weight(.medium), style: .subheadline, weight: .medium)
         }
         /// A borderless panel's own title, which names the surface rather than a section inside it.
-        static var panelTitle: Font {
-            ThemeFonts.font(.display, base: .headline, style: .headline, weight: .bold)
-        }
+        static var panelTitle: Font { ThemeFonts.font(.display, base: .headline, style: .headline) }
         /// The big value line on the calculator answer card (both source and target sides).
         static var calcResult: Font { ThemeFonts.font(.display, base: .title, style: .title1) }
         static var keyCap: Font { ThemeFonts.font(.body, base: .caption, style: .caption1) }
@@ -412,9 +410,7 @@ enum Theme {
             ThemeFonts.font(
                 .display, base: Font.title3.weight(.semibold), style: .title3, weight: .semibold)
         }
-        static var markdownHeading3: Font {
-            ThemeFonts.font(.display, base: .headline, style: .headline, weight: .bold)
-        }
+        static var markdownHeading3: Font { ThemeFonts.font(.display, base: .headline, style: .headline) }
         static var code: Font {
             ThemeFonts.font(.mono, base: .system(.callout, design: .monospaced), style: .callout)
         }
@@ -446,9 +442,7 @@ enum Theme {
         static let menuIcon = Font.body
         static let menuSymbolSize: CGFloat = 14
         static let menuSymbolWeight = Font.Weight.medium
-        static var noteTitle: Font {
-            ThemeFonts.font(.display, base: .headline, style: .headline, weight: .bold)
-        }
+        static var noteTitle: Font { ThemeFonts.font(.display, base: .headline, style: .headline) }
         /// The composer row's glyphs; Send's arrow is bolder, and Stop's square smaller to match it.
         static let composerSymbol = Font.system(size: 13, weight: .medium)
         static let composerSend = Font.system(size: 13, weight: .bold)

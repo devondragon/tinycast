@@ -216,9 +216,15 @@ struct InterfaceMetrics: Equatable, Sendable {
             _ style: NSFont.TextStyle, weight: NSFont.Weight? = nil, monospaced: Bool = false
         ) -> NSFont {
             let base = nsFont(style)
-            if monospaced { return .monospacedSystemFont(ofSize: base.pointSize, weight: weight ?? .regular) }
-            guard let weight else { return base }
-            return .systemFont(ofSize: base.pointSize, weight: weight)
+            let font: NSFont =
+                if monospaced {
+                    .monospacedSystemFont(ofSize: base.pointSize, weight: weight ?? .regular)
+                } else if let weight {
+                    .systemFont(ofSize: base.pointSize, weight: weight)
+                } else {
+                    base
+                }
+            return ThemeFonts.nsFont(monospaced ? .mono : .body, base: font)
         }
 
         /// Composed like `Theme`'s own: the style carries the face, an explicit weight overrides it.
@@ -230,7 +236,7 @@ struct InterfaceMetrics: Equatable, Sendable {
             guard let role else { return weight.map(scaled.weight) ?? scaled }
             return ThemeFonts.font(
                 role, base: weight.map(scaled.weight) ?? scaled, style: style,
-                weight: weight ?? (style == .headline ? .bold : nil), scale: scale)
+                weight: weight, scale: scale)
         }
 
         /// Its own descriptor, so `.headline` stays Bold and `.caption2` Medium rather than lightening.
