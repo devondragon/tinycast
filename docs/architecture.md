@@ -178,6 +178,9 @@ macOS by itself. Nothing else in the app sets an appearance.
 
 `AppCore.applyTheme()` applies `AppSettings.theme` to `ThemeStore.active`, a global `@Observable` store
 read by `Theme`'s tokens; it is global for the same reason as `IconCache.style`.
+SwiftUI repaints through Observation; AppKit text that copied a color or font (the note editor, chat
+text, the palette caret, extension SVG palettes) compares `ThemeStore.active.generation` and reapplies
+when it moves. A static cache of a themed value is a `ThemeDerived`, which rebuilds on a new generation.
 
 ## Observation
 

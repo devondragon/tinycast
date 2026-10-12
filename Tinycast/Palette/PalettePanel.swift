@@ -122,7 +122,7 @@ final class PalettePanel: NSPanel {
             keyCode: UInt16(arrow.code))
     }
 
-    private static let caretColor = NSColor(Theme.Colors.textPrimary)
+    private static var caretColor: NSColor { NSColor(Theme.Colors.textPrimary) }
 
     /// Caret hiding on SwiftUI's own field editor. docs/features/palette.md#menu-open-input-freeze
     private func setSearchCaretHidden(_ hidden: Bool) {

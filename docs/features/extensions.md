@@ -297,9 +297,10 @@ screens hold (see [palette.md](palette.md)).
   the shape draws nothing at all. It happens there rather than in `resolve` because `resolve` runs
   in a `body` and the decode already runs detached, and because the markdown images a Detail draws
   never pass through `resolve` at all. The palette is handed in as `[name: css]`, resolved once per
-  appearance by `ExtensionImage.svgPalette(isDark:)` — a `Color` can only be flattened to sRGB on the
+  appearance and theme by `ExtensionImage.svgPalette(isDark:)` — a `Color` can only be flattened to sRGB on the
   main actor, which is exactly what the decode must not touch. Anything reading a decoded image keys
-  its `.task` on `ExtensionImage.LoadKey`, since the URL alone no longer says what will be drawn.
+  its `.task` on `ExtensionImage.LoadKey`, which carries the appearance and the theme generation,
+  since the URL alone no longer says what will be drawn.
   The feature's own fills live in `ExtensionColors` — never in `Theme`.
 - **Form** — label-left/control-right rows. Field values live in the extension (React owns them); every
   edit dispatches `onTinycastChange` and the resulting re-render is what updates the control, so
