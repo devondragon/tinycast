@@ -4,6 +4,7 @@ enum ThemeCatalog {
     static func definition(for id: ThemeID) -> ThemeDefinition {
         switch id {
         case .standard: standard
+        case .tron: tron
         }
     }
 

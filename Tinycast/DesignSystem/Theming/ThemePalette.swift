@@ -24,6 +24,9 @@ struct ThemePalette {
     private static func resolve(_ recipe: ColorRecipe, token: ColorToken, in theme: ThemeDefinition) -> Color {
         switch recipe {
         case .ink(let dark, let light):
+            if theme.id != .standard, raisedUnderIncreasedContrast.contains(token) {
+                return raisable(theme.ink, dark: dark, light: light, floor: theme.recipe(for: .textTertiary))
+            }
             return tinted(theme.ink, dark: dark, light: light)
         case .surface(let dark, let light):
             return tinted(theme.surface, dark: dark, light: light)
@@ -37,6 +40,20 @@ struct ThemePalette {
         case .system(let system, let dark, let light):
             return withAlpha(systemColor(system), dark: dark, light: light)
         }
+    }
+
+    /// Hairlines a high-contrast reader cannot see at their usual stop; Default leaves this to macOS.
+    private static let raisedUnderIncreasedContrast: Set<ColorToken> = [.separator, .border, .cardStroke]
+
+    private static func raisable(_ pair: RGBAPair, dark: Double, light: Double, floor: ColorRecipe) -> Color {
+        guard case .ink(let floorDark, let floorLight) = floor else { return tinted(pair, dark: dark, light: light) }
+        return Color(nsColor: NSColor(name: nil) { appearance in
+            let high = appearance.name.rawValue.contains("HighContrast")
+            let isDark = appearance.isDark
+            let stop = isDark ? (high ? max(dark, floorDark) : dark) : (high ? max(light, floorLight) : light)
+            let ink = pair.value(dark: isDark)
+            return nsColor(ink.with(alpha: ink.alpha * stop))
+        })
     }
 
     private static func tinted(_ pair: RGBAPair, dark: Double, light: Double) -> Color {

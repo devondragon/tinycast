@@ -456,9 +456,12 @@ enum Theme {
             Color(nsColor: NSColor(name: nil) { @Sendable in $0.isDark ? dark : light })
         }
 
-        /// The alpha ramp, inverted: white ink over the dark surface, black ink over the light one.
+        /// The alpha ramp in the active theme's ink: white over the dark surface, black over the light one.
         static func ramp(dark: Double, light: Double) -> Color {
-            adaptive(dark: .srgbInk(1, alpha: dark), light: .srgbInk(0, alpha: light))
+            let ink = ThemeStore.active.palette.definition.ink
+            return adaptive(
+                dark: ThemePalette.nsColor(ink.dark.with(alpha: ink.dark.alpha * dark)),
+                light: ThemePalette.nsColor(ink.light.with(alpha: ink.light.alpha * light)))
         }
 
         /// The ramp's inverse: the scrim darkens the dark surface and lightens the light one.

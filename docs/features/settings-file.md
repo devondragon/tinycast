@@ -123,7 +123,7 @@ Where a number has a special case, the case is a word:
 | `calendar.menuBarUpcomingEvents` | `"today"`, or 2, 5, 10, 30 minutes before |
 | `calendar.hideCurrentEventAfterMinutes` | `"never"`, 0 (as it starts), 5, 10, 30 |
 | `appearance.theme` | `"system"`, `"light"`, `"dark"` (the macOS appearance, not the look) |
-| `appearance.visualTheme` | `"standard"` (more as themes land) |
+| `appearance.visualTheme` | `"standard"`, `"tron"` (more as themes land) |
 | `windowManagement.gap` | 0 to 64 |
 | `snippets.folder`, `notes.folder` | an absolute or `~/` path, or `null` for Application Support |
 
