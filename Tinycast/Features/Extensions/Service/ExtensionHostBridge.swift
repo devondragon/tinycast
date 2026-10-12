@@ -224,7 +224,7 @@ final class ExtensionHostBridge: ExtensionHostAPI {
                 Task { @MainActor in
                     try? await Task.sleep(for: .milliseconds(350))
                     guard !Task.isCancelled else { return }
-                    Paster.postCommandV()
+                    Paster.postCommandV(toPid: target?.processIdentifier)
                 }
                 return nil
             }

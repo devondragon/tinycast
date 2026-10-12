@@ -620,7 +620,9 @@ claims focus is private and several levels down — there is nothing to override
 `PaletteWindowController` records `previousApp` (the frontmost app) on show. Paste then targets that
 app:
 
-- `Paster.paste` activates it and posts a synthetic ⌘V via `CGEvent`.
+- `Paster.paste` activates it and posts a synthetic ⌘V to its PID via `CGEvent`. Not through the HID
+  tap: an open note panel takes key as the palette orders out, and would receive the chord. With no
+  `previousApp` (summoned over our own window), the chord goes through the HID tap to that window.
 - `Paster.pasteInPlace` posts ⌘V straight to the app's PID _without_ activating it, so the palette can
   stay open and frontmost (used by "paste keeping window open").
 

@@ -18,10 +18,7 @@ enum Paster {
     ) -> Bool {
         guard write(item, store: store) else { return false }
         store.promote(item)
-        previousApp?.activate()
-        DispatchQueue.main.asyncAfter(deadline: .now() + activationDelay) {
-            postCommandV()
-        }
+        activateAndPaste(into: previousApp)
         return true
     }
 
@@ -57,19 +54,23 @@ enum Paster {
     @MainActor
     static func pasteString(_ text: String, previousApp: NSRunningApplication?) {
         writeString(text)
-        previousApp?.activate()
-        DispatchQueue.main.asyncAfter(deadline: .now() + activationDelay) {
-            postCommandV()
-        }
+        activateAndPaste(into: previousApp)
     }
 
     /// A file, pasted into `previousApp`; the receiver takes the file or its path, as it reads.
     @MainActor
     static func pasteFile(_ url: URL, previousApp: NSRunningApplication?) {
         PasteboardFiles.write(url, to: .general)
-        previousApp?.activate()
+        activateAndPaste(into: previousApp)
+    }
+
+    /// Our own floating panel can take key as the palette hides, so ⌘V goes to the app by pid.
+    @MainActor
+    private static func activateAndPaste(into app: NSRunningApplication?) {
+        app?.activate()
+        let pid = app?.processIdentifier
         DispatchQueue.main.asyncAfter(deadline: .now() + activationDelay) {
-            postCommandV()
+            postCommandV(toPid: pid)
         }
     }
 
