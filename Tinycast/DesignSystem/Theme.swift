@@ -539,7 +539,7 @@ enum Theme {
         }
     }
 
-    /// Surface styles as data, so Extensions can draw them with its own code.
+    /// Surface styles as data, so the Extensions feature can draw them with its own code.
     @MainActor
     enum Surfaces {
         static func style(_ role: SurfaceRole) -> SurfaceStyle {

@@ -37,6 +37,7 @@ private struct ThemedSurfaceModifier<S: Shape>: ViewModifier {
 
 private struct ThemedPanelModifier<S: Shape>: ViewModifier {
     let shape: S
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     @ViewBuilder
     func body(content: Content) -> some View {
@@ -45,6 +46,12 @@ private struct ThemedPanelModifier<S: Shape>: ViewModifier {
             content
                 .background(Theme.Colors.panelScrim)
                 .background(GlassEffectView())
+        case .tintedGlass(let tint) where reduceTransparency:
+            content
+                .foregroundStyle(Theme.Colors.textPrimary)
+                .background(Theme.Colors.panelScrim)
+                .background(PanelBackdrop(backdrop: ThemeStore.active.palette.definition.backdrop))
+                .background { SolidSurface(fill: .color(tint.opaque), stroke: nil, glows: false, shape: shape) }
         case .tintedGlass(let tint):
             content
                 .foregroundStyle(Theme.Colors.textPrimary)

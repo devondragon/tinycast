@@ -13,7 +13,7 @@ struct PanelBackdrop: View {
         if backdrop.kind != .none {
             TimelineView(.animation(minimumInterval: 1.0 / 30, paused: still || !isVisible)) { timeline in
                 Canvas(rendersAsynchronously: true) { context, size in
-                    // Wrapped to an hour: a reference-date Double loses sub-frame precision.
+                    // Wrapped to an hour so trig and Float math downstream keep their precision.
                     let time = still ? 0 : timeline.date.timeIntervalSinceReferenceDate
                         .truncatingRemainder(dividingBy: 3600) * backdrop.speed
                     BackdropRenderer.draw(backdrop, in: &context, size: size, time: time, dark: dark)

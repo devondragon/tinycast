@@ -32,7 +32,8 @@ struct WindowOcclusionReader: NSViewRepresentable {
                     MainActor.assumeIsolated { self?.report() }
                 },
                 center: center)
-            report()
+            // Reporting now would write SwiftUI state during the view update that attached us.
+            Task { @MainActor [weak self] in self?.report() }
         }
 
         private func report() { onChange(window?.occlusionState.contains(.visible) ?? false) }
