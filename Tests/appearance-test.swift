@@ -104,6 +104,36 @@ struct AppearanceTests {
         check("generation starts at zero", store.generation == 0)
         dark("palette selection", store.palette.color(.selection), is: Color.white.opacity(0.10))
 
+        print("# a switch is visible to AppKit hosts")
+        let before = ThemeStore.active.generation
+        ThemeStore.active.apply(.standard)
+        check("no-op apply keeps the generation", ThemeStore.active.generation == before)
+        var builds = 0
+        var derived = ThemeDerived { builds += 1 }
+        derived.value
+        derived.value
+        check("a derived value is built once per generation", builds == 1, "built \(builds) times")
+
+        print("# Default keeps the AppKit text faces")
+        let text = InterfaceMetrics.standard.typography
+        check("body text is the text style", text.textNSFont(.body) == .preferredFont(forTextStyle: .body))
+        check(
+            "headline text is the text style",
+            text.textNSFont(.headline) == .preferredFont(forTextStyle: .headline))
+        check(
+            "a weighted text is the system face",
+            text.textNSFont(.title2, weight: .semibold) == .systemFont(ofSize: 17, weight: .semibold))
+        check(
+            "monospaced text is the system mono face",
+            text.textNSFont(.body, monospaced: true) == .monospacedSystemFont(ofSize: 13, weight: .regular))
+
+        print("# a text style's implied weight reaches a themed face")
+        let implied: [(NSFont.TextStyle, NSFont.Weight)] = [(.headline, .bold), (.caption2, .medium), (.body, .regular)]
+        for (style, weight) in implied {
+            let actual = ThemeFonts.impliedWeight(of: .preferredFont(forTextStyle: style))
+            check("\(style.rawValue) implies \(weight.rawValue)", actual == weight, "got \(actual.rawValue)")
+        }
+
         print("# Default keeps every surface on its own glass")
         for role in SurfaceRole.allCases {
             check("\(role) is glass", Theme.Surfaces.style(role) == .glass)

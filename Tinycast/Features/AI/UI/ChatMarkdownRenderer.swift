@@ -9,6 +9,8 @@ struct ChatMarkdownSource: Equatable {
     let prefix: [Int]
     let failed: Bool
     let metrics: InterfaceMetrics
+    /// The renderer bakes theme colors and faces into the text, so a switch is a new source.
+    let themeGeneration: Int
 }
 
 /// What the renderer made: the text, where each code block sits, and the current find match.

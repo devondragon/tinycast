@@ -65,7 +65,8 @@ struct ChatMarkdownTests {
             ChatMarkdownSource(
                 blocks: MarkdownBlock.parse(text, midStream: message.isArriving(segmentAt: 0, of: 1)),
                 highlight: ChatTextHighlight(query: "apple", current: current),
-                citations: citations, prefix: [0], failed: false, metrics: .standard)
+                citations: citations, prefix: [0], failed: false, metrics: .standard,
+                themeGeneration: ThemeStore.active.generation)
         ).render()
     }
 
