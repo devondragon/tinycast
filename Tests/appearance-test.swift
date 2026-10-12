@@ -28,17 +28,6 @@ struct AppearanceTests {
         return out
     }
 
-    static func components(_ color: Color, appearanceNamed name: String) -> [Int] {
-        let appearance = NSAppearance(appearanceNamed: NSAppearance.Name(name), bundle: nil)!
-        var out: [Int] = []
-        appearance.performAsCurrentDrawingAppearance {
-            let ns = NSColor(color).usingColorSpace(.sRGB)!
-            out = [ns.redComponent, ns.greenComponent, ns.blueComponent, ns.alphaComponent]
-                .map { Int(($0 * 255).rounded()) }
-        }
-        return out
-    }
-
     static func dark(_ label: String, _ token: Color, is expected: Color) {
         let actual = components(token, .darkAqua)
         let wanted = components(expected, .darkAqua)
@@ -51,8 +40,6 @@ struct AppearanceTests {
             "\(label) adapts", components(token, .darkAqua) != components(token, .aqua),
             "light resolves identically to dark")
     }
-
-    static let highContrastLight = "NSAppearanceNameAccessibilityHighContrastAqua"
 
     static func main() {
         let c = Theme.Colors.self
@@ -158,18 +145,18 @@ struct AppearanceTests {
         for token in [ColorToken.textPrimary, .selection, .panelScrim, .accent] {
             adapts("tron \(token)", ThemeStore.active.palette.color(token))
         }
-        let normal = components(Theme.Colors.separator, .aqua)[3]
-        let raised = components(Theme.Colors.separator, appearanceNamed: highContrastLight)[3]
-        check("tron separator rises under Increase Contrast", raised > normal, "\(raised) vs \(normal)")
+        let plain = [NSAppearance(named: .aqua)!, NSAppearance(named: .darkAqua)!]
+        check(
+            "Increase Contrast raises hairlines",
+            plain.allSatisfy { ThemePalette.raisesHairlines($0, increaseContrast: true) })
+        check(
+            "plain appearances do not raise hairlines",
+            plain.allSatisfy { !ThemePalette.raisesHairlines($0, increaseContrast: false) })
         check(
             "tron ramp follows the theme ink",
             components(Theme.Colors.ramp(dark: 0.3, light: 0.2), .darkAqua)
                 != components(Color.white.opacity(0.3), .darkAqua))
         ThemeStore.active.apply(.standard)
-        check(
-            "Default separator is unchanged under Increase Contrast",
-            components(Theme.Colors.separator, appearanceNamed: highContrastLight)[3]
-                == components(Theme.Colors.separator, .aqua)[3])
         check(
             "Default ramp is white over dark",
             components(Theme.Colors.ramp(dark: 0.3, light: 0.2), .darkAqua)

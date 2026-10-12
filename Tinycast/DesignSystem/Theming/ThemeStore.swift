@@ -20,6 +20,11 @@ final class ThemeStore {
         generation &+= 1
         return true
     }
+
+    func reload() {
+        palette = ThemePalette(palette.definition)
+        generation &+= 1
+    }
 }
 
 /// A value an AppKit host derives from the active theme, rebuilt on first use after a switch.

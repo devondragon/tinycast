@@ -384,7 +384,7 @@ struct ExtensionIconView: View {
     @MainActor
     private enum MenuSymbolStyle {
         static let size: CGFloat = 14
-        static let color = Theme.Colors.ramp(dark: 0.70, light: 0.70)
+        static var color: Color { Theme.Colors.ramp(dark: 0.70, light: 0.70) }
     }
 
     @Environment(\.metrics) private var metrics

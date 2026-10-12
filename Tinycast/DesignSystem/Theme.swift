@@ -456,7 +456,7 @@ enum Theme {
             Color(nsColor: NSColor(name: nil) { @Sendable in $0.isDark ? dark : light })
         }
 
-        /// The alpha ramp in the active theme's ink: white over the dark surface, black over the light one.
+        /// The active theme's ink at an alpha per appearance.
         static func ramp(dark: Double, light: Double) -> Color {
             let ink = ThemeStore.active.palette.definition.ink
             return adaptive(
