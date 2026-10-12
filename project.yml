@@ -45,8 +45,12 @@ targets:
           - Features/Clipboard/Service/ClipboardTextHelper.swift
           - Features/Dictation/Helper
           - Resources/EmojiKeywords
+          - Resources/Fonts
       # A folder reference keeps the packs in their own directory, which `EmojiIndex` lists.
       - path: Tinycast/Resources/EmojiKeywords
+        type: folder
+      # A folder reference, so ATSApplicationFontsPath finds the faces under Resources/Fonts.
+      - path: Tinycast/Resources/Fonts
         type: folder
       # The MIT mark's licence asks the notice to travel with the binary, not just the repo.
       - path: NOTICE.md
