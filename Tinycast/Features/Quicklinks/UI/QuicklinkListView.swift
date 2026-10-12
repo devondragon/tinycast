@@ -91,13 +91,6 @@ private struct QuicklinkRow: View {
     @Environment(HotKeyManager.self) private var hotKeys
     @State private var hovered = false
 
-    /// Selection wins over hover when a row is both; otherwise hover shows its fainter layer.
-    private var fill: Color {
-        if selected { return Theme.Colors.selection }
-        if hovered { return Theme.Colors.rowHover }
-        return .clear
-    }
-
     var body: some View {
         IconCache.observeStyle()
         return HStack(spacing: metrics.spacing.lg) {
@@ -131,8 +124,7 @@ private struct QuicklinkRow: View {
         .padding(.horizontal, metrics.spacing.md)
         .padding(.vertical, metrics.spacing.sm)
         .background(
-            RoundedRectangle(cornerRadius: metrics.radius.row, style: .continuous)
-                .fill(fill)
+            RowHighlight(selected: selected, hovered: hovered, cornerRadius: metrics.radius.row)
         )
         .armedHover($hovered)
     }

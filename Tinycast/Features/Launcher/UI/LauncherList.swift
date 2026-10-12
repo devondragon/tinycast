@@ -242,13 +242,6 @@ private struct AppRow: View {
     @Environment(PaletteState.self) private var palette
     @State private var hovered = false
 
-    /// Selection wins over hover when a row is both; otherwise hover shows its fainter layer.
-    private var fill: Color {
-        if selected { return Theme.Colors.selection }
-        if hovered { return Theme.Colors.rowHover }
-        return .clear
-    }
-
     /// Keycaps for this entry's hotkey, or `nil` if none is bound.
     private var shortcutCaps: [String]? {
         guard let action = app.hotKeyAction else { return nil }
@@ -321,8 +314,7 @@ private struct AppRow: View {
         .padding(.horizontal, metrics.spacing.md)
         .padding(.vertical, metrics.spacing.sm)
         .background(
-            RoundedRectangle(cornerRadius: metrics.radius.row, style: .continuous)
-                .fill(fill)
+            RowHighlight(selected: selected, hovered: hovered, cornerRadius: metrics.radius.row)
         )
         .armedHover($hovered)
     }
