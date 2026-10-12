@@ -28,7 +28,9 @@ final class AppCore {
     let dictationAudioDucker = DictationAudioDucker()
     @ObservationIgnored private(set) lazy var dictationModels =
         DictationModelStore(idleRelease: settings.dictationIdleRelease)
-    let hyperKeyTap = HyperKeyTap()
+    @ObservationIgnored private(set) lazy var hyperKey = HyperKeyManager(
+        settings: settings, hotKeys: hotKeys)
+    @ObservationIgnored private lazy var dictationKey = DictationKeyManager(hotKeys: hotKeys)
     let windowMover = WindowMover()
     let spaceSwitcher = SpaceSwitcher()
     let inputSourceSwitcher = InputSourceSwitcher()
@@ -356,7 +358,7 @@ final class AppCore {
             }
             updateCoordinator.applyAutomaticChecking()
 
-            hyperKeyTap.healthTicker = healthTicker
+            hyperKey.healthTicker = healthTicker
             hotKeys.modifierTapMonitor.healthTicker = healthTicker
             snippetListener.healthTicker = healthTicker
 
@@ -384,7 +386,7 @@ final class AppCore {
                 self?.windowCommandCoordinator.runCustomWindowSize(id: id)
             }
             hotKeys.onOpenQuicklink = { [weak self] id in
-                self?.quicklinkCoordinator.openQuicklink(id: id)
+                self?.quicklinkCoordinator.openQuicklinkFromHotKey(id: id)
             }
             hotKeys.onRunQuickAction = { [weak self] id in
                 self?.quickActionCoordinator.run(id: id)
@@ -437,8 +439,11 @@ final class AppCore {
                 customWindowSizeIDs: Set(customWindowSizes.sizes.map(\.id)),
                 quickActionIDs: customQuickActions.isAvailable
                     ? Set(customQuickActions.actions.map(\.id)) : Set(hotKeys.boundQuickActionIDs))
-            // Keeps running while Carbon pauses: the recorder needs its rewritten flags.
-            hyperKeyTap.start(settings: settings)
+            // After `hotKeys.start`: Secure Input equivalents are built from the loaded bindings.
+            hyperKey.onProblem = { [weak self] in self?.showMessage($0, tone: .danger) }
+            hyperKey.start()
+            dictationKey.onProblem = { [weak self] in self?.showMessage($0, tone: .danger) }
+            dictationKey.start()
 
             snippetsStore.onSnapshot = { [weak self] snapshot in
                 guard let self else { return }
@@ -560,8 +565,9 @@ final class AppCore {
         if settings.dictationEnabled { dictationCoordinator.prepareForTermination() }
         settingsFile?.flush()
         clipboardTextIndexer?.stop()
-        // Caps Lock first: its remap is the one teardown that outlives the process.
-        hyperKeyTap.prepareForTermination()
+        // HID remaps first: they outlive the process.
+        hyperKey.prepareForTermination()
+        dictationKey.prepareForTermination()
         windowLayoutCoordinator.prepareForTermination()
         roomCoordinator.prepareForTermination()
         inputSourceSwitcher.endSession()
