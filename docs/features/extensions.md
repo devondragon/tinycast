@@ -119,6 +119,7 @@ Two host-call flavours:
 | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | `Service/ExtensionRuntime.swift`              | the `JSContext`, host-function installation, timers, exception reporting                                   |
 | `Service/ExtensionHostBridge.swift`           | main-actor host APIs (clipboard, storage, cache, window, toasts, system)                            |
+| `Service/ExtensionSignInSession.swift`        | the browser step of an extension's OAuth sign-in (`ASWebAuthenticationSession`)                     |
 | `Service/ExtensionNodeShims.swift`            | the synchronous `fs` / `os` / `child_process` / `crypto` / `zlib` services                                 |
 | `Service/ExtensionFetcher.swift`              | HTTP over `URLSession` or a Unix socket, plus async `exec` collection and the shared PATH resolver         |
 | `Service/ExtensionWebSocketBridge.swift`      | `URLSessionWebSocketTask` connections, opened and read from JS                                             |
@@ -683,7 +684,7 @@ interval floor instead of sixty.
 `showHUD`, `confirmAlert`, `closeMainWindow`, `popToRoot`, `clearSearchBar`, `open`, `trash`,
 `showInFinder`, `getApplications`, `getDefaultApplication`, `getFrontmostApplication`,
 `getSelectedText`, `getSelectedFinderItems`, `launchCommand`, `updateCommandMetadata`,
-`openExtensionPreferences`,
+`openExtensionPreferences`, `OAuth`,
 `useNavigation`, `Icon`, `Color`, `Image.Mask`, `Keyboard.Shortcut.Common`, `LaunchType`.
 
 **`raycast://` URLs** — extensions address Raycast by scheme; the most common is a bare
@@ -691,6 +692,17 @@ interval floor instead of sixty.
 this). `ExtensionHostBridge` keeps those inside Tinycast: `raycast://extensions/<author>/<extension>/<command>`
 runs that command when it's installed, anything else reopens the palette. Handing them to the workspace
 would launch Raycast itself.
+
+**`OAuth`** — `PKCEClient` builds the RFC 7636 request in JS, and `@raycast/utils`' `OAuthService`
+runs on top of it unchanged. The browser step is `ExtensionSignInSession`: providers have Raycast's
+fixed redirect URIs registered, which all end on `raycast://oauth` or `com.raycast:/oauth`, and
+`ASWebAuthenticationSession` intercepts that scheme itself, so an installed Raycast cannot take the
+redirect. Raycast's web redirect page drops `state`, so only a returned `state` is checked. Each
+provider's token set lives in the extension's data file, beside its preferences, keyed by
+`providerId`. Only a command the user opened can start a sign-in; a background refresh fails until
+then. While the browser is up the palette hides, but Pop to Root Search holds off, because resetting
+would stop the command and cancel the sign-in. Summoning the palette meanwhile returns to the waiting
+command, and the palette comes back on its own when the redirect lands.
 
 **Node built-ins** — `path`, `fs` (+ `fs/promises`, `createReadStream`/`createWriteStream`, a snapshot-backed `opendir`, and
 the descriptor calls `tar` unpacks through), `os`,
@@ -882,19 +894,19 @@ contains frames only (V8 repeats the message, so the headline has to be prepende
 Everything is under `~/Library/Application Support/<bundle id>/`, keyed by bundle id so a Debug run
 never shares with an installed copy.
 
-| What                                 | Where                                                 | Gone on uninstall |
-| ------------------------------------ | ----------------------------------------------------- | ----------------- |
-| The extension                        | `extensions/<name>/`                                  | yes               |
-| `LocalStorage`, `Cache`, preferences | `extension-data/<safe name>.json`                     | yes               |
-| Command subtitle, refresh state      | `extension-commands.json`                             | yes               |
-| Installed store version              | `extension-versions.json`                             | yes               |
-| `environment.supportPath`            | `extension-support/<safe name>/`                      | yes               |
-| Menu-bar activation and snapshot     | `extension-commands.json`                             | yes               |
-| Icon override                        | `UserDefaults` → `extensionAppearances`               | yes               |
-| Command shortcuts                    | `UserDefaults` → `hotkey.extensionCommand.<entry id>` | yes               |
-| Favorites, hidden items              | `UserDefaults` → `favoriteApps`, `hiddenItemKeys`     | yes               |
-| User alias                           | `UserDefaults` → `launcherAliases`                    | yes               |
-| Launch ranking                       | `launcher-ranking.json`                               | yes               |
+| What                                               | Where                                                 | Gone on uninstall |
+| -------------------------------------------------- | ----------------------------------------------------- | ----------------- |
+| The extension                                      | `extensions/<name>/`                                  | yes               |
+| `LocalStorage`, `Cache`, preferences, OAuth tokens | `extension-data/<safe name>.json`                     | yes               |
+| Command subtitle, refresh state                    | `extension-commands.json`                             | yes               |
+| Installed store version                            | `extension-versions.json`                             | yes               |
+| `environment.supportPath`                          | `extension-support/<safe name>/`                      | yes               |
+| Menu-bar activation and snapshot                   | `extension-commands.json`                             | yes               |
+| Icon override                                      | `UserDefaults` → `extensionAppearances`               | yes               |
+| Command shortcuts                                  | `UserDefaults` → `hotkey.extensionCommand.<entry id>` | yes               |
+| Favorites, hidden items                            | `UserDefaults` → `favoriteApps`, `hiddenItemKeys`     | yes               |
+| User alias                                         | `UserDefaults` → `launcherAliases`                    | yes               |
+| Launch ranking                                     | `launcher-ranking.json`                               | yes               |
 
 An `extension-data` file that exists but will not decode is read as empty for the run and never
 flushed over, so an extension's preferences and `LocalStorage` survive a bad write; a HUD says so
