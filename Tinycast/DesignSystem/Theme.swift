@@ -528,11 +528,29 @@ enum Theme {
         /// The command output window's page: a flat surface the log sits directly on.
         static var terminalSurface: Color { ThemeStore.active.palette.color(.terminalSurface) }
     }
+
+    /// The theme's glow; zero radius in Default, so nothing draws.
+    @MainActor
+    enum Effects {
+        static var glowColor: Color { ThemePalette.color(ThemeStore.active.palette.definition.glow.color) }
+
+        static func glowRadius(dark: Bool) -> CGFloat {
+            ThemeStore.active.palette.definition.glow.radius.value(dark: dark)
+        }
+    }
+
+    /// Surface styles as data, so Extensions can draw them with its own code.
+    @MainActor
+    enum Surfaces {
+        static func style(_ role: SurfaceRole) -> SurfaceStyle {
+            ThemeStore.active.palette.definition.surfaces.style(for: role)
+        }
+    }
 }
 
 extension View {
     /// A floating glass control surface: regular, interactive Liquid Glass.
     func frosted(in shape: some Shape) -> some View {
-        glassEffect(.regular.interactive(), in: shape)
+        themedSurface(.control, in: shape, glass: .regular.interactive())
     }
 }
