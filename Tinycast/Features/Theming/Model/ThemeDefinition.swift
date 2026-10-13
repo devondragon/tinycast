@@ -4,6 +4,7 @@ import Foundation
 enum ThemeID: String, CaseIterable, Identifiable, Sendable {
     case standard
     case tron
+    case matrix
 
     var id: String { rawValue }
 
@@ -11,6 +12,7 @@ enum ThemeID: String, CaseIterable, Identifiable, Sendable {
         switch self {
         case .standard: "Default"
         case .tron: "Tron Legacy"
+        case .matrix: "Matrix"
         }
     }
 }

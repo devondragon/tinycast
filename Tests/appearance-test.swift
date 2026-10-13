@@ -145,6 +145,11 @@ struct AppearanceTests {
         for token in [ColorToken.textPrimary, .selection, .panelScrim, .accent] {
             adapts("tron \(token)", ThemeStore.active.palette.color(token))
         }
+        ThemeStore.active.apply(.matrix)
+        for token in [ColorToken.textPrimary, .selection, .panelScrim, .accent] {
+            adapts("matrix \(token)", ThemeStore.active.palette.color(token))
+        }
+        ThemeStore.active.apply(.tron)
         let plain = [NSAppearance(named: .aqua)!, NSAppearance(named: .darkAqua)!]
         let accessible = ["NSAppearanceNameAccessibilityAqua", "NSAppearanceNameAccessibilityDarkAqua"]
             .compactMap { NSAppearance(appearanceNamed: NSAppearance.Name($0), bundle: nil) }
@@ -190,25 +195,29 @@ struct AppearanceTests {
             components(Theme.Colors.ramp(dark: 0.3, light: 0.2), .aqua)
                 == components(Color.black.opacity(0.2), .aqua))
 
-        let tronBackdrop = ThemeCatalog.definition(for: .tron).backdrop
-        var drawn = 0
-        var inked = false
-        for (size, time, isDark) in [
-            (CGSize(width: 720, height: 480), 0.0, true), (CGSize(width: 320, height: 200), 1234.5, false),
-            (CGSize(width: 1, height: 1), 3599.9, true),
-        ] {
-            let canvas = Canvas { context, canvasSize in
-                BackdropRenderer.draw(tronBackdrop, in: &context, size: canvasSize, time: time, dark: isDark)
+        for (name, id, label) in [("tron", ThemeID.tron, "grid"), ("matrix", .matrix, "code rain")] {
+            let backdrop = ThemeCatalog.definition(for: id).backdrop
+            var drawn = 0
+            var inked = false
+            for (size, time, isDark) in [
+                (CGSize(width: 720, height: 480), 0.0, true), (CGSize(width: 320, height: 200), 1234.5, false),
+                (CGSize(width: 1, height: 1), 3599.9, true),
+            ] {
+                let canvas = Canvas { context, canvasSize in
+                    BackdropRenderer.draw(backdrop, in: &context, size: canvasSize, time: time, dark: isDark)
+                } symbols: {
+                    BackdropRenderer.symbols(for: backdrop, dark: isDark)
+                }
+                .frame(width: size.width, height: size.height)
+                guard let image = ImageRenderer(content: canvas).cgImage else { continue }
+                drawn += 1
+                if size.width == 720, let data = image.dataProvider?.data as Data? {
+                    inked = data.contains { $0 != 0 }
+                }
             }
-            .frame(width: size.width, height: size.height)
-            guard let image = ImageRenderer(content: canvas).cgImage else { continue }
-            drawn += 1
-            if size.width == 720, let data = image.dataProvider?.data as Data? {
-                inked = data.contains { $0 != 0 }
-            }
+            check("the \(name) \(label) backdrop renders at several sizes and times", drawn == 3)
+            check("the \(name) \(label) backdrop leaves visible pixels", inked)
         }
-        check("the grid backdrop renders at several sizes and times", drawn == 3)
-        check("the grid backdrop leaves visible pixels", inked)
 
         print("\n\(passes) passed, \(failures) failed")
         exit(failures == 0 ? 0 : 1)

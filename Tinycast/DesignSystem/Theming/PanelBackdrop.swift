@@ -36,13 +36,14 @@ enum BackdropRenderer {
     ) {
         switch backdrop.kind {
         case .grid: GridBackdrop.draw(backdrop, in: &context, size: size, time: time, dark: dark, sunset: false)
-        case .none, .codeRain, .sunsetGrid, .scanlines: break
+        case .codeRain: CodeRainBackdrop.draw(backdrop, in: &context, size: size, time: time)
+        case .none, .sunsetGrid, .scanlines: break
         }
     }
 
     @ViewBuilder
     static func symbols(for backdrop: Backdrop, dark: Bool) -> some View {
-        EmptyView()
+        if backdrop.kind == .codeRain { CodeRainBackdrop.symbols(for: backdrop, dark: dark) }
     }
 
     /// A fixed integer hash, so every column and trace is a pure function of its index.

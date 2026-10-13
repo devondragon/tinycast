@@ -60,7 +60,7 @@ copy, per the extension rule in `AGENTS.md`.
 `PanelBackdrop` wraps a `Canvas` in a `TimelineView` at 30 fps and draws through `BackdropRenderer`,
 with one renderer per `BackdropKind` in `DesignSystem/Theming/Backdrops/`. A renderer is stateless:
 every position is a pure function of time and a fixed integer hash, nothing is stored between frames,
-and glyphs are resolved once as `Canvas` symbols. Renderers are `nonisolated` and take plain
+and glyphs are resolved once as `Canvas` symbols. Renderers are plain enums that carry no actor isolation and take plain
 per-appearance colors from `ThemePalette.nsColor`.
 
 The timeline is paused when the window is hidden or occluded (`WindowOcclusionReader`), under
@@ -76,10 +76,16 @@ steps. `ImageRenderer` also rasterizes and reads back each frame (an empty canva
 so the proxy is an upper bound on the draw cost. Proxy CPU is mean ms x 30 / 1000. The live columns come
 from `Scripts/measure-backdrop.sh` against the running Debug app and are pending.
 
+`ImageRenderer` rebuilds the view every frame, so a backdrop with `Canvas` symbols pays glyph resolution
+each frame here, while the live `Canvas` resolves them once. The harness prints that cost as a separate
+"symbols" row; the code rain row below lists the proxy with and without it.
+
 | Backdrop | Proxy ms/frame (mean, p95) | Proxy CPU at 30 fps | Live CPU open | Live CPU hidden | RSS delta | Machine | Date |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Tron grid, dark | 0.52, 0.58 | 1.6% | pending | pending | pending | Apple M4 Max | 2026-10-12 |
 | Tron grid, light | 0.48, 0.54 | 1.4% | pending | pending | pending | Apple M4 Max | 2026-10-12 |
+| Code rain, dark (pitch 16) | 8.20, 8.72 (1.25 net of 6.95 symbols) | 24.6% (3.8% net) | pending | pending | pending | Apple M4 Max, load average 12 | 2026-10-12 |
+| Code rain, light (pitch 16) | 8.14, 8.76 (1.19 net of 6.95 symbols) | 24.4% (3.6% net) | pending | pending | pending | Apple M4 Max, load average 12 | 2026-10-12 |
 
 ## Fonts
 
@@ -96,7 +102,7 @@ bundled family is not installed, so a missing font never produces a blank label.
 2. Add `ThemeCatalog+Name.swift` with the `ThemeDefinition`, and return it from
    `ThemeCatalog.definition(for:)`.
 3. If the backdrop kind is new, add a renderer under `DesignSystem/Theming/Backdrops/`: stateless,
-   `nonisolated`, plain per-appearance colors via `ThemePalette.nsColor`.
+   a plain enum with no actor isolation, plain per-appearance colors via `ThemePalette.nsColor`.
 4. Add the value to the `appearance.visualTheme` row in [settings-file.md](settings-file.md).
 5. Run `theme-test` (contrast against each surface) and `backdrop-performance` (draw cost), and fill
    the live columns of the budget table with `Scripts/measure-backdrop.sh`.
