@@ -69,23 +69,31 @@ The Settings picker draws the same still frame for each card.
 
 ## Backdrop budget
 
-While visible a backdrop must stay under 5% of one core and under 8 MB of extra resident memory, and
-use no CPU while hidden. The proxy columns come from `Tests/backdrop-performance.swift`, which renders
-`BackdropRenderer.draw` through `ImageRenderer` at the 750x475 palette size for 300 frames at 1/30 s
-steps. `ImageRenderer` also rasterizes and reads back each frame (an empty canvas costs about 0.45 ms),
-so the proxy is an upper bound on the draw cost. Proxy CPU is mean ms x 30 / 1000. The live columns come
-from `Scripts/measure-backdrop.sh` against the running Debug app and are pending.
+A backdrop runs only while the palette is showing. The hard requirement is zero CPU while hidden
+(the timeline pauses on hide and occlusion). While visible the target is roughly 5% to 8% of one core
+and under 8 MB of extra resident memory; each backdrop sets its own `frameRate` (Tron 30, Matrix 24).
 
-`ImageRenderer` rebuilds the view every frame, so a backdrop with `Canvas` symbols pays glyph resolution
-each frame here, while the live `Canvas` resolves them once. The harness prints that cost as a separate
-"symbols" row; the code rain row below lists the proxy with and without it.
+Three kinds of figure appear below. The proxy columns come from `Tests/backdrop-performance.swift`,
+which renders `BackdropRenderer.draw` through `ImageRenderer` at the 750x475 palette size for 300
+frames. `ImageRenderer` rasterizes and reads back each frame and rebuilds the view every frame, so it
+re-resolves `Canvas` symbols each time (the "symbols" row). That makes the proxy an upper bound and
+not representative for symbol-heavy backdrops such as code rain. The hosted-window probe puts
+`PanelBackdrop` in an `NSHostingView` window and reads process CPU over 8 seconds; it is noisy (the
+machine ran at load average 10 to 12) and each figure is a single run. The `Live CPU open` and
+`Live CPU hidden` columns come from `Scripts/measure-backdrop.sh` against the running Debug app and
+are pending.
 
-| Backdrop | Proxy ms/frame (mean, p95) | Proxy CPU at 30 fps | Live CPU open | Live CPU hidden | RSS delta | Machine | Date |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Tron grid, dark | 0.52, 0.58 | 1.6% | pending | pending | pending | Apple M4 Max | 2026-10-12 |
-| Tron grid, light | 0.48, 0.54 | 1.4% | pending | pending | pending | Apple M4 Max | 2026-10-12 |
-| Code rain, dark (pitch 16) | 8.20, 8.72 (1.25 net of 6.95 symbols) | 24.6% (3.8% net) | pending | pending | pending | Apple M4 Max, load average 12 | 2026-10-12 |
-| Code rain, light (pitch 16) | 8.14, 8.76 (1.19 net of 6.95 symbols) | 24.4% (3.6% net) | pending | pending | pending | Apple M4 Max, load average 12 | 2026-10-12 |
+| Backdrop | Proxy ms/frame (mean, p95) | Proxy CPU at 30 fps | Hosted-window probe | Live CPU open | Live CPU hidden | RSS delta | Machine | Date |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Tron grid, dark | 0.60, 0.68 | 1.8% | 0.7% to 6.1% over 4 runs | pending | pending | pending | Apple M4 Max | 2026-10-12 |
+| Tron grid, light | 0.59, 0.70 | 1.8% | 1.7% to 5.7% over 3 runs | pending | pending | pending | Apple M4 Max | 2026-10-12 |
+| Code rain, dark (24 fps) | 6.59, 7.19 (5.35 is symbol resolution) | 19.8%, not representative | 2.5% to 6.4% over 4 runs, at 20 fps and fewer glyphs | pending | pending | pending | Apple M4 Max | 2026-10-12 |
+| Code rain, light (24 fps) | 6.44, 7.17 | 19.3%, not representative | 6.5% in 1 run (a second run read 0%, the timeline did not tick), at 20 fps and fewer glyphs | pending | pending | pending | Apple M4 Max | 2026-10-12 |
+
+The code rain probe figures were taken at 20 fps with about half the columns raining and trails of 5 to
+12 glyphs. The shipped setting is 24 fps with two thirds of the columns and trails of 6 to 15, which
+draws more per frame and has not been probed; measure it with `Scripts/measure-backdrop.sh`. A rough
+glyph count: 46 columns, two thirds raining, about 10 glyphs each, around 300 draws per frame.
 
 ## Fonts
 

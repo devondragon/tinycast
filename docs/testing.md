@@ -312,11 +312,12 @@ swiftc -O -swift-version 6 Tinycast/Features/Emoji/Model/{EmojiCatalog,EmojiData
 /tmp/emoji-search-performance --languages fr,ja
 ```
 
-`Tests/backdrop-performance.swift` renders the Tron grid and Matrix code rain offscreen at palette size for 300 frames and
-prints mean and p95 milliseconds and the implied CPU at 30 fps. Build it with `-O` and the sources in its
-`run -O index backdrop-performance` entry. `ImageRenderer` adds rasterization, so the figure is an upper
-bound; `Scripts/measure-backdrop.sh` samples the running Debug app for the live numbers (see
-[theming.md](features/theming.md#backdrop-budget)).
+`Tests/backdrop-performance.swift` renders the Tron grid and the Matrix code rain offscreen at palette
+size for 300 frames and prints mean and p95 milliseconds and the implied CPU at 30 fps. Build it with
+`-O` and the sources in its `run -O index backdrop-performance` entry. `ImageRenderer` adds rasterization
+and re-resolves `Canvas` symbols each frame, so the figure is an upper bound and misleading for
+symbol-heavy backdrops; `Scripts/measure-backdrop.sh` samples the running Debug app for the live numbers
+(see [theming.md](features/theming.md#backdrop-budget)).
 
 `Tests/notes-editor-performance.swift` installs a 100,000-character note in a real rendered editor and
 prints, as JSON, the median over 30 runs of the install with its full restyle, one typed character at

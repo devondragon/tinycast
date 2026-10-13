@@ -39,7 +39,7 @@ extension ThemeCatalog {
             kind: .codeRain, primary: matrixGreen,
             secondary: RGBAPair(dark: RGBA(hex: 0xB8FFC4), light: RGBA(hex: 0x0A3D12)),
             tertiary: RGBAPair(dark: RGBA(hex: 0x00802B), light: RGBA(hex: 0x6FBF7F)),
-            intensity: .init(dark: 0.45, light: 0.18), speed: 1, lightIsStatic: false),
+            intensity: .init(dark: 0.45, light: 0.18), speed: 1, frameRate: 24, lightIsStatic: false),
         glow: Glow(
             color: RGBAPair(dark: RGBA(hex: 0x00FF41, alpha: 0.7), light: RGBA(hex: 0x00802B, alpha: 0.4)),
             radius: .init(dark: 6, light: 2)),

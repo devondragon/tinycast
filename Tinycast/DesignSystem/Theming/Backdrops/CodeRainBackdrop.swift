@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Falling columns of half-width katakana and digits; each column's pace and offset is a hash.
+/// Falling columns of half-width katakana and digits; a hash picks the two thirds of columns that rain, and their pace.
 enum CodeRainBackdrop {
     static let glyphs = Array("ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ0123456789").map(String.init)
     private static let pitch: CGFloat = 16
@@ -9,9 +9,9 @@ enum CodeRainBackdrop {
 
     static func draw(_ backdrop: Backdrop, in context: inout GraphicsContext, size: CGSize, time: Double) {
         let columns = Int(size.width / pitch)
-        for column in 0..<columns {
+        for column in 0..<columns where BackdropRenderer.mix(column * 31) % 3 != 0 {
             let speed = 40 + Double(BackdropRenderer.mix(column) % 60)
-            let length = 8 + BackdropRenderer.mix(column * 7) % 16
+            let length = 6 + BackdropRenderer.mix(column * 7) % 10
             let span = size.height + CGFloat(length) * pitch
             let head = (time * speed + BackdropRenderer.unit(column * 13) * span)
                 .truncatingRemainder(dividingBy: span)
@@ -30,8 +30,8 @@ enum CodeRainBackdrop {
 
     @ViewBuilder
     static func symbols(for backdrop: Backdrop, dark: Bool) -> some View {
-        let body = color(backdrop.primary, dark: dark)
-        let head = color(backdrop.secondary, dark: dark)
+        let body = BackdropRenderer.color(backdrop.primary, dark: dark)
+        let head = BackdropRenderer.color(backdrop.secondary, dark: dark)
         ForEach(Array(glyphs.indices) + glyphs.indices.map { $0 + headTagOffset }, id: \.self) { tag in
             let isHead = tag >= headTagOffset
             Text(glyphs[tag % headTagOffset])
@@ -39,9 +39,5 @@ enum CodeRainBackdrop {
                 .foregroundStyle(isHead ? head : body)
                 .tag(tag)
         }
-    }
-
-    private static func color(_ pair: RGBAPair, dark: Bool) -> Color {
-        Color(nsColor: ThemePalette.nsColor(dark ? pair.dark : pair.light))
     }
 }

@@ -1,9 +1,7 @@
 import AppKit
 import SwiftUI
 
-/// Renders each backdrop offscreen at palette size; ImageRenderer adds rasterization, so it is an upper bound.
-/// ImageRenderer also rebuilds the view each frame, so the "symbols" row (glyph resolution a live Canvas
-/// does once) is paid every frame here; subtract it for the draw cost.
+// Offscreen ImageRenderer proxy: an upper bound, and it re-resolves Canvas symbols every frame.
 @main
 @MainActor
 enum BackdropPerformance {

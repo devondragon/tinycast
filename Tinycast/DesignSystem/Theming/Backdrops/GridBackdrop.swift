@@ -13,8 +13,8 @@ enum GridBackdrop {
         let horizon = size.height * (sunset ? 0.52 : 0.38)
         let floor = size.height - horizon
         let vanishing = CGPoint(x: size.width / 2, y: horizon)
-        let line = color(backdrop.primary, dark: dark)
-        let accent = color(backdrop.secondary, dark: dark)
+        let line = BackdropRenderer.color(backdrop.primary, dark: dark)
+        let accent = BackdropRenderer.color(backdrop.secondary, dark: dark)
 
         var horizontals = Path()
         let phase = (time * 0.35).truncatingRemainder(dividingBy: 1)
@@ -49,10 +49,6 @@ enum GridBackdrop {
             context.stroke(path, with: .color(color.opacity(0.35)), lineWidth: 6)
             context.stroke(path, with: .color(color), lineWidth: 2)
         }
-    }
-
-    private static func color(_ pair: RGBAPair, dark: Bool) -> Color {
-        Color(nsColor: ThemePalette.nsColor(dark ? pair.dark : pair.light))
     }
 
     private static func point(from start: CGPoint, to end: CGPoint, at t: Double) -> CGPoint {

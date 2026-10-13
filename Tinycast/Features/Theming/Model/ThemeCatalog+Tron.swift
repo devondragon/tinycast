@@ -37,7 +37,7 @@ extension ThemeCatalog {
             kind: .grid, primary: tronCyan,
             secondary: RGBAPair(dark: RGBA(hex: 0xFF9A3C), light: RGBA(hex: 0xC2410C)),
             tertiary: tronCyan,
-            intensity: .init(dark: 0.55, light: 0.35), speed: 1, lightIsStatic: false),
+            intensity: .init(dark: 0.55, light: 0.35), speed: 1, frameRate: 30, lightIsStatic: false),
         glow: Glow(
             color: RGBAPair(dark: RGBA(hex: 0x6FE3FF, alpha: 0.8), light: RGBA(hex: 0x0086B3, alpha: 0.5)),
             radius: .init(dark: 8, light: 3)),
