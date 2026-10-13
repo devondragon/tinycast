@@ -114,6 +114,7 @@ struct HyperKeyDiagnosticsSection: View {
         return sentences.joined(separator: " ")
     }
 
+    @MainActor
     private enum DiagnosticTone {
         case valid, invalid, warning, neutral
 

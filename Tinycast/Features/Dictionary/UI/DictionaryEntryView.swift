@@ -115,6 +115,7 @@ private struct DictionaryBlockView: View {
 
 extension [DictionaryEntry.Run] {
     /// Styles by intent rather than by font, so each run keeps the size its block sets.
+    @MainActor
     fileprivate func attributed(base: Color = Theme.Colors.textPrimary) -> AttributedString {
         reduce(into: AttributedString()) { result, run in
             var piece = AttributedString(run.text)

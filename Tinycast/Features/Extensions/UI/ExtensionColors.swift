@@ -1,6 +1,7 @@
 import SwiftUI
 
 /// Here, not in `Theme`: a third-party screen may never force a change on a launcher one.
+@MainActor
 enum ExtensionColors {
     /// The Settings card's own surface, so a form field is the same material as the app's.
     static let fieldFill = Theme.Colors.ramp(dark: 0.05, light: 0.04)

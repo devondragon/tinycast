@@ -1,5 +1,6 @@
 import SwiftUI
 
+@MainActor
 extension DialogTone {
     /// Tints the subject glyph only; buttons take their color from `DialogAction.Role`.
     var tint: Color {

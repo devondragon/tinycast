@@ -424,10 +424,11 @@ enum Theme {
         static let composerStop = Font.system(size: 10, weight: .bold)
     }
 
+    @MainActor
     enum Colors {
         /// Resolves against the window's `effectiveAppearance`, so a token repaints on its own.
         static func adaptive(dark: NSColor, light: NSColor) -> Color {
-            Color(nsColor: NSColor(name: nil) { $0.isDark ? dark : light })
+            Color(nsColor: NSColor(name: nil) { @Sendable in $0.isDark ? dark : light })
         }
 
         /// The alpha ramp, inverted: white ink over the dark surface, black ink over the light one.
@@ -436,111 +437,96 @@ enum Theme {
         }
 
         /// The ramp's inverse: the scrim darkens the dark surface and lightens the light one.
-        static let panelScrim = adaptive(dark: .srgbInk(0, alpha: 0.40), light: .srgbInk(1, alpha: 0.55))
+        static var panelScrim: Color { ThemeStore.active.palette.color(.panelScrim) }
         /// Modal separation inside Tinycast: the launcher recedes while its dialog is in front.
-        static let dialogDimming = adaptive(
-            dark: .srgbInk(0, alpha: 0.34), light: .srgbInk(0, alpha: 0.34))
+        static var dialogDimming: Color { ThemeStore.active.palette.color(.dialogDimming) }
         /// Find's marks, the Mac's own yellow: every match faint, the current one solid.
-        static let findMatch = adaptive(
-            dark: NSColor.systemYellow.withAlphaComponent(0.32),
-            light: NSColor.systemYellow.withAlphaComponent(0.4))
-        static let findCurrent = adaptive(
-            dark: NSColor.systemYellow.withAlphaComponent(0.9),
-            light: NSColor.systemYellow.withAlphaComponent(0.95))
+        static var findMatch: Color { ThemeStore.active.palette.color(.findMatch) }
+        static var findCurrent: Color { ThemeStore.active.palette.color(.findCurrent) }
         /// Black on the solid mark in both appearances, as a highlighter's ink stays readable.
-        static let findCurrentInk = adaptive(
-            dark: .srgbInk(0, alpha: 1), light: .srgbInk(0, alpha: 1))
-        static let tooltipShadow = adaptive(
-            dark: .srgbInk(0, alpha: 0.18), light: .srgbInk(0, alpha: 0.18))
+        static var findCurrentInk: Color { ThemeStore.active.palette.color(.findCurrentInk) }
+        static var tooltipShadow: Color { ThemeStore.active.palette.color(.tooltipShadow) }
 
         /// Selection fill, shared by every list so they look identical.
-        static let selection = ramp(dark: 0.10, light: 0.09)
+        static var selection: Color { ThemeStore.active.palette.color(.selection) }
         /// Mouse hover: a fainter layer, visually distinct from selection.
-        static let rowHover = ramp(dark: 0.05, light: 0.045)
+        static var rowHover: Color { ThemeStore.active.palette.color(.rowHover) }
         /// Emoji grid chrome: a quiet tile at rest, with two legible rings on interaction.
-        static let emojiCell = ramp(dark: 0.045, light: 0.04)
-        static let emojiHoverBorder = ramp(dark: 0.42, light: 0.34)
-        static let emojiSelectionBorder = ramp(dark: 0.92, light: 0.72)
-        static let emojiInnerBorder = adaptive(
-            dark: .srgbInk(0, alpha: 0.72), light: .srgbInk(1, alpha: 0.72))
-        static let menuHover = ramp(dark: 0.10, light: 0.09)
-        static let separator = ramp(dark: 0.10, light: 0.12)
+        static var emojiCell: Color { ThemeStore.active.palette.color(.emojiCell) }
+        static var emojiHoverBorder: Color { ThemeStore.active.palette.color(.emojiHoverBorder) }
+        static var emojiSelectionBorder: Color { ThemeStore.active.palette.color(.emojiSelectionBorder) }
+        static var emojiInnerBorder: Color { ThemeStore.active.palette.color(.emojiInnerBorder) }
+        static var menuHover: Color { ThemeStore.active.palette.color(.menuHover) }
+        static var separator: Color { ThemeStore.active.palette.color(.separator) }
         /// Small control surfaces: kbd chips, glyph tiles.
-        static let controlSurface = ramp(dark: 0.10, light: 0.08)
+        static var controlSurface: Color { ThemeStore.active.palette.color(.controlSurface) }
         /// A pointer over a control should lift it above its resting surface.
-        static let controlHover = ramp(dark: 0.16, light: 0.14)
+        static var controlHover: Color { ThemeStore.active.palette.color(.controlHover) }
         /// A held control is stronger than hover, so mouse-down always reads.
-        static let controlPressed = ramp(dark: 0.24, light: 0.20)
+        static var controlPressed: Color { ThemeStore.active.palette.color(.controlPressed) }
         /// Control borders: outlined kbd chips.
-        static let border = ramp(dark: 0.20, light: 0.18)
+        static var border: Color { ThemeStore.active.palette.color(.border) }
         /// Alpha 1, so a call site can dim it with `.opacity` and land on the value it replaced.
-        static let textPrimary = ramp(dark: 1.0, light: 1.0)
-        static let textSecondary = ramp(dark: 0.60, light: 0.60)
-        static let textTertiary = ramp(dark: 0.40, light: 0.42)
-        static let menuSymbol = ramp(dark: 0.70, light: 0.70)
-        static let noteText = ramp(dark: 0.90, light: 0.85)
-        static let iconPlaceholder = ramp(dark: 0.06, light: 0.06)
+        static var textPrimary: Color { ThemeStore.active.palette.color(.textPrimary) }
+        static var textSecondary: Color { ThemeStore.active.palette.color(.textSecondary) }
+        static var textTertiary: Color { ThemeStore.active.palette.color(.textTertiary) }
+        static var menuSymbol: Color { ThemeStore.active.palette.color(.menuSymbol) }
+        static var noteText: Color { ThemeStore.active.palette.color(.noteText) }
+        static var iconPlaceholder: Color { ThemeStore.active.palette.color(.iconPlaceholder) }
         /// The faint wash behind the Onboarding header.
-        static let sheen = ramp(dark: 0.04, light: 0.04)
+        static var sheen: Color { ThemeStore.active.palette.color(.sheen) }
         /// The Settings card: a faint surface whose border doubles as the row divider.
-        static let cardFill = ramp(dark: 0.05, light: 0.04)
-        static let cardStroke = ramp(dark: 0.10, light: 0.10)
+        static var cardFill: Color { ThemeStore.active.palette.color(.cardFill) }
+        static var cardStroke: Color { ThemeStore.active.palette.color(.cardStroke) }
         /// White in both: the frost brightens glass, and light glass needs more to read at all.
         /// A window on the preview's plate. White in both, since the plate is always dark.
-        static let layoutPreviewWindow = adaptive(
-            dark: .srgbInk(1, alpha: 0.22), light: .srgbInk(1, alpha: 0.28))
+        static var layoutPreviewWindow: Color { ThemeStore.active.palette.color(.layoutPreviewWindow) }
         /// The selected one, lifted enough to read as chosen before the accent stroke is seen.
-        static let layoutPreviewWindowSelected = adaptive(
-            dark: .srgbInk(1, alpha: 0.38), light: .srgbInk(1, alpha: 0.44))
-        /// The preview's plate: a display is dark in both appearances, so `adaptive`, not `ramp`.
-        static let layoutPreviewGround = adaptive(
-            dark: .srgbInk(0, alpha: 0.55), light: .srgbInk(0, alpha: 0.50))
+        static var layoutPreviewWindowSelected: Color { ThemeStore.active.palette.color(.layoutPreviewWindowSelected) }
+        /// The preview's plate: a display is dark in both appearances.
+        static var layoutPreviewGround: Color { ThemeStore.active.palette.color(.layoutPreviewGround) }
         /// The blurred desk behind a room preview, darkened so only the new layout reads.
-        static let roomPreviewDim = adaptive(
-            dark: .srgbInk(0, alpha: 0.18), light: .srgbInk(0, alpha: 0.18))
+        static var roomPreviewDim: Color { ThemeStore.active.palette.color(.roomPreviewDim) }
         /// A room card is a solid window in both appearances, so the desk never shows through.
-        static let roomCardFill = adaptive(
-            dark: .srgbInk(0.16, alpha: 0.94), light: .srgbInk(0.98, alpha: 0.94))
-        static let roomCardStroke = Color.accentColor
-        static let roomCardShadow = adaptive(
-            dark: .srgbInk(0, alpha: 0.25), light: .srgbInk(0, alpha: 0.25))
-        static let roomCardDot = ramp(dark: 0.25, light: 0.25)
+        static var roomCardFill: Color { ThemeStore.active.palette.color(.roomCardFill) }
+        static var roomCardStroke: Color { ThemeStore.active.palette.color(.roomCardStroke) }
+        static var roomCardShadow: Color { ThemeStore.active.palette.color(.roomCardShadow) }
+        static var roomCardDot: Color { ThemeStore.active.palette.color(.roomCardDot) }
         /// The pill behind the header of the section a Settings search jumped to.
-        static let searchFlash = Color.accentColor.opacity(0.35)
+        static var searchFlash: Color { ThemeStore.active.palette.color(.searchFlash) }
         /// The two squares of a checkerboard, behind a colour with alpha to show.
-        static let checkerLight = Color(nsColor: .srgbInk(1, alpha: 0.22))
-        static let checkerDark = Color(nsColor: .srgbInk(0, alpha: 0.22))
+        static var checkerLight: Color { ThemeStore.active.palette.color(.checkerLight) }
+        static var checkerDark: Color { ThemeStore.active.palette.color(.checkerDark) }
         /// The violet of the app mark, used only to tint the About support callout.
-        static let brand = Color(red: 0.525, green: 0.231, blue: 1.0)
+        static var brand: Color { ThemeStore.active.palette.color(.brand) }
         /// The palette's drop guides while dragging, and once a release would snap it home.
-        static let dropGuide = ramp(dark: 0.35, light: 0.35)
-        static let dropGuideArmed = Color.blue
+        static var dropGuide: Color { ThemeStore.active.palette.color(.dropGuide) }
+        static var dropGuideArmed: Color { ThemeStore.active.palette.color(.dropGuideArmed) }
         /// A dialog's standard default action; destructive defaults keep their semantic red.
-        static let primaryAction = Color.blue
+        static var primaryAction: Color { ThemeStore.active.palette.color(.primaryAction) }
         /// Focus rings, selected outlines and accent glyphs: the system accent until a theme sets one.
-        static let accent = Color.accentColor
+        static var accent: Color { ThemeStore.active.palette.color(.accent) }
         /// Ink on a solid accent or status fill.
-        static let onAccent = Color.white
+        static var onAccent: Color { ThemeStore.active.palette.color(.onAccent) }
         /// Link text in the AppKit text views.
-        static let link = Color(nsColor: .linkColor)
+        static var link: Color { ThemeStore.active.palette.color(.link) }
         /// Destructive tint: a destructive label, and a `.danger` dialog's glyph.
-        static let destructive = Color.red
+        static var destructive: Color { ThemeStore.active.palette.color(.destructive) }
         /// Success tint: the leading glyph of a `.success` dialog.
-        static let success = Color.green
+        static var success: Color { ThemeStore.active.palette.color(.success) }
         /// Caution tint, short of destructive: a chat context nearly full.
-        static let warning = Color.orange
+        static var warning: Color { ThemeStore.active.palette.color(.warning) }
         /// Send's disc and its arrow: the strongest mark on the composer, inverted against the page.
-        static let composerSend = ramp(dark: 0.92, light: 0.92)
-        static let composerSendInk = adaptive(dark: .srgbInk(0, alpha: 0.85), light: .srgbInk(1, alpha: 1))
+        static var composerSend: Color { ThemeStore.active.palette.color(.composerSend) }
+        static var composerSendInk: Color { ThemeStore.active.palette.color(.composerSendInk) }
         /// The window's own page, for a card that must hide the transcript it floats over.
-        static let windowSurface = Color(nsColor: .windowBackgroundColor)
+        static var windowSurface: Color { ThemeStore.active.palette.color(.windowSurface) }
         /// Where a dropped file will land: the chat window's dashed outline.
-        static let dropTarget = Color.accentColor
+        static var dropTarget: Color { ThemeStore.active.palette.color(.dropTarget) }
         /// Progress tint: the message pill's spinner while the work behind it is still running.
-        static let progress = Color.blue
+        static var progress: Color { ThemeStore.active.palette.color(.progress) }
         /// The command output window's page: a flat surface the log sits directly on.
-        static let terminalSurface = adaptive(
-            dark: .srgbInk(0.07, alpha: 1), light: .srgbInk(0.99, alpha: 1))
+        static var terminalSurface: Color { ThemeStore.active.palette.color(.terminalSurface) }
     }
 }
 

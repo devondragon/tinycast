@@ -107,6 +107,7 @@ private struct AttendeeRow: View {
     }
 }
 
+@MainActor
 private extension MeetingDetails.Attendee.Response {
     var symbol: String {
         switch self {
