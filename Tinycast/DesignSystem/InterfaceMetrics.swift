@@ -137,20 +137,23 @@ struct InterfaceMetrics: Equatable, Sendable {
     }
 
     /// `NSFont` is the only public source of a text style's size and face.
-    struct Typography: Sendable {
+    @MainActor
+    struct Typography {
         let scale: CGFloat
 
         var searchFieldSize: CGFloat { scaledPoints(Theme.Typography.searchFieldSize, scale) }
         var searchField: Font {
             scale == 1
                 ? Theme.Typography.searchField
-                : .system(size: searchFieldSize, weight: .regular)
+                : ThemeFonts.font(
+                    .display, base: .system(size: searchFieldSize, weight: .regular), style: .title2,
+                    fixedSize: searchFieldSize)
         }
-        /// Isolated because `Theme`'s twin is, not because resolving a font needs main.
-        @MainActor var searchFieldNSFont: NSFont {
+        var searchFieldNSFont: NSFont {
             scale == 1
                 ? Theme.Typography.searchFieldNSFont
-                : NSFont.systemFont(ofSize: searchFieldSize, weight: .regular)
+                : ThemeFonts.nsFont(
+                    .display, base: .systemFont(ofSize: searchFieldSize, weight: .regular))
         }
         var headerIcon: Font {
             scale == 1
@@ -160,36 +163,53 @@ struct InterfaceMetrics: Equatable, Sendable {
 
         var rowTitle: Font { font(Theme.Typography.rowTitle, .body) }
         var rowTrailing: Font { font(Theme.Typography.rowTrailing, .callout) }
-        var sectionHeader: Font { font(Theme.Typography.sectionHeader, .subheadline, .medium) }
-        var panelTitle: Font { font(Theme.Typography.panelTitle, .headline) }
-        var calcResult: Font { font(Theme.Typography.calcResult, .title1) }
+        var sectionHeader: Font {
+            font(Theme.Typography.sectionHeader, .subheadline, .medium, role: .display)
+        }
+        var panelTitle: Font { font(Theme.Typography.panelTitle, .headline, role: .display) }
+        var calcResult: Font { font(Theme.Typography.calcResult, .title1, role: .display) }
         var keyCap: Font { font(Theme.Typography.keyCap, .caption1) }
         var compactKeyCap: Font { font(Theme.Typography.compactKeyCap, .caption2) }
         var heroKeyCap: Font { font(Theme.Typography.heroKeyCap, .body) }
-        var markdownHeading1: Font { font(Theme.Typography.markdownHeading1, .title2, .semibold) }
-        var markdownHeading2: Font { font(Theme.Typography.markdownHeading2, .title3, .semibold) }
-        var markdownHeading3: Font { font(Theme.Typography.markdownHeading3, .headline) }
+        var markdownHeading1: Font {
+            font(Theme.Typography.markdownHeading1, .title2, .semibold, role: .display)
+        }
+        var markdownHeading2: Font {
+            font(Theme.Typography.markdownHeading2, .title3, .semibold, role: .display)
+        }
+        var markdownHeading3: Font { font(Theme.Typography.markdownHeading3, .headline, role: .display) }
         var code: Font {
             scale == 1
                 ? Theme.Typography.code
-                : .system(size: nsFont(.callout).pointSize, design: .monospaced)
+                : ThemeFonts.font(
+                    .mono, base: .system(size: nsFont(.callout).pointSize, design: .monospaced),
+                    style: .callout, scale: scale)
         }
-        var inlineCode: Font { font(Theme.Typography.inlineCode, .body).monospaced() }
+        var inlineCode: Font {
+            scale == 1
+                ? Theme.Typography.inlineCode
+                : ThemeFonts.font(
+                    .mono, base: Font(nsFont(.body)).monospaced(), style: .body, scale: scale)
+        }
         var bar: Font { font(Theme.Typography.bar, .callout, .medium) }
         var chip: Font { font(Theme.Typography.chip, .callout) }
-        @MainActor var chipNSFont: NSFont { scale == 1 ? Theme.Typography.chipNSFont : nsFont(.callout) }
+        var chipNSFont: NSFont {
+            scale == 1 ? Theme.Typography.chipNSFont : ThemeFonts.nsFont(.body, base: nsFont(.callout))
+        }
         var caption: Font { font(Theme.Typography.caption, .caption1) }
         var detail: Font { font(Theme.Typography.detail, .callout) }
         var microLabel: Font { font(Theme.Typography.microLabel, .caption2, .semibold) }
         var codeSmall: Font {
             scale == 1
                 ? Theme.Typography.codeSmall
-                : .system(size: nsFont(.subheadline).pointSize, design: .monospaced)
+                : ThemeFonts.font(
+                    .mono, base: .system(size: nsFont(.subheadline).pointSize, design: .monospaced),
+                    style: .subheadline, scale: scale)
         }
-        var disclosure: Font { font(Theme.Typography.disclosure, .caption1, .semibold) }
+        var disclosure: Font { font(Theme.Typography.disclosure, .caption1, .semibold, role: nil) }
         var menuRow: Font { font(Theme.Typography.menuRow, .body) }
         var menuShortcut: Font { font(Theme.Typography.menuShortcut, .callout) }
-        var menuIcon: Font { font(Theme.Typography.menuIcon, .body) }
+        var menuIcon: Font { font(Theme.Typography.menuIcon, .body, role: nil) }
 
         /// The AppKit twin of a text style, for text an `NSTextView` draws beside SwiftUI's own.
         func textNSFont(
@@ -203,13 +223,14 @@ struct InterfaceMetrics: Equatable, Sendable {
 
         /// Composed like `Theme`'s own: the style carries the face, an explicit weight overrides it.
         private func font(
-            _ base: Font, _ style: NSFont.TextStyle, _ weight: Font.Weight? = nil
-        )
-            -> Font
-        {
+            _ base: Font, _ style: NSFont.TextStyle, _ weight: Font.Weight? = nil, role: FontRole? = .body
+        ) -> Font {
             guard scale != 1 else { return base }
             let scaled = Font(nsFont(style))
-            return weight.map(scaled.weight) ?? scaled
+            guard let role else { return weight.map(scaled.weight) ?? scaled }
+            return ThemeFonts.font(
+                role, base: weight.map(scaled.weight) ?? scaled, style: style,
+                weight: weight ?? (style == .headline ? .bold : nil), scale: scale)
         }
 
         /// Its own descriptor, so `.headline` stays Bold and `.caption2` Medium rather than lightening.

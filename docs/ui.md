@@ -204,6 +204,14 @@ System text styles only — **no fixed point sizes in views**. Two named excepti
 `rowTitle` (`.body`), `sectionHeader` (`.subheadline.medium`),
 `rowTrailing`/`bar`/`menuRow`/`keyCap` etc. as named.
 
+Each text token is a computed `static var` that resolves through `ThemeFonts` in the active theme's
+face for its role: display for the search field, titles, section headers and headings, mono for code,
+body for the rest. A face equal to Default's returns the system font untouched, so Default renders
+exactly as before. Symbol fonts (`headerIcon`, `menuIcon`, `disclosure`, the composer glyphs) stay
+system in every theme. `Theme.Typography` and `InterfaceMetrics.Typography` are `@MainActor`, since
+both read `ThemeStore`. The search field's bundled face is pinned to `searchFieldSize` points so the
+`NSFont` twin that measures it always agrees.
+
 `InterfaceMetrics.Typography` scales a style by rebuilding its `NSFont` **from that font's own
 descriptor** at the scaled point size. Never reconstruct one as `.system(size:weight:)` from a
 hand-written weight table: on macOS `.headline` is Bold and `.caption2` is Medium, so a table

@@ -24,6 +24,7 @@ struct InterfaceSizeTests {
     static func main() {
         theDefaultIsThemeVerbatim()
         fontsKeepTheirFace()
+        defaultFacesLeaveFontsAsTheyWere()
         everySizeRounds()
         sizesGrow()
         derivationsHold()
@@ -219,6 +220,34 @@ struct InterfaceSizeTests {
                 metrics.typography.searchFieldSize
                     == (Theme.Typography.searchFieldSize * size.scale).rounded(),
                 "the search field's stated size scales at \(size.rawValue)")
+        }
+    }
+
+    /// The Default theme's faces must resolve every token to the font it named before theming.
+    static func defaultFacesLeaveFontsAsTheyWere() {
+        let t = Theme.Typography.self
+        expect(t.rowTitle == Font.body, "Default rowTitle is .body")
+        expect(
+            t.searchField == Font.system(size: 20, weight: .regular), "Default searchField is SF 20")
+        expect(t.sectionHeader == Font.subheadline.weight(.medium), "Default sectionHeader")
+        expect(t.panelTitle == Font.headline, "Default panelTitle")
+        expect(t.calcResult == Font.title, "Default calcResult")
+        expect(t.markdownHeading1 == Font.title2.weight(.semibold), "Default markdownHeading1")
+        expect(t.code == Font.system(.callout, design: .monospaced), "Default code")
+        expect(t.inlineCode == Font.body.monospaced(), "Default inlineCode")
+        expect(t.codeSmall == Font.system(.subheadline, design: .monospaced), "Default codeSmall")
+        expect(t.microLabel == Font.caption2.weight(.semibold), "Default microLabel")
+        expect(t.noteTitle == Font.headline, "Default noteTitle")
+        expect(
+            t.searchFieldNSFont == NSFont.systemFont(ofSize: 20, weight: .regular),
+            "Default searchFieldNSFont is SF 20")
+        expect(
+            t.chipNSFont == NSFont.preferredFont(forTextStyle: .callout), "Default chipNSFont")
+        for size in InterfaceSize.allCases {
+            let typography = size.metrics.typography
+            expect(
+                abs(typography.searchFieldNSFont.pointSize - typography.searchFieldSize) < 0.5,
+                "the search NSFont matches its stated size at \(size.rawValue)")
         }
     }
 

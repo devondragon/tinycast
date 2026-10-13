@@ -180,7 +180,7 @@ block moved and to any list line whose depth changed.
 
 `NoteMarkdownStyler` turns one line into attributes. `NoteMarkdownTypography` sets the body one
 system text style up (title3) and headings at largeTitle, title1 and title2, with or without
-rendering; Interface Size does not scale Notes. A hidden marker gets a 0.01-point system font and
+rendering, each in the active theme's body, display or mono face; Interface Size does not scale Notes. A hidden marker gets a 0.01-point system font and
 a clear colour, so it stays in the string at almost no width. Fence and rule lines are cleared at their
 normal font instead, so they keep their row height. Every list item (bullet, numbered or task) gets 8
 points of space after it, rendered or revealed, so items read as separate rows and moving the caret

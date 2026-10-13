@@ -55,6 +55,16 @@ struct ThemeTests {
             }
         }
 
+        print("# every bundled font ships with its file and license")
+        let fonts = URL(fileURLWithPath: "Tinycast/Resources/Fonts")
+        for font in BundledFont.allCases {
+            for file in font.files {
+                check("\(file) is bundled", FileManager.default.fileExists(atPath: fonts.appending(path: file).path))
+            }
+            check("\(font.license) is bundled",
+                  FileManager.default.fileExists(atPath: fonts.appending(path: "Licenses/\(font.license)").path))
+        }
+
         print("\n\(passes) passed, \(failures) failed")
         exit(failures == 0 ? 0 : 1)
     }

@@ -34,6 +34,7 @@ struct NotesEditorTests {
         testTextHeight(rendersMarkdown: false)
         testTextHeight(rendersMarkdown: true)
         testHeightBeforeDraw()
+        testDefaultFacesKeepNoteFonts()
         print(failures == 0 ? "Notes editor tests passed" : "\(failures) tests failed")
         exit(failures == 0 ? 0 : 1)
     }
@@ -1099,6 +1100,20 @@ struct NotesEditorTests {
             onCharacterCountChange: onCountChange,
             onFormattingChange: onFormattingChange,
             onReady: { _ in })
+    }
+
+    private static func testDefaultFacesKeepNoteFonts() {
+        let size = { NSFont.preferredFont(forTextStyle: $0).pointSize }
+        check(
+            "Default note body is the system face",
+            NoteMarkdownTypography.body == NSFont.systemFont(ofSize: size(.title3)))
+        check(
+            "Default first heading is bold system",
+            NoteMarkdownTypography.heading1 == NSFont.systemFont(ofSize: size(.largeTitle), weight: .bold))
+        check(
+            "Default code block is system monospaced",
+            NoteMarkdownTypography.codeBlock
+                == NSFont.monospacedSystemFont(ofSize: size(.title3) - 1, weight: .regular))
     }
 
     private static func check(_ message: String, _ condition: @autoclosure () -> Bool) {

@@ -375,49 +375,80 @@ enum Theme {
     }
 
     /// System text styles (not hardcoded sizes) so the UI honors Dynamic Type.
+    @MainActor
     enum Typography {
         /// One size, two frameworks: `TextTrailingDragHandle` measures what the field renders.
         static let searchFieldSize: CGFloat = 20
-        static let searchField = Font.system(size: searchFieldSize, weight: .regular)
-        /// `NSFont` is not `Sendable`, hence the isolation; every reader is a view anyway.
-        @MainActor static let searchFieldNSFont = NSFont.systemFont(
-            ofSize: searchFieldSize, weight: .regular)
+        static var searchField: Font {
+            ThemeFonts.font(
+                .display, base: .system(size: searchFieldSize, weight: .regular), style: .title2,
+                fixedSize: searchFieldSize)
+        }
+        static var searchFieldNSFont: NSFont {
+            ThemeFonts.nsFont(.display, base: .systemFont(ofSize: searchFieldSize, weight: .regular))
+        }
         static let headerIcon = Font.system(size: 18, weight: .medium)
-        static let rowTitle = Font.body
-        static let rowTrailing = Font.callout
-        static let sectionHeader = Font.subheadline.weight(.medium)
+        static var rowTitle: Font { ThemeFonts.font(.body, base: .body, style: .body) }
+        static var rowTrailing: Font { ThemeFonts.font(.body, base: .callout, style: .callout) }
+        static var sectionHeader: Font {
+            ThemeFonts.font(
+                .display, base: Font.subheadline.weight(.medium), style: .subheadline, weight: .medium)
+        }
         /// A borderless panel's own title, which names the surface rather than a section inside it.
-        static let panelTitle = Font.headline
+        static var panelTitle: Font {
+            ThemeFonts.font(.display, base: .headline, style: .headline, weight: .bold)
+        }
         /// The big value line on the calculator answer card (both source and target sides).
-        static let calcResult = Font.title
-        static let keyCap = Font.caption
+        static var calcResult: Font { ThemeFonts.font(.display, base: .title, style: .title1) }
+        static var keyCap: Font { ThemeFonts.font(.body, base: .caption, style: .caption1) }
         /// Pair with the matching `Size` for `KeyCapChip.Scale`.
-        static let compactKeyCap = Font.caption2
-        static let heroKeyCap = Font.body
-        static let markdownHeading1 = Font.title2.weight(.semibold)
-        static let markdownHeading2 = Font.title3.weight(.semibold)
-        static let markdownHeading3 = Font.headline
-        static let code = Font.system(.callout, design: .monospaced)
-        static let inlineCode = Font.body.monospaced()
-        static let bar = Font.callout.weight(.medium)
+        static var compactKeyCap: Font { ThemeFonts.font(.body, base: .caption2, style: .caption2) }
+        static var heroKeyCap: Font { ThemeFonts.font(.body, base: .body, style: .body) }
+        static var markdownHeading1: Font {
+            ThemeFonts.font(
+                .display, base: Font.title2.weight(.semibold), style: .title2, weight: .semibold)
+        }
+        static var markdownHeading2: Font {
+            ThemeFonts.font(
+                .display, base: Font.title3.weight(.semibold), style: .title3, weight: .semibold)
+        }
+        static var markdownHeading3: Font {
+            ThemeFonts.font(.display, base: .headline, style: .headline, weight: .bold)
+        }
+        static var code: Font {
+            ThemeFonts.font(.mono, base: .system(.callout, design: .monospaced), style: .callout)
+        }
+        static var inlineCode: Font { ThemeFonts.font(.mono, base: Font.body.monospaced(), style: .body) }
+        static var bar: Font {
+            ThemeFonts.font(.body, base: Font.callout.weight(.medium), style: .callout, weight: .medium)
+        }
         /// A staged chat attachment's name beside the search text; the NSFont measures the chip.
-        static let chip = Font.callout
-        @MainActor static let chipNSFont = NSFont.preferredFont(forTextStyle: .callout)
+        static var chip: Font { ThemeFonts.font(.body, base: .callout, style: .callout) }
+        static var chipNSFont: NSFont {
+            ThemeFonts.nsFont(.body, base: .preferredFont(forTextStyle: .callout))
+        }
         /// Metadata under a title, at caption size.
-        static let caption = Font.caption
+        static var caption: Font { ThemeFonts.font(.body, base: .caption, style: .caption1) }
         /// Body-adjacent text one step down: a chat card's lines, a preview's caption row.
-        static let detail = Font.callout
+        static var detail: Font { ThemeFonts.font(.body, base: .callout, style: .callout) }
         /// A tiny uppercase-feeling label over a value.
-        static let microLabel = Font.caption2.weight(.semibold)
-        static let codeSmall = Font.system(.subheadline, design: .monospaced)
+        static var microLabel: Font {
+            ThemeFonts.font(
+                .body, base: Font.caption2.weight(.semibold), style: .caption2, weight: .semibold)
+        }
+        static var codeSmall: Font {
+            ThemeFonts.font(.mono, base: .system(.subheadline, design: .monospaced), style: .subheadline)
+        }
         /// A dropdown control's trailing chevron, deliberately smaller than the label it follows.
         static let disclosure = Font.caption.weight(.semibold)
-        static let menuRow = Font.body
-        static let menuShortcut = Font.callout
+        static var menuRow: Font { ThemeFonts.font(.body, base: .body, style: .body) }
+        static var menuShortcut: Font { ThemeFonts.font(.body, base: .callout, style: .callout) }
         static let menuIcon = Font.body
         static let menuSymbolSize: CGFloat = 14
         static let menuSymbolWeight = Font.Weight.medium
-        static let noteTitle = Font.headline
+        static var noteTitle: Font {
+            ThemeFonts.font(.display, base: .headline, style: .headline, weight: .bold)
+        }
         /// The composer row's glyphs; Send's arrow is bolder, and Stop's square smaller to match it.
         static let composerSymbol = Font.system(size: 13, weight: .medium)
         static let composerSend = Font.system(size: 13, weight: .bold)
