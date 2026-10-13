@@ -50,7 +50,8 @@ open with an `## Invariants` section; read it before changing anything in that a
 [Raycast import](features/raycast-import.md) ·
 [Raycast extensions](features/extensions.md) ·
 [updates](features/updates.md) ·
-[support](features/support.md)
+[support](features/support.md) ·
+[theming](features/theming.md)
 
 ## Security
 
