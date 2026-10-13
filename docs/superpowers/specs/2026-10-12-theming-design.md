@@ -153,15 +153,16 @@ Each kind is one view in `DesignSystem/Backdrops/`:
 
 Rules for every backdrop:
 
-- `TimelineView(.animation(minimumInterval: 1.0 / 30, paused: ...))` around a `Canvas`.
+- `TimelineView(.animation(minimumInterval: 1.0 / frameRate, paused: ...))` around a `Canvas`; the
+  frame rate is per backdrop (`Backdrop.frameRate`).
 - Paused when the window is hidden or occluded (each backdrop watches its own window's
   `didChangeOcclusionStateNotification`), and under Reduce Motion, where it draws one still
   frame.
 - Stateless per frame: every glyph, trace and column position is a pure function of time and a
   fixed integer hash, so nothing is stored or allocated between frames.
 - Glyphs are resolved once as `Canvas` symbols and reused.
-- Budget while the palette is visible: under 5% of one core on Apple silicon, under 8 MB extra
-  resident memory. Zero CPU while hidden. Measured with `Signposts` and the recipes in
+- Budget while the palette is visible: zero CPU while hidden (hard rule); roughly 5-8% of one core while visible
+  (target, Devon 2026-10-12); under 8 MB extra resident memory. Measured with `Signposts` and the recipes in
   `docs/testing.md` before a backdrop is considered done.
 
 ## Glow

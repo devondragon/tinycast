@@ -149,6 +149,10 @@ struct AppearanceTests {
         for token in [ColorToken.textPrimary, .selection, .panelScrim, .accent] {
             adapts("matrix \(token)", ThemeStore.active.palette.color(token))
         }
+        ThemeStore.active.apply(.synthwave)
+        for token in [ColorToken.textPrimary, .selection, .panelScrim, .accent] {
+            adapts("synthwave \(token)", ThemeStore.active.palette.color(token))
+        }
         ThemeStore.active.apply(.tron)
         let plain = [NSAppearance(named: .aqua)!, NSAppearance(named: .darkAqua)!]
         let accessible = ["NSAppearanceNameAccessibilityAqua", "NSAppearanceNameAccessibilityDarkAqua"]
@@ -195,7 +199,9 @@ struct AppearanceTests {
             components(Theme.Colors.ramp(dark: 0.3, light: 0.2), .aqua)
                 == components(Color.black.opacity(0.2), .aqua))
 
-        for (name, id, label) in [("tron", ThemeID.tron, "grid"), ("matrix", .matrix, "code rain")] {
+        for (name, id, label) in [
+            ("tron", ThemeID.tron, "grid"), ("matrix", .matrix, "code rain"), ("synthwave", .synthwave, "sunset grid"),
+        ] {
             let backdrop = ThemeCatalog.definition(for: id).backdrop
             var drawn = 0
             var inked = false

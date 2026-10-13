@@ -184,6 +184,7 @@
 		36A6FC9C41CDBD4ADA1F8E87 /* AIModelDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68649D40F987D1CD24D1112 /* AIModelDiscovery.swift */; };
 		383A577E1A70AF702C474B0F /* ClipDragPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6491D532351DEB940B4FBD1A /* ClipDragPayload.swift */; };
 		3891DA96CC148D13893F4494 /* ShortcutCaptureSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = B235DFF451FF4D52A8E44D00 /* ShortcutCaptureSession.swift */; };
+		390056F41749F7BDD18784FC /* ThemeCatalog+Synthwave.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66650E1DFC9F881AB39749BC /* ThemeCatalog+Synthwave.swift */; };
 		3917193B62450F226297B3F1 /* SelectionReveal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 648F0F43FEEE537F6451756B /* SelectionReveal.swift */; };
 		394AF7EBEFA5C5413D7D8E9B /* ExtensionListing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4479345B4ECF587F3BC08093 /* ExtensionListing.swift */; };
 		399BDA54C1BDE11A889B32EF /* ThemeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCE25D2A3BA041D86E21F8F8 /* ThemeStore.swift */; };
@@ -414,6 +415,7 @@
 		78BA4410EAA35ED76D7CFBE8 /* QuickActionSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98C29DA5656628B41C17D42A /* QuickActionSettingsStore.swift */; };
 		791AC049B6CA16C7D86EEBEF /* MeetingLauncher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46C117C966BC2990F19E00AB /* MeetingLauncher.swift */; };
 		793835891E5910BCD4972ECC /* CodeRainBackdrop.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFB3A82F724CF86CCAAC30B6 /* CodeRainBackdrop.swift */; };
+		7A4A3E59D0BDE68294182221 /* SunsetBackdrop.swift in Sources */ = {isa = PBXBuildFile; fileRef = B632CCB437FE9F2FF04CD70F /* SunsetBackdrop.swift */; };
 		7A7D20DFBEB49D7C7D9DDEB5 /* RoomPreviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 676760D8D30526B99A1F97B7 /* RoomPreviewController.swift */; };
 		7AF6E4F92BBF4D41B9B1E700 /* BackupBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 780B32AF98BA3A51D2F0E8B4 /* BackupBundle.swift */; };
 		7B25CD1684D24C164346AA68 /* SnippetEditorScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F590D5052075C9E121306FEE /* SnippetEditorScreen.swift */; };
@@ -1232,6 +1234,7 @@
 		65D4EEE2968877B45565C85F /* WindowTarget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowTarget.swift; sourceTree = "<group>"; };
 		65F1010FAC9C0EC4DBDE58A8 /* AIRequestBody.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIRequestBody.swift; sourceTree = "<group>"; };
 		6621A88681E993D49EEF07A3 /* tinycast.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = tinycast.icon; sourceTree = "<group>"; };
+		66650E1DFC9F881AB39749BC /* ThemeCatalog+Synthwave.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ThemeCatalog+Synthwave.swift"; sourceTree = "<group>"; };
 		666E0A469BE1984BEF1A9A50 /* CalcDimension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalcDimension.swift; sourceTree = "<group>"; };
 		676760D8D30526B99A1F97B7 /* RoomPreviewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomPreviewController.swift; sourceTree = "<group>"; };
 		677036AB7EE67B050C2930D5 /* AXScreens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AXScreens.swift; sourceTree = "<group>"; };
@@ -1491,6 +1494,7 @@
 		B5BD1FBE1BBBAC5DDB1FE8A8 /* DictationTextFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationTextFormatter.swift; sourceTree = "<group>"; };
 		B6194BC8452745726E8572C0 /* MathSymbolCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MathSymbolCatalog.swift; sourceTree = "<group>"; };
 		B620894347E87EC4130CA4C8 /* BackupStaging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupStaging.swift; sourceTree = "<group>"; };
+		B632CCB437FE9F2FF04CD70F /* SunsetBackdrop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SunsetBackdrop.swift; sourceTree = "<group>"; };
 		B675C14B308FA33896A8AE49 /* RaycastImportError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaycastImportError.swift; sourceTree = "<group>"; };
 		B6915B7D8E6816B7919F5CF4 /* ExtensionDateField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionDateField.swift; sourceTree = "<group>"; };
 		B6A6748260B2DF011CCAFCEF /* ThinScrollbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThinScrollbar.swift; sourceTree = "<group>"; };
@@ -3182,6 +3186,7 @@
 			children = (
 				BFB3A82F724CF86CCAAC30B6 /* CodeRainBackdrop.swift */,
 				CE477920D9F817832C4BFA65 /* GridBackdrop.swift */,
+				B632CCB437FE9F2FF04CD70F /* SunsetBackdrop.swift */,
 			);
 			path = Backdrops;
 			sourceTree = "<group>";
@@ -3322,6 +3327,7 @@
 				E0D824676BF42B91E890D591 /* RGBA.swift */,
 				013AC0275E8DC5BC01D0B99F /* ThemeCatalog.swift */,
 				5A5FB8E7D98F3AAAAD24E3F9 /* ThemeCatalog+Matrix.swift */,
+				66650E1DFC9F881AB39749BC /* ThemeCatalog+Synthwave.swift */,
 				BB18AD950E3D4F3071F2BF74 /* ThemeCatalog+Tron.swift */,
 				836330B7A9675C8B75F78357 /* ThemeDefinition.swift */,
 			);
@@ -4688,6 +4694,7 @@
 				9A7BBA93D54AB1638F1EBE6F /* SpaceGesture.swift in Sources */,
 				7C2AA1D827EC87533021BD74 /* SpaceSwitcher.swift in Sources */,
 				60E4AA375F0424AAD55799FD /* SteadySegmentedPicker.swift in Sources */,
+				7A4A3E59D0BDE68294182221 /* SunsetBackdrop.swift in Sources */,
 				E29056264B57A3F0EC5F5698 /* SupportCoordinator.swift in Sources */,
 				B589C3ECFF03C790102361D4 /* SupportReminderSchedule.swift in Sources */,
 				E29CF7293742DDCAE030682C /* SupportReminderStore.swift in Sources */,
@@ -4709,6 +4716,7 @@
 				85FF7D441BD782A29EDD95A8 /* TextTranslator.swift in Sources */,
 				36968DFA1E201E681F0BCD42 /* Theme.swift in Sources */,
 				69D2906D0329C4218E9BEAD8 /* ThemeCatalog+Matrix.swift in Sources */,
+				390056F41749F7BDD18784FC /* ThemeCatalog+Synthwave.swift in Sources */,
 				87F007D551744A780DFFCCFA /* ThemeCatalog+Tron.swift in Sources */,
 				76D3635F68EAE4F3439C4234 /* ThemeCatalog.swift in Sources */,
 				F3EF04B1C5812B0A9EB7B938 /* ThemeDefinition.swift in Sources */,

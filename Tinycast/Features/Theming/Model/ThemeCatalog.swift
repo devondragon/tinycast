@@ -6,6 +6,7 @@ enum ThemeCatalog {
         case .standard: standard
         case .tron: tron
         case .matrix: matrix
+        case .synthwave: synthwave
         }
     }
 

@@ -13,7 +13,10 @@ enum BackdropPerformance {
         print("\(Int(size.width))x\(Int(size.height)), \(frames) frames at 1/30 s steps")
         let blank = measure(size: size) { _, _ in }
         report("empty canvas", blank)
-        for (name, theme) in [("tron grid", ThemeCatalog.tron), ("matrix rain", ThemeCatalog.matrix)] {
+        for (name, theme) in [
+            ("tron grid", ThemeCatalog.tron), ("matrix rain", ThemeCatalog.matrix),
+            ("synthwave sunset", ThemeCatalog.synthwave),
+        ] {
             let backdrop = theme.backdrop
             let blankBytes = render(size: size) { _, _ in }
             let drawnBytes = render(size: size, draw: { context, time in
@@ -69,6 +72,6 @@ enum BackdropPerformance {
         let p95 = sorted[Int(Double(sorted.count - 1) * 0.95)]
         let cpu = mean * 30 / 1_000 * 100
         let line = String(format: "mean %6.2f ms  p95 %6.2f ms  implied CPU at 30 fps %5.1f%%", mean, p95, cpu)
-        print("\(label.padding(toLength: 20, withPad: " ", startingAt: 0)) \(line)")
+        print("\(label.padding(toLength: 24, withPad: " ", startingAt: 0)) \(line)")
     }
 }

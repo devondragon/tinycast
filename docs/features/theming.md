@@ -71,7 +71,7 @@ The Settings picker draws the same still frame for each card.
 
 A backdrop runs only while the palette is showing. The hard requirement is zero CPU while hidden
 (the timeline pauses on hide and occlusion). While visible the target is roughly 5% to 8% of one core
-and under 8 MB of extra resident memory; each backdrop sets its own `frameRate` (Tron 30, Matrix 24).
+and under 8 MB of extra resident memory; each backdrop sets its own `frameRate` (Tron 30, Matrix 24, Synthwave 30).
 
 Three kinds of figure appear below. The proxy columns come from `Tests/backdrop-performance.swift`,
 which renders `BackdropRenderer.draw` through `ImageRenderer` at the 750x475 palette size for 300
@@ -87,6 +87,8 @@ are pending.
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Tron grid, dark | 0.60, 0.68 | 1.8% | 0.7% to 6.1% over 4 runs | pending | pending | pending | Apple M4 Max | 2026-10-12 |
 | Tron grid, light | 0.59, 0.70 | 1.8% | 1.7% to 5.7% over 3 runs | pending | pending | pending | Apple M4 Max | 2026-10-12 |
+| Synthwave sunset, dark | 0.62, 0.72 | 1.8% | not probed | pending | pending | pending | Apple M4 Max | 2026-10-12 |
+| Synthwave sunset, light | 0.51, 0.57 | 1.5% | not probed | pending | pending | pending | Apple M4 Max | 2026-10-12 |
 | Code rain, dark (24 fps) | 6.59, 7.19 (5.35 is symbol resolution) | 19.8%, not representative | 2.5% to 6.4% over 4 runs, at 20 fps and fewer glyphs | pending | pending | pending | Apple M4 Max | 2026-10-12 |
 | Code rain, light (24 fps) | 6.44, 7.17 | 19.3%, not representative | 6.5% in 1 run (a second run read 0%, the timeline did not tick), at 20 fps and fewer glyphs | pending | pending | pending | Apple M4 Max | 2026-10-12 |
 
