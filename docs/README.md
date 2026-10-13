@@ -51,7 +51,8 @@ open with an `## Invariants` section; read it before changing anything in that a
 [Raycast extensions](features/extensions.md) ·
 [updates](features/updates.md) ·
 [support](features/support.md) ·
-[theming](features/theming.md)
+[theming](features/theming.md) ·
+[adding a theme](features/adding-a-theme.md)
 
 ## Security
 

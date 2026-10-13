@@ -119,14 +119,6 @@ resolves to its own face.
 
 ## Adding a theme
 
-1. Add a `ThemeID` case and its title.
-2. Add `ThemeCatalog+Name.swift` with the `ThemeDefinition`, and return it from
-   `ThemeCatalog.definition(for:)`.
-3. If the backdrop kind is new, add a renderer under `DesignSystem/Theming/Backdrops/`: stateless,
-   a plain enum with no actor isolation, plain per-appearance colors via `BackdropRenderer.color(_:dark:)`.
-4. Add the value to the `appearance.visualTheme` row in [settings-file.md](settings-file.md).
-5. Run `theme-test` (contrast against each surface) and `backdrop-performance` (draw cost), and fill
-   the live columns of the budget table with `Scripts/measure-backdrop.sh`.
-
-The Settings picker lists `ThemeID.allCases`, so a new theme appears there without further work.
+Follow [adding-a-theme.md](adding-a-theme.md): the files to touch, a definition template, the
+renderer rules, font steps, contrast tuning and the checks that need eyes.
 
