@@ -11,7 +11,7 @@ struct PanelBackdrop: View {
         let dark = colorScheme == .dark
         let still = reduceMotion || (!dark && backdrop.lightIsStatic)
         if backdrop.kind != .none {
-            TimelineView(.animation(minimumInterval: 1.0 / 30, paused: still || !isVisible)) { timeline in
+            TimelineView(.animation(minimumInterval: 1.0 / backdrop.frameRate, paused: still || !isVisible)) { timeline in
                 Canvas(rendersAsynchronously: true) { context, size in
                     // Wrapped to an hour so trig and Float math downstream keep their precision.
                     let time = still ? 0 : timeline.date.timeIntervalSinceReferenceDate
@@ -36,13 +36,18 @@ enum BackdropRenderer {
     ) {
         switch backdrop.kind {
         case .grid: GridBackdrop.draw(backdrop, in: &context, size: size, time: time, dark: dark, sunset: false)
-        case .none, .codeRain, .sunsetGrid, .scanlines: break
+        case .codeRain: CodeRainBackdrop.draw(backdrop, in: &context, size: size, time: time)
+        case .none, .sunsetGrid, .scanlines: break
         }
     }
 
     @ViewBuilder
     static func symbols(for backdrop: Backdrop, dark: Bool) -> some View {
-        EmptyView()
+        if backdrop.kind == .codeRain { CodeRainBackdrop.symbols(for: backdrop, dark: dark) }
+    }
+
+    static func color(_ pair: RGBAPair, dark: Bool) -> Color {
+        Color(nsColor: ThemePalette.nsColor(dark ? pair.dark : pair.light))
     }
 
     /// A fixed integer hash, so every column and trace is a pure function of its index.

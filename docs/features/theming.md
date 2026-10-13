@@ -60,7 +60,7 @@ copy, per the extension rule in `AGENTS.md`.
 `PanelBackdrop` wraps a `Canvas` in a `TimelineView` at 30 fps and draws through `BackdropRenderer`,
 with one renderer per `BackdropKind` in `DesignSystem/Theming/Backdrops/`. A renderer is stateless:
 every position is a pure function of time and a fixed integer hash, nothing is stored between frames,
-and glyphs are resolved once as `Canvas` symbols. Renderers are `nonisolated` and take plain
+and glyphs are resolved once as `Canvas` symbols. Renderers are plain enums that carry no actor isolation and take plain
 per-appearance colors from `ThemePalette.nsColor`.
 
 The timeline is paused when the window is hidden or occluded (`WindowOcclusionReader`), under
@@ -69,17 +69,31 @@ The Settings picker draws the same still frame for each card.
 
 ## Backdrop budget
 
-While visible a backdrop must stay under 5% of one core and under 8 MB of extra resident memory, and
-use no CPU while hidden. The proxy columns come from `Tests/backdrop-performance.swift`, which renders
-`BackdropRenderer.draw` through `ImageRenderer` at the 750x475 palette size for 300 frames at 1/30 s
-steps. `ImageRenderer` also rasterizes and reads back each frame (an empty canvas costs about 0.45 ms),
-so the proxy is an upper bound on the draw cost. Proxy CPU is mean ms x 30 / 1000. The live columns come
-from `Scripts/measure-backdrop.sh` against the running Debug app and are pending.
+A backdrop runs only while the palette is showing. The hard requirement is zero CPU while hidden
+(the timeline pauses on hide and occlusion). While visible the target is roughly 5% to 8% of one core
+and under 8 MB of extra resident memory; each backdrop sets its own `frameRate` (Tron 30, Matrix 24).
 
-| Backdrop | Proxy ms/frame (mean, p95) | Proxy CPU at 30 fps | Live CPU open | Live CPU hidden | RSS delta | Machine | Date |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Tron grid, dark | 0.52, 0.58 | 1.6% | pending | pending | pending | Apple M4 Max | 2026-10-12 |
-| Tron grid, light | 0.48, 0.54 | 1.4% | pending | pending | pending | Apple M4 Max | 2026-10-12 |
+Three kinds of figure appear below. The proxy columns come from `Tests/backdrop-performance.swift`,
+which renders `BackdropRenderer.draw` through `ImageRenderer` at the 750x475 palette size for 300
+frames. `ImageRenderer` rasterizes and reads back each frame and rebuilds the view every frame, so it
+re-resolves `Canvas` symbols each time (the "symbols" row). That makes the proxy an upper bound and
+not representative for symbol-heavy backdrops such as code rain. The hosted-window probe puts
+`PanelBackdrop` in an `NSHostingView` window and reads process CPU over 8 seconds; it is noisy (the
+machine ran at load average 10 to 12) and each figure is a single run. The `Live CPU open` and
+`Live CPU hidden` columns come from `Scripts/measure-backdrop.sh` against the running Debug app and
+are pending.
+
+| Backdrop | Proxy ms/frame (mean, p95) | Proxy CPU at 30 fps | Hosted-window probe | Live CPU open | Live CPU hidden | RSS delta | Machine | Date |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Tron grid, dark | 0.60, 0.68 | 1.8% | 0.7% to 6.1% over 4 runs | pending | pending | pending | Apple M4 Max | 2026-10-12 |
+| Tron grid, light | 0.59, 0.70 | 1.8% | 1.7% to 5.7% over 3 runs | pending | pending | pending | Apple M4 Max | 2026-10-12 |
+| Code rain, dark (24 fps) | 6.59, 7.19 (5.35 is symbol resolution) | 19.8%, not representative | 2.5% to 6.4% over 4 runs, at 20 fps and fewer glyphs | pending | pending | pending | Apple M4 Max | 2026-10-12 |
+| Code rain, light (24 fps) | 6.44, 7.17 | 19.3%, not representative | 6.5% in 1 run (a second run read 0%, the timeline did not tick), at 20 fps and fewer glyphs | pending | pending | pending | Apple M4 Max | 2026-10-12 |
+
+The code rain probe figures were taken at 20 fps with about half the columns raining and trails of 5 to
+12 glyphs. The shipped setting is 24 fps with two thirds of the columns and trails of 6 to 15, which
+draws more per frame and has not been probed; measure it with `Scripts/measure-backdrop.sh`. A rough
+glyph count: 46 columns, two thirds raining, about 10 glyphs each, around 300 draws per frame.
 
 ## Fonts
 
@@ -96,7 +110,7 @@ bundled family is not installed, so a missing font never produces a blank label.
 2. Add `ThemeCatalog+Name.swift` with the `ThemeDefinition`, and return it from
    `ThemeCatalog.definition(for:)`.
 3. If the backdrop kind is new, add a renderer under `DesignSystem/Theming/Backdrops/`: stateless,
-   `nonisolated`, plain per-appearance colors via `ThemePalette.nsColor`.
+   a plain enum with no actor isolation, plain per-appearance colors via `ThemePalette.nsColor`.
 4. Add the value to the `appearance.visualTheme` row in [settings-file.md](settings-file.md).
 5. Run `theme-test` (contrast against each surface) and `backdrop-performance` (draw cost), and fill
    the live columns of the budget table with `Scripts/measure-backdrop.sh`.

@@ -4,6 +4,7 @@ import Foundation
 enum ThemeID: String, CaseIterable, Identifiable, Sendable {
     case standard
     case tron
+    case matrix
 
     var id: String { rawValue }
 
@@ -11,6 +12,7 @@ enum ThemeID: String, CaseIterable, Identifiable, Sendable {
         switch self {
         case .standard: "Default"
         case .tron: "Tron Legacy"
+        case .matrix: "Matrix"
         }
     }
 }
@@ -106,12 +108,14 @@ struct Backdrop: Equatable, Sendable {
     let intensity: RGBAPair.Scalar
     /// 1 is the backdrop's designed pace.
     let speed: Double
+    /// Timeline frames per second while visible.
+    let frameRate: Double
     /// Light variants that are texture rather than motion skip the timeline entirely.
     let lightIsStatic: Bool
 
     static let none = Backdrop(
         kind: .none, primary: .both(.gray(0)), secondary: .both(.gray(0)), tertiary: .both(.gray(0)),
-        intensity: .init(dark: 0, light: 0), speed: 0, lightIsStatic: true)
+        intensity: .init(dark: 0, light: 0), speed: 0, frameRate: 30, lightIsStatic: true)
 
     var colors: [RGBAPair] { [primary, secondary, tertiary] }
 }

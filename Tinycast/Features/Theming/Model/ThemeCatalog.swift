@@ -5,6 +5,7 @@ enum ThemeCatalog {
         switch id {
         case .standard: standard
         case .tron: tron
+        case .matrix: matrix
         }
     }
 
