@@ -73,6 +73,10 @@ struct AppearanceTests {
         dark("accent", c.accent, is: Color.accentColor)
         dark("onAccent", c.onAccent, is: Color.white)
         dark("link", c.link, is: Color(nsColor: .linkColor))
+        dark("findMatch", c.findMatch, is: Color(nsColor: NSColor.systemYellow.withAlphaComponent(0.32)))
+        dark("findCurrent", c.findCurrent, is: Color(nsColor: NSColor.systemYellow.withAlphaComponent(0.9)))
+        adapts("findMatch", c.findMatch)
+        adapts("findCurrent", c.findCurrent)
 
         print("# every surface token resolves per appearance")
         for (label, token) in [
@@ -245,6 +249,17 @@ struct AppearanceTests {
             let resolved = ThemeFonts.nsFont(.body, base: .systemFont(ofSize: 13, weight: weight))
             check("Amber body \(weight.rawValue) resolves to \(name)", resolved.fontName == name, resolved.fontName)
         }
+        let bodyFont = { ThemeFonts.font(.body, base: .body, style: .body, weight: .medium) }
+        let first = bodyFont()
+        check("Amber body font reads equal twice", first == bodyFont())
+        let base = NSFont.systemFont(ofSize: 13, weight: .medium)
+        check("Amber body NSFont reads equal twice", ThemeFonts.nsFont(.body, base: base) == ThemeFonts.nsFont(.body, base: base))
+        ThemeStore.active.apply(.synthwave)
+        check("a theme switch drops the cached font", bodyFont() != first)
+        ThemeStore.active.apply(.standard)
+        check("Default font is base", ThemeFonts.font(.body, base: .caption, style: .body) == .caption)
+        check("Default NSFont is base", ThemeFonts.nsFont(.body, base: base) === base)
+        ThemeStore.active.apply(.amber)
         let plexInk = [Font.Weight.regular, .medium, .semibold, .bold].map { weight -> Int in
             let font = ThemeFonts.font(.body, base: .body, style: .body, weight: weight, fixedSize: 16)
             let label = Text("Hamburgefonstiv mmmm").font(font).foregroundStyle(.white)
