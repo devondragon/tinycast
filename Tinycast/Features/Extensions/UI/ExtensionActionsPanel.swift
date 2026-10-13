@@ -90,7 +90,7 @@ struct ExtensionActionsPanel: View {
             return .handled
         }
         .frame(width: panel.width)
-        .glassEffect(.regular, in: shape)
+        .extensionSurface(.overlay, in: shape, glass: .regular)
     }
 
     @ViewBuilder

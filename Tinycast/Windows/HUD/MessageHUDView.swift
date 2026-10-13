@@ -59,8 +59,7 @@ struct MessageHUDView: View {
         .fixedSize()
         .background { glow }
         // Not glass: with nothing to lens it falls back to an opaque backing and shows.
-        .background(hovered ? Theme.Colors.controlHover : Theme.Colors.panelScrim)
-        .background(GlassEffectView())
+        .themedPanel(in: Capsule(), scrim: hovered ? Theme.Colors.controlHover : Theme.Colors.panelScrim)
         .clipShape(Capsule())
         .overlay { rim }
     }

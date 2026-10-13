@@ -104,6 +104,12 @@ struct AppearanceTests {
         check("generation starts at zero", store.generation == 0)
         dark("palette selection", store.palette.color(.selection), is: Color.white.opacity(0.10))
 
+        print("# Default keeps every surface on its own glass")
+        for role in SurfaceRole.allCases {
+            check("\(role) is glass", Theme.Surfaces.style(role) == .glass)
+        }
+        check("Default has no glow", Theme.Effects.glowRadius(dark: true) == 0)
+
         print("\n\(passes) passed, \(failures) failed")
         exit(failures == 0 ? 0 : 1)
     }

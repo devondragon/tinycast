@@ -160,7 +160,7 @@ struct ExtensionToastPill: View {
                     startPoint: .leading, endPoint: .trailing),
                 lineWidth: Theme.Size.hairline)
         }
-        .frosted(in: Capsule())
+        .extensionSurface(.control, in: Capsule(), glass: .regular.interactive())
         .contentShape(Capsule())
         .onTapGesture(perform: onDismiss)
         .onHover { isHovered in
