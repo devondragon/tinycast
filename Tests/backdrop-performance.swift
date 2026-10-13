@@ -12,7 +12,12 @@ enum BackdropPerformance {
         let backdrop = ThemeCatalog.tron.backdrop
         let size = CGSize(width: Theme.Size.panelWidth, height: Theme.Size.panelHeight)
         print("Tron grid, \(Int(size.width))x\(Int(size.height)), \(frames) frames at 1/30 s steps")
-        _ = render(size: size) { _, _ in }
+        let blankBytes = render(size: size) { _, _ in }
+        let drawnBytes = render(size: size, draw: { context, time in
+            BackdropRenderer.draw(backdrop, in: &context, size: size, time: time, dark: true)
+        }, time: 1)
+        precondition(!blankBytes.isEmpty && blankBytes != drawnBytes, "the backdrop drew nothing")
+        print("check: drawn render differs from blank render")
         let blank = measure(size: size) { _, _ in }
         report("empty canvas", blank)
         for dark in [true, false] {
@@ -25,21 +30,21 @@ enum BackdropPerformance {
 
     static func render(
         size: CGSize, draw: @escaping (inout GraphicsContext, Double) -> Void, time: Double = 0
-    ) -> Bool {
+    ) -> Data {
         let view = Canvas { context, _ in draw(&context, time) }.frame(width: size.width, height: size.height)
         let renderer = ImageRenderer(content: view)
         renderer.scale = 2
-        guard let image = renderer.cgImage else { return false }
-        return (image.dataProvider?.data as Data?)?.isEmpty == false
+        guard let image = renderer.cgImage else { return Data() }
+        return (image.dataProvider?.data as Data?) ?? Data()
     }
 
     static func measure(size: CGSize, draw: @escaping (inout GraphicsContext, Double) -> Void) -> [Double] {
         var millis: [Double] = []
         for frame in 0..<frames {
             let start = ContinuousClock.now
-            let ok = render(size: size, draw: draw, time: Double(frame) * step)
+            let bytes = render(size: size, draw: draw, time: Double(frame) * step)
             let elapsed = start.duration(to: .now).components
-            precondition(ok, "ImageRenderer produced no image")
+            precondition(!bytes.isEmpty, "ImageRenderer produced no image")
             millis.append(Double(elapsed.seconds) * 1_000 + Double(elapsed.attoseconds) / 1e15)
         }
         return millis
