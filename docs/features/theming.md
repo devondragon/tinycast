@@ -42,8 +42,10 @@ high-contrast appearance), because a hairline at the usual alpha disappears for 
 
 ## Surfaces
 
-`Theme.Surfaces` exposes a `SurfaceStyle` for each of three roles: `panel` (the palette and other
-borderless windows), `overlay` (menus, dialogs, HUDs) and `control` (buttons, fields, cards). A style
+`Theme.Surfaces` exposes a `SurfaceStyle` for each of three roles: `panel` (the palette, notes, the
+quick action result, the camera panels and both HUDs), `overlay` (menus, dialogs, callouts, the note
+switcher and heading menu, and chat cards) and `control` (the action capsule, the menu circle and
+pills). A style
 is `.glass` (the call site's own glass, which is all Default uses), `.tintedGlass`, or `.solid` with a
 fill, stroke and optional glow. Views never branch on the theme.
 
