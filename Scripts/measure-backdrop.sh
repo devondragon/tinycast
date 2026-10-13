@@ -20,12 +20,20 @@
 set -euo pipefail
 
 seconds=${1:-10}
+if ! [[ "$seconds" =~ ^[0-9]+$ ]] || [ "$seconds" -lt 1 ]; then
+    echo "usage: $0 [seconds]   (a whole number of seconds, 1 or more)" >&2
+    exit 2
+fi
 name=${TINYCAST_PROCESS:-Tinycast Dev}
 pid=$(pgrep -x "$name" | head -n 1 || true)
 if [ -z "$pid" ]; then
     echo "$name is not running" >&2
     exit 1
 fi
+
+now() {
+    perl -MTime::HiRes=time -e 'printf "%.3f\n", time'
+}
 
 # Accepts [[d-]hh:]mm:ss[.ss]; prints seconds.
 cpu_seconds() {
@@ -45,7 +53,7 @@ sample() {
 
 first=$(sample)
 read -r cpu0 rss <<< "$first"
-wall0=$(date +%s)
+wall0=$(now)
 rss_sum=$rss
 count=1
 for _ in $(seq 1 "$seconds"); do
@@ -55,8 +63,8 @@ for _ in $(seq 1 "$seconds"); do
     rss_sum=$((rss_sum + rss))
     count=$((count + 1))
 done
-wall1=$(date +%s)
+wall1=$(now)
 
-awk -v a="$(cpu_seconds "$cpu0")" -v b="$(cpu_seconds "$cpu1")" -v w="$((wall1 - wall0))" \
+awk -v a="$(cpu_seconds "$cpu0")" -v b="$(cpu_seconds "$cpu1")" -v w="$wall1" -v w0="$wall0" \
     -v rss="$rss_sum" -v n="$count" \
-    'BEGIN { printf "mean CPU %.1f %%  mean RSS %d KB  (%d samples, %d s)\n", (b - a) / w * 100, rss / n, n, w }'
+    'BEGIN { printf "mean CPU %.1f %%  mean RSS %d KB  (%d samples, %.1f s)\n", (b - a) / (w - w0) * 100, rss / n, n, w - w0 }'
