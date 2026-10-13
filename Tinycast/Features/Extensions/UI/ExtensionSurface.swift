@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 /// The theme's surface, drawn here rather than through DesignSystem so extensions stay walled off.
@@ -19,24 +20,32 @@ private struct ExtensionSurfaceModifier<S: Shape>: ViewModifier {
         case .glass:
             content.glassEffect(glass, in: shape)
         case .tintedGlass(let tint) where reduceTransparency:
-            content.background { shape.fill(ThemePalette.color(tint.opaque)) }
+            content.background { shape.fill(color(tint.opaque)) }
         case .tintedGlass(let tint):
-            content.glassEffect(glass.tint(ThemePalette.color(tint)), in: shape)
+            content.glassEffect(glass.tint(color(tint)), in: shape)
         case .solid(.color(let fill), let stroke, _):
             content.background {
-                shape.fill(ThemePalette.color(fill))
-                    .overlay { shape.stroke(ThemePalette.color(stroke), lineWidth: 1) }
+                shape.fill(color(fill))
+                    .overlay { shape.stroke(color(stroke), lineWidth: 1) }
             }
         case .solid(.verticalGradient(let top, let bottom), let stroke, _):
             content.background {
                 shape
                     .fill(
                         LinearGradient(
-                            colors: [ThemePalette.color(top), ThemePalette.color(bottom)],
+                            colors: [color(top), color(bottom)],
                             startPoint: .top, endPoint: .bottom)
                     )
-                    .overlay { shape.stroke(ThemePalette.color(stroke), lineWidth: 1) }
+                    .overlay { shape.stroke(color(stroke), lineWidth: 1) }
             }
         }
+    }
+
+    private func color(_ pair: RGBAPair) -> Color {
+        Theme.Colors.adaptive(dark: nsColor(pair.dark), light: nsColor(pair.light))
+    }
+
+    private func nsColor(_ value: RGBA) -> NSColor {
+        NSColor(srgbRed: value.red, green: value.green, blue: value.blue, alpha: value.alpha)
     }
 }
