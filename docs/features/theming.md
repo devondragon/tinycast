@@ -82,12 +82,13 @@ re-resolves `Canvas` symbols each time (the "symbols" row). That makes the proxy
 not representative for symbol-heavy backdrops such as code rain. The hosted-window probe puts
 `PanelBackdrop` in an `NSHostingView` window and reads process CPU over 8 seconds; it is noisy (the
 machine ran at load average 10 to 12) and each figure is a single run. The `Live CPU open` and
-`Live CPU hidden` columns come from `Scripts/measure-backdrop.sh` against the running Debug app and
-are pending.
+`Live CPU hidden` columns come from `Scripts/measure-backdrop.sh` against the running app (10 second
+runs, `TINYCAST_PROCESS=Tinycast` for the installed release build). The open figure is the whole
+palette's cost, not the backdrop's alone; rows without a run say pending.
 
 | Backdrop | Proxy ms/frame (mean, p95) | Proxy CPU at 30 fps | Hosted-window probe | Live CPU open | Live CPU hidden | RSS delta | Machine | Date |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Tron grid, dark | 0.60, 0.68 | 1.8% | 0.7% to 6.1% over 4 runs | pending | pending | pending | Apple M4 Max | 2026-10-12 |
+| Tron grid, dark | 0.60, 0.68 | 1.8% | 0.7% to 6.1% over 4 runs | 11.1% (whole palette) | 0.1% before, 0.3% after | about 0.3 MB | Apple M4 Max | 2026-10-12 |
 | Tron grid, light | 0.59, 0.70 | 1.8% | 1.7% to 5.7% over 3 runs | pending | pending | pending | Apple M4 Max | 2026-10-12 |
 | Synthwave sunset, dark | 0.62, 0.72 | 1.8% | not probed | pending | pending | pending | Apple M4 Max | 2026-10-12 |
 | Synthwave sunset, light | 0.51, 0.57 | 1.5% | not probed | pending | pending | pending | Apple M4 Max | 2026-10-12 |
@@ -98,7 +99,11 @@ are pending.
 
 The code rain probe figures were taken at 20 fps with about half the columns raining and trails of 5 to
 12 glyphs. The shipped setting is 24 fps with two thirds of the columns and trails of 6 to 15, which
-draws more per frame and has not been probed; measure it with `Scripts/measure-backdrop.sh`. A rough
+draws more per frame and has not been probed; measure it with `Scripts/measure-backdrop.sh`.
+
+Tron's live open figure is above the 5% to 8% target because it includes the rest of the palette;
+it was accepted as is (Devon, 2026-10-12), since the palette is only open for a few seconds at a time
+and CPU returns to idle once it closes. A rough
 glyph count: 46 columns, two thirds raining, about 10 glyphs each, around 300 draws per frame.
 
 ## Fonts
