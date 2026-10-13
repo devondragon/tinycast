@@ -161,6 +161,10 @@ struct AppearanceTests {
         for token in [ColorToken.textPrimary, .selection, .panelScrim, .accent] {
             adapts("amber \(token)", ThemeStore.active.palette.color(token))
         }
+        ThemeStore.active.apply(.ares)
+        for token in [ColorToken.textPrimary, .selection, .panelScrim, .accent] {
+            adapts("ares \(token)", ThemeStore.active.palette.color(token))
+        }
         ThemeStore.active.apply(.tron)
         let plain = [NSAppearance(named: .aqua)!, NSAppearance(named: .darkAqua)!]
         let accessible = ["NSAppearanceNameAccessibilityAqua", "NSAppearanceNameAccessibilityDarkAqua"]
@@ -209,7 +213,7 @@ struct AppearanceTests {
 
         for (name, id, label) in [
             ("tron", ThemeID.tron, "grid"), ("matrix", .matrix, "code rain"), ("synthwave", .synthwave, "sunset grid"),
-            ("amber", .amber, "scanlines"),
+            ("amber", .amber, "scanlines"), ("ares", .ares, "light trails"),
         ] {
             let backdrop = ThemeCatalog.definition(for: id).backdrop
             var drawn = 0
@@ -233,7 +237,7 @@ struct AppearanceTests {
             }
             check("the \(name) \(label) backdrop renders at several sizes and times", drawn == 4)
             check("the \(name) \(label) backdrop leaves visible pixels in Dark", inked)
-            if id == .amber { check("the \(name) \(label) backdrop leaves visible pixels in Light", inkedLight) }
+            if id == .amber || id == .ares { check("the \(name) \(label) backdrop leaves visible pixels in Light", inkedLight) }
         }
 
         for file in BundledFont.ibmPlexMono.files {

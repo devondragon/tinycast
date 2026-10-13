@@ -7,6 +7,7 @@ enum ThemeID: String, CaseIterable, Identifiable, Sendable {
     case matrix
     case synthwave
     case amber
+    case ares
 
     var id: String { rawValue }
 
@@ -17,6 +18,7 @@ enum ThemeID: String, CaseIterable, Identifiable, Sendable {
         case .matrix: "Matrix"
         case .synthwave: "Synthwave"
         case .amber: "Amber CRT"
+        case .ares: "Tron Ares"
         }
     }
 }
@@ -100,7 +102,7 @@ struct ThemeSurfaces: Equatable, Sendable {
 }
 
 enum BackdropKind: Sendable {
-    case none, grid, codeRain, sunsetGrid, scanlines
+    case none, grid, codeRain, sunsetGrid, scanlines, lightTrails
 }
 
 struct Backdrop: Equatable, Sendable {
@@ -155,7 +157,7 @@ enum SystemDesign: Sendable {
 
 /// Every font Tinycast bundles, with the file it ships in and the license beside it.
 enum BundledFont: CaseIterable, Sendable {
-    case orbitron, exo2, shareTechMono, audiowide, vt323, ibmPlexMono
+    case orbitron, exo2, shareTechMono, audiowide, vt323, ibmPlexMono, chakraPetch
 
     var family: String {
         switch self {
@@ -165,6 +167,7 @@ enum BundledFont: CaseIterable, Sendable {
         case .audiowide: "Audiowide"
         case .vt323: "VT323"
         case .ibmPlexMono: "IBM Plex Mono"
+        case .chakraPetch: "Chakra Petch"
         }
     }
 
@@ -178,6 +181,9 @@ enum BundledFont: CaseIterable, Sendable {
         case .ibmPlexMono:
             ["IBMPlexMono-Regular.ttf", "IBMPlexMono-Medium.ttf", "IBMPlexMono-SemiBold.ttf",
              "IBMPlexMono-Bold.ttf"]
+        case .chakraPetch:
+            ["ChakraPetch-Regular.ttf", "ChakraPetch-Medium.ttf", "ChakraPetch-SemiBold.ttf",
+             "ChakraPetch-Bold.ttf"]
         }
     }
 
