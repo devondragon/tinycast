@@ -73,6 +73,10 @@ struct AppearanceTests {
         dark("accent", c.accent, is: Color.accentColor)
         dark("onAccent", c.onAccent, is: Color.white)
         dark("link", c.link, is: Color(nsColor: .linkColor))
+        dark("findMatch", c.findMatch, is: Color(nsColor: NSColor.systemYellow.withAlphaComponent(0.32)))
+        dark("findCurrent", c.findCurrent, is: Color(nsColor: NSColor.systemYellow.withAlphaComponent(0.9)))
+        adapts("findMatch", c.findMatch)
+        adapts("findCurrent", c.findCurrent)
 
         print("# every surface token resolves per appearance")
         for (label, token) in [
@@ -153,6 +157,10 @@ struct AppearanceTests {
         for token in [ColorToken.textPrimary, .selection, .panelScrim, .accent] {
             adapts("synthwave \(token)", ThemeStore.active.palette.color(token))
         }
+        ThemeStore.active.apply(.amber)
+        for token in [ColorToken.textPrimary, .selection, .panelScrim, .accent] {
+            adapts("amber \(token)", ThemeStore.active.palette.color(token))
+        }
         ThemeStore.active.apply(.tron)
         let plain = [NSAppearance(named: .aqua)!, NSAppearance(named: .darkAqua)!]
         let accessible = ["NSAppearanceNameAccessibilityAqua", "NSAppearanceNameAccessibilityDarkAqua"]
@@ -201,13 +209,15 @@ struct AppearanceTests {
 
         for (name, id, label) in [
             ("tron", ThemeID.tron, "grid"), ("matrix", .matrix, "code rain"), ("synthwave", .synthwave, "sunset grid"),
+            ("amber", .amber, "scanlines"),
         ] {
             let backdrop = ThemeCatalog.definition(for: id).backdrop
             var drawn = 0
             var inked = false
+            var inkedLight = false
             for (size, time, isDark) in [
                 (CGSize(width: 720, height: 480), 0.0, true), (CGSize(width: 320, height: 200), 1234.5, false),
-                (CGSize(width: 1, height: 1), 3599.9, true),
+                (CGSize(width: 1, height: 1), 3599.9, true), (CGSize(width: 720, height: 480), 0.0, false),
             ] {
                 let canvas = Canvas { context, canvasSize in
                     BackdropRenderer.draw(backdrop, in: &context, size: canvasSize, time: time, dark: isDark)
@@ -218,12 +228,50 @@ struct AppearanceTests {
                 guard let image = ImageRenderer(content: canvas).cgImage else { continue }
                 drawn += 1
                 if size.width == 720, let data = image.dataProvider?.data as Data? {
-                    inked = data.contains { $0 != 0 }
+                    if isDark { inked = data.contains { $0 != 0 } } else { inkedLight = data.contains { $0 != 0 } }
                 }
             }
-            check("the \(name) \(label) backdrop renders at several sizes and times", drawn == 3)
-            check("the \(name) \(label) backdrop leaves visible pixels", inked)
+            check("the \(name) \(label) backdrop renders at several sizes and times", drawn == 4)
+            check("the \(name) \(label) backdrop leaves visible pixels in Dark", inked)
+            if id == .amber { check("the \(name) \(label) backdrop leaves visible pixels in Light", inkedLight) }
         }
+
+        for file in BundledFont.ibmPlexMono.files {
+            let url = URL(fileURLWithPath: "Tinycast/Resources/Fonts/\(file)") as CFURL
+            CTFontManagerRegisterFontsForURL(url, .process, nil)
+        }
+        ThemeStore.active.apply(.amber)
+        let plexNames: [(NSFont.Weight, String)] = [
+            (.regular, "IBMPlexMono-Regular"), (.medium, "IBMPlexMono-Medium"),
+            (.semibold, "IBMPlexMono-SemiBold"), (.bold, "IBMPlexMono-Bold"),
+        ]
+        for (weight, name) in plexNames {
+            let resolved = ThemeFonts.nsFont(.body, base: .systemFont(ofSize: 13, weight: weight))
+            check("Amber body \(weight.rawValue) resolves to \(name)", resolved.fontName == name, resolved.fontName)
+        }
+        let bodyFont = { ThemeFonts.font(.body, base: .body, style: .body, weight: .medium) }
+        let first = bodyFont()
+        check("Amber body font reads equal twice", first == bodyFont())
+        let base = NSFont.systemFont(ofSize: 13, weight: .medium)
+        check("Amber body NSFont reads equal twice", ThemeFonts.nsFont(.body, base: base) == ThemeFonts.nsFont(.body, base: base))
+        ThemeStore.active.apply(.synthwave)
+        check("a theme switch drops the cached font", bodyFont() != first)
+        ThemeStore.active.apply(.standard)
+        check("Default font is base", ThemeFonts.font(.body, base: .caption, style: .body) == .caption)
+        check("Default NSFont is base", ThemeFonts.nsFont(.body, base: base) === base)
+        ThemeStore.active.apply(.amber)
+        let plexInk = [Font.Weight.regular, .medium, .semibold, .bold].map { weight -> Int in
+            let font = ThemeFonts.font(.body, base: .body, style: .body, weight: weight, fixedSize: 16)
+            let label = Text("Hamburgefonstiv mmmm").font(font).foregroundStyle(.white)
+                .frame(width: 300, height: 30).background(.black)
+            let renderer = ImageRenderer(content: label)
+            renderer.scale = 2
+            let data = renderer.cgImage?.dataProvider?.data as Data? ?? Data()
+            return data.reduce(0) { $0 + Int($1) }
+        }
+        check(
+            "Amber body weights render progressively heavier",
+            zip(plexInk, plexInk.dropFirst()).allSatisfy { $0 < $1 }, "\(plexInk)")
 
         print("\n\(passes) passed, \(failures) failed")
         exit(failures == 0 ? 0 : 1)

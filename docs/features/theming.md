@@ -42,8 +42,10 @@ high-contrast appearance), because a hairline at the usual alpha disappears for 
 
 ## Surfaces
 
-`Theme.Surfaces` exposes a `SurfaceStyle` for each of three roles: `panel` (the palette and other
-borderless windows), `overlay` (menus, dialogs, HUDs) and `control` (buttons, fields, cards). A style
+`Theme.Surfaces` exposes a `SurfaceStyle` for each of three roles: `panel` (the palette, notes, the
+quick action result, the camera panels and both HUDs), `overlay` (menus, dialogs, callouts, the note
+switcher and heading menu, and chat cards) and `control` (the action capsule, the menu circle and
+pills). A style
 is `.glass` (the call site's own glass, which is all Default uses), `.tintedGlass`, or `.solid` with a
 fill, stroke and optional glow. Views never branch on the theme.
 
@@ -71,7 +73,7 @@ The Settings picker draws the same still frame for each card.
 
 A backdrop runs only while the palette is showing. The hard requirement is zero CPU while hidden
 (the timeline pauses on hide and occlusion). While visible the target is roughly 5% to 8% of one core
-and under 8 MB of extra resident memory; each backdrop sets its own `frameRate` (Tron 30, Matrix 24, Synthwave 30).
+and under 8 MB of extra resident memory; each backdrop sets its own `frameRate` (Tron 30, Matrix 24, Synthwave 30, Amber 30).
 
 Three kinds of figure appear below. The proxy columns come from `Tests/backdrop-performance.swift`,
 which renders `BackdropRenderer.draw` through `ImageRenderer` at the 750x475 palette size for 300
@@ -89,6 +91,8 @@ are pending.
 | Tron grid, light | 0.59, 0.70 | 1.8% | 1.7% to 5.7% over 3 runs | pending | pending | pending | Apple M4 Max | 2026-10-12 |
 | Synthwave sunset, dark | 0.62, 0.72 | 1.8% | not probed | pending | pending | pending | Apple M4 Max | 2026-10-12 |
 | Synthwave sunset, light | 0.51, 0.57 | 1.5% | not probed | pending | pending | pending | Apple M4 Max | 2026-10-12 |
+| Amber scanlines, dark | 1.15 to 1.52, 1.60 to 2.45 over 3 runs | 3.4% to 4.6% | not probed | pending | pending | pending | Apple M4 Max | 2026-10-12 |
+| Amber scanlines, light (static) | 0.58 to 0.92, 0.65 to 1.17 over 3 runs, one frame drawn then the timeline pauses | 1.7% to 2.7%, not a running cost | not probed | pending | pending | pending | Apple M4 Max | 2026-10-12 |
 | Code rain, dark (24 fps) | 6.59, 7.19 (5.35 is symbol resolution) | 19.8%, not representative | 2.5% to 6.4% over 4 runs, at 20 fps and fewer glyphs | pending | pending | pending | Apple M4 Max | 2026-10-12 |
 | Code rain, light (24 fps) | 6.44, 7.17 | 19.3%, not representative | 6.5% in 1 run (a second run read 0%, the timeline did not tick), at 20 fps and fewer glyphs | pending | pending | pending | Apple M4 Max | 2026-10-12 |
 
@@ -104,7 +108,9 @@ Faces are bundled under `Tinycast/Resources/Fonts/` with their licenses, and reg
 resolves). Typography tokens go through `ThemeFonts`, which returns the token's `base` font untouched
 when the theme's face for that role (`display`, `body`, `mono`) equals Default's, and also when a
 bundled family is not installed, so a missing font never produces a blank label. Custom faces use
-`Font.custom(_:size:relativeTo:)` so Dynamic Type still scales them.
+`Font.custom(_:size:relativeTo:)` so Dynamic Type still scales them. IBM Plex Mono ships four static
+files (Regular, Medium, SemiBold, Bold) under one family name; `appearance-test` checks that each weight
+resolves to its own face.
 
 ## Adding a theme
 

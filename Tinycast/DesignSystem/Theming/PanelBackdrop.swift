@@ -38,7 +38,8 @@ enum BackdropRenderer {
         case .grid: GridBackdrop.draw(backdrop, in: &context, size: size, time: time, dark: dark, sunset: false)
         case .codeRain: CodeRainBackdrop.draw(backdrop, in: &context, size: size, time: time)
         case .sunsetGrid: SunsetBackdrop.draw(backdrop, in: &context, size: size, time: time, dark: dark)
-        case .none, .scanlines: break
+        case .scanlines: ScanlineBackdrop.draw(backdrop, in: &context, size: size, time: time, dark: dark)
+        case .none: break
         }
     }
 

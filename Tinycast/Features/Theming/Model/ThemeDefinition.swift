@@ -6,6 +6,7 @@ enum ThemeID: String, CaseIterable, Identifiable, Sendable {
     case tron
     case matrix
     case synthwave
+    case amber
 
     var id: String { rawValue }
 
@@ -15,6 +16,7 @@ enum ThemeID: String, CaseIterable, Identifiable, Sendable {
         case .tron: "Tron Legacy"
         case .matrix: "Matrix"
         case .synthwave: "Synthwave"
+        case .amber: "Amber CRT"
         }
     }
 }

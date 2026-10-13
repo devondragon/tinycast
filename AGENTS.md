@@ -74,11 +74,13 @@ feature's doc, under its own `## Invariants`.
 - **Async results can become stale across suspension.** Before applying them, validate cancellation,
   operation identity and destination where they can change. Long-lived work has an owner and teardown;
   detached or callback-backed work owned by a caller follows that caller's cancellation.
-- **Dark is the baseline, and a colour's dark branch is the literal it always was.** `Theme.Colors`
-  resolves per appearance through `ramp`/`adaptive`; every dark value is the `Color.white.opacity(…)`
-  the forced-dark build shipped, restated rather than re-derived. Retune a light branch freely — change
+- **Dark is the baseline, and a colour's dark branch is the literal it always was.** The dark stops
+  now live in `ColorToken.baseRecipe`, pinned by `Tests/appearance-test.swift`: every one is the
+  `Color.white.opacity(…)` the forced-dark build shipped, restated rather than re-derived. Retune a light branch freely — change
   a dark one only when the task is to change Dark. `AppAppearance` drives `NSApp.appearance`, and
-  `.system` maps to `nil` so AppKit follows macOS on its own.
+  `.system` maps to `nil` so AppKit follows macOS on its own. `Theme`'s tokens read the global
+  `ThemeStore.active`, global like `IconCache.style` for the reason
+  [architecture.md](docs/architecture.md) records.
 - **Tinycast presents its own dialogs — never `NSAlert` or a system popover.** A question
   goes through `DialogController`, a report through a HUD via `HUDPresenter`.
 - **A networked feature fetches on a private `.ephemeral`, `urlCache = nil` session**, never

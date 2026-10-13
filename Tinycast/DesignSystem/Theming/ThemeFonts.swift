@@ -11,12 +11,15 @@ enum ThemeFonts {
     ) -> Font {
         let face = ThemeStore.active.palette.definition.faces.face(for: role)
         guard face != ThemeFaces.system.face(for: role) else { return base }
+        if case .bundled(let bundled) = face, !isInstalled(bundled) { return base }
+        let key = FontKey(role: role, style: style, weight: weight, scale: scale, fixedSize: fixedSize)
+        let cache = currentCache()
+        if let font = cache.fonts[key] { return font }
         let preferred = NSFont.preferredFont(forTextStyle: style)
         let size = fixedSize ?? (preferred.pointSize * scale).rounded()
         let font: Font
         switch face {
         case .bundled(let bundled):
-            guard isInstalled(bundled) else { return base }
             font =
                 fixedSize == nil
                 ? .custom(bundled.family, size: size, relativeTo: textStyle(style))
@@ -24,12 +27,23 @@ enum ThemeFonts {
         case .system(let design):
             font = .system(size: size, design: fontDesign(design))
         }
-        return font.weight(weight ?? fontWeight(impliedWeight(of: preferred)))
+        let resolved = font.weight(weight ?? fontWeight(impliedWeight(of: preferred)))
+        cache.fonts[key] = resolved
+        return resolved
     }
 
     static func nsFont(_ role: FontRole, base: NSFont) -> NSFont {
         let face = ThemeStore.active.palette.definition.faces.face(for: role)
         guard face != ThemeFaces.system.face(for: role) else { return base }
+        let key = NSFontKey(role: role, base: base)
+        let cache = currentCache()
+        if let font = cache.nsFonts[key] { return font }
+        let resolved = resolveNSFont(face, base: base)
+        cache.nsFonts[key] = resolved
+        return resolved
+    }
+
+    private static func resolveNSFont(_ face: FontFace, base: NSFont) -> NSFont {
         switch face {
         case .bundled(let bundled):
             let descriptor = NSFontDescriptor(fontAttributes: [
@@ -72,8 +86,46 @@ enum ThemeFonts {
             ?? .regular
     }
 
+    private struct FontKey: Hashable {
+        let role: FontRole
+        let style: NSFont.TextStyle
+        let weight: Font.Weight?
+        let scale: CGFloat
+        let fixedSize: CGFloat?
+    }
+
+    private struct NSFontKey: Hashable {
+        let role: FontRole
+        let base: NSFont
+    }
+
+    private final class Cache {
+        let generation: Int
+        var fonts: [FontKey: Font] = [:]
+        var nsFonts: [NSFontKey: NSFont] = [:]
+
+        init(generation: Int) {
+            self.generation = generation
+        }
+    }
+
+    private static var cache = Cache(generation: -1)
+
+    /// Resolution runs once per theme switch: token reads happen per row, per render.
+    private static func currentCache() -> Cache {
+        let generation = ThemeStore.active.generation
+        if cache.generation != generation { cache = Cache(generation: generation) }
+        return cache
+    }
+
+    /// Only a hit is remembered: a font registered later must still be found.
+    private static var installed: Set<BundledFont> = []
+
     private static func isInstalled(_ bundled: BundledFont) -> Bool {
-        NSFontManager.shared.availableMembers(ofFontFamily: bundled.family) != nil
+        if installed.contains(bundled) { return true }
+        guard NSFontManager.shared.availableMembers(ofFontFamily: bundled.family) != nil else { return false }
+        installed.insert(bundled)
+        return true
     }
 
     private static func textStyle(_ style: NSFont.TextStyle) -> Font.TextStyle {

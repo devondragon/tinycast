@@ -232,8 +232,9 @@ scanlines.
   with the store active, and every Default surface role resolves to `.glass`.
 - New `Tests/theme-test.swift`: every `ThemeID` has a definition with every token filled; the
   contrast rules above hold for all themes and variants; every bundled font named in a
-  definition has a file in `Resources/Fonts/` and a license next to it; the settings round trip
-  for `theme` works.
+  definition has a file in `Resources/Fonts/` and a license next to it.
+- The `settings.json` round trip for `theme` is covered generically by
+  `Tests/settings-file-test.swift`, including that a rejected value keeps the current one.
 - Backdrop performance measured per backdrop and recorded in the PR.
 - Visual sign-off by Devon for each theme, over a light and a dark wallpaper, in both variants.
 - The standard definition of done in `docs/testing.md` applies to every PR.
