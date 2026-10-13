@@ -140,13 +140,13 @@ of `themedSurface` per the extension rule. Extensions get no backdrop and no glo
 Only the `panel` role draws a backdrop. Layer order, back to front: surface fill, backdrop at
 `backdropIntensity`, the theme's `panelScrim`, content, then the clip (still last).
 
-Each kind is one view in `DesignSystem/Backdrops/`:
+Each kind is one view in `DesignSystem/Theming/Backdrops/`:
 
 - `GridBackdrop` (Tron): a perspective floor grid with a few light traces travelling along the
   lines and turning at right angles.
 - `CodeRainBackdrop` (Matrix): columns of falling katakana and digits with a bright head and a
   fading tail.
-- `SunsetGridBackdrop` (Synthwave): a banded sun above a horizon and a grid scrolling toward the
+- `SunsetBackdrop` (Synthwave): a banded sun above a horizon and a grid scrolling toward the
   viewer.
 - `ScanlineBackdrop` (Amber): fixed scanlines, a slow vignette breathing, rare faint flicker.
   The light variant is paper grain without flicker.

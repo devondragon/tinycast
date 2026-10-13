@@ -22,10 +22,12 @@ enum SunsetBackdrop {
                     Gradient(colors: [top, bottom]),
                     startPoint: CGPoint(x: center.x, y: center.y - radius), endPoint: center))
             layer.blendMode = .destinationOut
-            let drift = (time * 6).truncatingRemainder(dividingBy: radius / Double(bands))
+            let spacing = radius / Double(bands)
+            let top = center.y - radius * 0.55
+            let drift = (time * 6).truncatingRemainder(dividingBy: spacing)
             for band in 0..<bands {
-                let y = center.y - radius * 0.55 + Double(band) * radius / Double(bands) + drift
-                let height = 1.5 + Double(band) * 1.2
+                let y = top + Double(band) * spacing + drift
+                let height = max(0, (y - top) * 1.2 / spacing)
                 layer.fill(Path(CGRect(x: 0, y: y, width: size.width, height: height)), with: .color(.black))
             }
         }

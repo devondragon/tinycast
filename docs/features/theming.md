@@ -57,11 +57,11 @@ copy, per the extension rule in `AGENTS.md`.
 
 ## Backdrops
 
-`PanelBackdrop` wraps a `Canvas` in a `TimelineView` at 30 fps and draws through `BackdropRenderer`,
+`PanelBackdrop` wraps a `Canvas` in a `TimelineView` at the backdrop's `frameRate` and draws through `BackdropRenderer`,
 with one renderer per `BackdropKind` in `DesignSystem/Theming/Backdrops/`. A renderer is stateless:
 every position is a pure function of time and a fixed integer hash, nothing is stored between frames,
 and glyphs are resolved once as `Canvas` symbols. Renderers are plain enums that carry no actor isolation and take plain
-per-appearance colors from `ThemePalette.nsColor`.
+per-appearance colors from `BackdropRenderer.color(_:dark:)`.
 
 The timeline is paused when the window is hidden or occluded (`WindowOcclusionReader`), under
 Reduce Motion (one still frame at time 0), and in Light when the backdrop's `lightIsStatic` is set.
@@ -112,7 +112,7 @@ bundled family is not installed, so a missing font never produces a blank label.
 2. Add `ThemeCatalog+Name.swift` with the `ThemeDefinition`, and return it from
    `ThemeCatalog.definition(for:)`.
 3. If the backdrop kind is new, add a renderer under `DesignSystem/Theming/Backdrops/`: stateless,
-   a plain enum with no actor isolation, plain per-appearance colors via `ThemePalette.nsColor`.
+   a plain enum with no actor isolation, plain per-appearance colors via `BackdropRenderer.color(_:dark:)`.
 4. Add the value to the `appearance.visualTheme` row in [settings-file.md](settings-file.md).
 5. Run `theme-test` (contrast against each surface) and `backdrop-performance` (draw cost), and fill
    the live columns of the budget table with `Scripts/measure-backdrop.sh`.
