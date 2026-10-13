@@ -16,7 +16,7 @@ struct ExtensionRefreshIndicator: View {
                 .help("Background refresh is off — enable it from Actions")
         case .failed(let message):
             Image(systemName: "exclamationmark.triangle")
-                .foregroundStyle(.orange)
+                .foregroundStyle(Theme.Colors.warning)
                 .help(message)
         }
     }

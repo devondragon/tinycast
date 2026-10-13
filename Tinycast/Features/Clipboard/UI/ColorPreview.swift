@@ -14,7 +14,7 @@ struct ColorPreview: View {
             ColorSwatch(color: color, cornerRadius: metrics.radius.card)
                 .frame(width: Self.swatchSize.width, height: Self.swatchSize.height)
             Text(text)
-                .font(.system(.subheadline, design: .monospaced))
+                .font(metrics.typography.codeSmall)
                 .textSelection(.enabled)
                 .lineLimit(1)
                 .truncationMode(.middle)

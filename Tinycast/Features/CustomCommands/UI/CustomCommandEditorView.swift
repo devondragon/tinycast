@@ -61,7 +61,7 @@ struct CustomCommandEditorView: View {
                                 "Show output", detail: "Open a window with everything the command prints.",
                                 value: $editor.showsOutput, focus: .output)
                             if let errorMessage = editor.errorMessage {
-                                detail(errorMessage).foregroundStyle(.orange)
+                                detail(errorMessage).foregroundStyle(Theme.Colors.warning)
                             }
                         }
                     }

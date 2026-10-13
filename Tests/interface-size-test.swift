@@ -174,6 +174,10 @@ struct InterfaceSizeTests {
         expect(
             m.typography.chipNSFont == Theme.Typography.chipNSFont,
             "typography.chipNSFont is the Theme font itself")
+        expect(m.typography.caption == Theme.Typography.caption, "typography.caption is Theme's")
+        expect(m.typography.detail == Theme.Typography.detail, "typography.detail is Theme's")
+        expect(m.typography.microLabel == Theme.Typography.microLabel, "typography.microLabel is Theme's")
+        expect(m.typography.codeSmall == Theme.Typography.codeSmall, "typography.codeSmall is Theme's")
 
         // Extensions duplicates the mechanism rather than importing it, so it is checked here too.
         expect(ExtensionFormMetrics.base.scale, 1, "the form metrics base is unscaled")

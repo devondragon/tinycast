@@ -403,6 +403,13 @@ enum Theme {
         /// A staged chat attachment's name beside the search text; the NSFont measures the chip.
         static let chip = Font.callout
         @MainActor static let chipNSFont = NSFont.preferredFont(forTextStyle: .callout)
+        /// Metadata under a title, at caption size.
+        static let caption = Font.caption
+        /// Body-adjacent text one step down: a chat card's lines, a preview's caption row.
+        static let detail = Font.callout
+        /// A tiny uppercase-feeling label over a value.
+        static let microLabel = Font.caption2.weight(.semibold)
+        static let codeSmall = Font.system(.subheadline, design: .monospaced)
         /// A dropdown control's trailing chevron, deliberately smaller than the label it follows.
         static let disclosure = Font.caption.weight(.semibold)
         static let menuRow = Font.body
@@ -510,6 +517,12 @@ enum Theme {
         static let dropGuideArmed = Color.blue
         /// A dialog's standard default action; destructive defaults keep their semantic red.
         static let primaryAction = Color.blue
+        /// Focus rings, selected outlines and accent glyphs: the system accent until a theme sets one.
+        static let accent = Color.accentColor
+        /// Ink on a solid accent or status fill.
+        static let onAccent = Color.white
+        /// Link text in the AppKit text views.
+        static let link = Color(nsColor: .linkColor)
         /// Destructive tint: a destructive label, and a `.danger` dialog's glyph.
         static let destructive = Color.red
         /// Success tint: the leading glyph of a `.success` dialog.

@@ -9,7 +9,7 @@ struct PlainTextSurface: NSViewRepresentable {
     private static let attributes: [NSAttributedString.Key: Any] = [
         .font: NSFont.userFixedPitchFont(ofSize: 11)
             ?? .monospacedSystemFont(ofSize: 11, weight: .regular),
-        .foregroundColor: NSColor.textColor
+        .foregroundColor: NSColor(Theme.Colors.textPrimary)
     ]
     private static let inset = NSSize(width: 3, height: 3)
 

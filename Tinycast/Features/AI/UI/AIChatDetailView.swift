@@ -139,7 +139,7 @@ private struct AIChatComposer: View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             if !chat.session.messages.isEmpty, let notice = chat.notice {
                 Label(notice, systemImage: "exclamationmark.triangle")
-                    .font(.callout)
+                    .font(Theme.Typography.detail)
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, Theme.Spacing.sm)
             }
@@ -264,7 +264,7 @@ private struct ComposerControlLabel<Icon: View>: View {
             }
             if let title {
                 Text(title)
-                    .font(.callout)
+                    .font(Theme.Typography.detail)
                     .lineLimit(1)
                     .truncationMode(.middle)
             }
@@ -383,7 +383,7 @@ private struct DictationButton: View {
                 } else if session != nil {
                     ComposerSymbol(name: "waveform")
                         .symbolEffect(.variableColor.iterative)
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Theme.Colors.accent)
                 } else {
                     ComposerSymbol(name: "mic")
                         .foregroundStyle(Theme.Colors.textSecondary)
@@ -418,9 +418,9 @@ private struct WebSearchPill: View {
             HStack(spacing: Theme.Spacing.xs) {
                 ComposerSymbol(name: "globe")
                     .frame(width: Theme.Size.aiChatComposerGlyph, height: Theme.Size.aiChatComposerGlyph)
-                if !isCompact { Text("Search").font(.callout) }
+                if !isCompact { Text("Search").font(Theme.Typography.detail) }
             }
-            .foregroundStyle(Color.accentColor)
+            .foregroundStyle(Theme.Colors.accent)
             .padding(.horizontal, isCompact ? 0 : Theme.Spacing.md)
             .frame(minWidth: Theme.Size.aiChatComposerControl)
             .frame(height: Theme.Size.aiChatComposerControl)
@@ -560,7 +560,7 @@ private struct FindCounter: View {
     var body: some View {
         HStack(spacing: Theme.Spacing.sm) {
             Text(count == 0 ? "No matches" : "\(position) of \(count)")
-                .font(.callout)
+                .font(Theme.Typography.detail)
                 .monospacedDigit()
                 .foregroundStyle(.secondary)
             Button {
@@ -624,10 +624,10 @@ private struct ContextCard: View {
         let shape = RoundedRectangle(cornerRadius: Theme.Radius.menuPanel, style: .continuous)
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             HStack {
-                Text("Context").font(.headline)
+                Text("Context").font(Theme.Typography.panelTitle)
                 Spacer(minLength: Theme.Spacing.xxl)
                 Text(report.fill.formatted(.percent.precision(.fractionLength(0))))
-                    .font(.headline)
+                    .font(Theme.Typography.panelTitle)
                     .monospacedDigit()
                     .foregroundStyle(report.tint)
             }
@@ -635,7 +635,7 @@ private struct ContextCard: View {
                 .tint(report.tint)
             if report.historyBytes > report.budget {
                 Text("The oldest messages no longer fit and are left out.")
-                    .font(.caption)
+                    .font(Theme.Typography.caption)
                     .foregroundStyle(Theme.Colors.destructive)
             }
             Grid(
@@ -669,7 +669,7 @@ private struct ContextCard: View {
                     "MCP servers",
                     report.toolServers == 0 ? "None" : "\(report.toolServers) in reach")
             }
-            .font(.callout)
+            .font(Theme.Typography.detail)
         }
         .padding(Theme.Spacing.xl)
         .frame(width: Theme.Size.chatContextCard, alignment: .leading)
@@ -682,7 +682,7 @@ private struct ContextCard: View {
     private func section(_ title: String) -> some View {
         GridRow {
             Text(title.uppercased())
-                .font(.caption2.weight(.semibold))
+                .font(Theme.Typography.microLabel)
                 .foregroundStyle(.tertiary)
                 .gridCellColumns(2)
                 .padding(.top, Theme.Spacing.xs)

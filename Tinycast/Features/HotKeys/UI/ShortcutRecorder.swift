@@ -70,7 +70,7 @@ struct ShortcutRecorder: View {
                     Permissions.openAccessibilitySettings()
                 } label: {
                     Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(Theme.Colors.warning)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Open Accessibility settings")
@@ -89,7 +89,7 @@ struct ShortcutRecorder: View {
                             RoundedRectangle(
                                 cornerRadius: Theme.Radius.recorderKeyCap, style: .continuous
                             )
-                            .fill(Color.primary.opacity(0.08))
+                            .fill(Theme.Colors.textPrimary.opacity(0.08))
                         )
                 }
             }

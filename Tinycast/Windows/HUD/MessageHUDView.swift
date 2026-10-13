@@ -50,7 +50,7 @@ struct MessageHUDView: View {
             mark
             Text(message)
                 .font(metrics.typography.bar)
-                .foregroundStyle(Color.primary)
+                .foregroundStyle(Theme.Colors.textPrimary.opacity(0.85))
                 .lineLimit(1)
         }
         .padding(.horizontal, metrics.spacing.xl)

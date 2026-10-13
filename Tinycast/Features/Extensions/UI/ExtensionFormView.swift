@@ -208,7 +208,7 @@ struct ExtensionFormView: View {
                 if let error = field.string("error"), !error.isEmpty {
                     Text(error)
                         .font(metrics.typography.rowTrailing)
-                        .foregroundStyle(.red)
+                        .foregroundStyle(Theme.Colors.destructive)
                         // Spoken by the control it belongs to, so this text is its echo.
                         .accessibilityHidden(true)
                 }
@@ -375,7 +375,7 @@ private struct ExtensionCheckbox: View {
     /// Drawn, not an SF Symbol pair: those differ in weight and jitter as they tick.
     private var box: some View {
         RoundedRectangle(cornerRadius: 4, style: .continuous)
-            .fill(isOn ? Color.accentColor : ExtensionColors.fieldFill)
+            .fill(isOn ? Theme.Colors.accent : ExtensionColors.fieldFill)
             .overlay(
                 RoundedRectangle(cornerRadius: 4, style: .continuous)
                     .strokeBorder(
@@ -385,7 +385,7 @@ private struct ExtensionCheckbox: View {
                 if isOn {
                     Image(systemName: "checkmark")
                         .font(.system(size: 9, weight: .bold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Theme.Colors.onAccent)
                 }
             }
             .frame(

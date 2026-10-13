@@ -76,7 +76,7 @@ struct ExtensionFailureView: View {
             VStack(alignment: .leading, spacing: metrics.spacing.md) {
                 HStack(spacing: metrics.spacing.sm) {
                     Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(Theme.Colors.warning)
                     Text(headline)
                         .font(metrics.typography.rowTitle)
                         .textSelection(.enabled)

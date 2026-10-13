@@ -64,7 +64,7 @@ struct CalculatorCard: View {
                     Text(message)
                         .lineLimit(1)
                 }
-                .font(.body)
+                .font(metrics.typography.rowTitle)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity)
             }
