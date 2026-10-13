@@ -30,6 +30,15 @@ enum ExtensionImage {
     struct LoadKey: Equatable {
         var source: Source?
         var isDark: Bool
+        /// The palette is theme colors too, so a switch decodes the SVG again.
+        var themeGeneration: Int
+
+        @MainActor
+        init(source: Source?, isDark: Bool) {
+            self.source = source
+            self.isDark = isDark
+            themeGeneration = ThemeStore.active.generation
+        }
     }
 
     /// An `ImageLike`: a string, or `{source, tintColor, mask, fallback}` with a themed `source`.
@@ -126,13 +135,16 @@ enum ExtensionImage {
         return text.count <= 4 ? .glyph(text) : nil
     }
 
-    /// Resolved once per appearance: the conversion is main-actor work a decode must skip.
+    /// Resolved once per appearance and theme: a decode must skip this main-actor conversion.
     static func svgPalette(isDark: Bool) -> [String: String] {
-        isDark ? darkSVGPalette : lightSVGPalette
+        let generation = ThemeStore.active.generation
+        if let cached = svgPalettes[isDark], cached.generation == generation { return cached.palette }
+        let resolved = svgPalette(from: palette, isDark: isDark)
+        svgPalettes[isDark] = (generation, resolved)
+        return resolved
     }
 
-    private static let darkSVGPalette = svgPalette(from: palette, isDark: true)
-    private static let lightSVGPalette = svgPalette(from: palette, isDark: false)
+    private static var svgPalettes: [Bool: (generation: Int, palette: [String: String])] = [:]
 
     private static func svgPalette(from palette: [String: Color], isDark: Bool) -> [String: String] {
         palette.compactMapValues { cssColor($0, isDark: isDark) }
@@ -163,17 +175,19 @@ enum ExtensionImage {
     }
 
     /// The one source for both a SwiftUI tint and the CSS an SVG's own `stroke` is rewritten to.
-    private static let palette: [String: Color] = [
-        "raycast-blue": .blue,
-        "raycast-green": .green,
-        "raycast-magenta": Color(red: 0.85, green: 0.24, blue: 0.62),
-        "raycast-orange": .orange,
-        "raycast-purple": .purple,
-        "raycast-red": .red,
-        "raycast-yellow": .yellow,
-        "raycast-primary-text": .primary,
-        "raycast-secondary-text": Theme.Colors.textSecondary
-    ]
+    private static var palette: [String: Color] {
+        [
+            "raycast-blue": .blue,
+            "raycast-green": .green,
+            "raycast-magenta": Color(red: 0.85, green: 0.24, blue: 0.62),
+            "raycast-orange": .orange,
+            "raycast-purple": .purple,
+            "raycast-red": .red,
+            "raycast-yellow": .yellow,
+            "raycast-primary-text": .primary,
+            "raycast-secondary-text": Theme.Colors.textSecondary
+        ]
+    }
 
     private static func color(named raw: String) -> Color? {
         // Extensions also pass raw CSS, in every notation `ColorValue` reads.
@@ -370,7 +384,7 @@ struct ExtensionIconView: View {
     @MainActor
     private enum MenuSymbolStyle {
         static let size: CGFloat = 14
-        static let color = Theme.Colors.ramp(dark: 0.70, light: 0.70)
+        static var color: Color { Theme.Colors.ramp(dark: 0.70, light: 0.70) }
     }
 
     @Environment(\.metrics) private var metrics

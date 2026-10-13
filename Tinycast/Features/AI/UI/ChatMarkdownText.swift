@@ -22,7 +22,7 @@ struct ChatMarkdownText: View {
         ChatTextRepresentable(
             source: ChatMarkdownSource(
                 blocks: blocks, highlight: highlight, citations: citations, prefix: path,
-                failed: failed, metrics: metrics)
+                failed: failed, metrics: metrics, themeGeneration: ThemeStore.active.generation)
         ) { rect in
             if rect != currentMatch { currentMatch = rect }
         }
@@ -90,7 +90,6 @@ final class ChatSelectableTextView: NSTextView {
         isVerticallyResizable = false
         isHorizontallyResizable = false
         allowsUndo = false
-        linkTextAttributes = [.foregroundColor: NSColor(Theme.Colors.link), .cursor: NSCursor.pointingHand]
     }
 
     /// AppKit's own designated initializer; `NSTextView(frame:)` routes through it.
@@ -105,6 +104,7 @@ final class ChatSelectableTextView: NSTextView {
     func show(_ next: ChatMarkdownSource) {
         guard next != source else { return }
         source = next
+        linkTextAttributes = [.foregroundColor: NSColor(Theme.Colors.link), .cursor: NSCursor.pointingHand]
         let output = ChatMarkdownRenderer(next).render()
         rendered = output
         measured = nil
@@ -219,11 +219,9 @@ private final class ChatCodeHeader: NSView {
 
     init() {
         super.init(frame: .zero)
-        label.textColor = NSColor(Theme.Colors.textTertiary)
         label.lineBreakMode = .byTruncatingTail
         button.isBordered = false
         button.imagePosition = .imageOnly
-        button.contentTintColor = NSColor(Theme.Colors.textSecondary)
         button.target = self
         button.action = #selector(copyCode)
         addSubview(label)
@@ -240,6 +238,8 @@ private final class ChatCodeHeader: NSView {
         self.code = code
         label.stringValue = language ?? ""
         label.font = metrics.typography.textNSFont(.caption1)
+        label.textColor = NSColor(Theme.Colors.textTertiary)
+        button.contentTintColor = NSColor(Theme.Colors.textSecondary)
     }
 
     override func layout() {

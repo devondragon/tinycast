@@ -68,12 +68,6 @@ private struct FileSearchRow: View {
         _image = State(initialValue: IconCache.cachedFitted(forFile: result.id))
     }
 
-    private var fill: Color {
-        if selected { return Theme.Colors.selection }
-        if hovered { return Theme.Colors.rowHover }
-        return .clear
-    }
-
     /// A folder is named by where it sits: half the hits are some `src` or `Tinycast`.
     private var label: Text {
         guard result.isDirectory, !result.parentName.isEmpty else { return Text(result.name) }
@@ -102,8 +96,7 @@ private struct FileSearchRow: View {
         .padding(.horizontal, metrics.spacing.md)
         .padding(.vertical, metrics.spacing.sm)
         .background(
-            RoundedRectangle(cornerRadius: metrics.radius.row, style: .continuous)
-                .fill(fill)
+            RowHighlight(selected: selected, hovered: hovered, cornerRadius: metrics.radius.row)
         )
         .armedHover($hovered)
         .accessibilityElement(children: .combine)

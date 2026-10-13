@@ -45,12 +45,6 @@ private struct RoomPickerRowView: View {
     let selected: Bool
     @State private var hovered = false
 
-    private var fill: Color {
-        if selected { return Theme.Colors.selection }
-        if hovered { return Theme.Colors.rowHover }
-        return .clear
-    }
-
     private var title: String {
         switch row {
         case .window(let window):
@@ -103,7 +97,7 @@ private struct RoomPickerRowView: View {
         .padding(.horizontal, metrics.spacing.md)
         .padding(.vertical, metrics.spacing.sm)
         .background(
-            RoundedRectangle(cornerRadius: metrics.radius.row, style: .continuous).fill(fill)
+            RowHighlight(selected: selected, hovered: hovered, cornerRadius: metrics.radius.row)
         )
         .armedHover($hovered)
         .accessibilityElement(children: .combine)

@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import Synchronization
 
 /// One theme resolved to SwiftUI colors, once per switch rather than per render.
 @MainActor
@@ -24,6 +25,9 @@ struct ThemePalette {
     private static func resolve(_ recipe: ColorRecipe, token: ColorToken, in theme: ThemeDefinition) -> Color {
         switch recipe {
         case .ink(let dark, let light):
+            if theme.id != .standard, raisedUnderIncreasedContrast.contains(token) {
+                return raisable(theme.ink, dark: dark, light: light, floor: theme.recipe(for: .textTertiary))
+            }
             return tinted(theme.ink, dark: dark, light: light)
         case .surface(let dark, let light):
             return tinted(theme.surface, dark: dark, light: light)
@@ -37,6 +41,27 @@ struct ThemePalette {
         case .system(let system, let dark, let light):
             return withAlpha(systemColor(system), dark: dark, light: light)
         }
+    }
+
+    /// Hairlines a high-contrast reader cannot see at the usual stop; Default leaves it to macOS.
+    private static let raisedUnderIncreasedContrast: Set<ColorToken> = [.separator, .border, .cardStroke]
+
+    nonisolated static func raisesHairlines(_ appearance: NSAppearance, increaseContrast: Bool) -> Bool {
+        increaseContrast
+            || appearance.bestMatch(from: [
+                .aqua, .darkAqua, .accessibilityHighContrastAqua, .accessibilityHighContrastDarkAqua,
+            ]).map { $0 == .accessibilityHighContrastAqua || $0 == .accessibilityHighContrastDarkAqua } == true
+    }
+
+    private static func raisable(_ pair: RGBAPair, dark: Double, light: Double, floor: ColorRecipe) -> Color {
+        guard case .ink(let floorDark, let floorLight) = floor else { return tinted(pair, dark: dark, light: light) }
+        return Color(nsColor: NSColor(name: nil) { @Sendable appearance in
+            let high = raisesHairlines(appearance, increaseContrast: IncreasedContrastFlag.isOn)
+            let isDark = appearance.isDark
+            let stop = isDark ? (high ? max(dark, floorDark) : dark) : (high ? max(light, floorLight) : light)
+            let ink = pair.value(dark: isDark)
+            return nsColor(ink.with(alpha: ink.alpha * stop))
+        })
     }
 
     private static func tinted(_ pair: RGBAPair, dark: Double, light: Double) -> Color {
@@ -68,7 +93,15 @@ struct ThemePalette {
         }
     }
 
-    static func nsColor(_ value: RGBA) -> NSColor {
+    nonisolated static func nsColor(_ value: RGBA) -> NSColor {
         NSColor(srgbRed: value.red, green: value.green, blue: value.blue, alpha: value.alpha)
     }
+}
+
+/// The system's Increase Contrast setting, readable from a color provider on any thread.
+enum IncreasedContrastFlag {
+    private static let value = Mutex(false)
+    static var isOn: Bool { value.withLock { $0 } }
+
+    static func set(_ on: Bool) { value.withLock { $0 = on } }
 }

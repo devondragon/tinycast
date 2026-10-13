@@ -11,7 +11,8 @@ enum ThemeFonts {
     ) -> Font {
         let face = ThemeStore.active.palette.definition.faces.face(for: role)
         guard face != ThemeFaces.system.face(for: role) else { return base }
-        let size = fixedSize ?? (NSFont.preferredFont(forTextStyle: style).pointSize * scale).rounded()
+        let preferred = NSFont.preferredFont(forTextStyle: style)
+        let size = fixedSize ?? (preferred.pointSize * scale).rounded()
         let font: Font
         switch face {
         case .bundled(let bundled):
@@ -23,7 +24,7 @@ enum ThemeFonts {
         case .system(let design):
             font = .system(size: size, design: fontDesign(design))
         }
-        return weight.map(font.weight) ?? font
+        return font.weight(weight ?? fontWeight(impliedWeight(of: preferred)))
     }
 
     static func nsFont(_ role: FontRole, base: NSFont) -> NSFont {
@@ -31,13 +32,10 @@ enum ThemeFonts {
         guard face != ThemeFaces.system.face(for: role) else { return base }
         switch face {
         case .bundled(let bundled):
-            var attributes: [NSFontDescriptor.AttributeName: Any] = [.family: bundled.family]
-            if let traits = base.fontDescriptor.object(forKey: .traits) as? [NSFontDescriptor.TraitKey: Any],
-                let weight = traits[.weight]
-            {
-                attributes[.traits] = [NSFontDescriptor.TraitKey.weight: weight]
-            }
-            let descriptor = NSFontDescriptor(fontAttributes: attributes)
+            let descriptor = NSFontDescriptor(fontAttributes: [
+                .family: bundled.family,
+                .traits: [NSFontDescriptor.TraitKey.weight: impliedWeight(of: base).rawValue]
+            ])
             guard let font = NSFont(descriptor: descriptor, size: base.pointSize),
                 font.familyName == bundled.family
             else { return base }
@@ -46,6 +44,32 @@ enum ThemeFonts {
             guard let descriptor = base.fontDescriptor.withDesign(nsDesign(design)) else { return base }
             return NSFont(descriptor: descriptor, size: base.pointSize) ?? base
         }
+    }
+
+    /// A text style's weight lives on SF's `wght` axis: `.caption2` is Medium with a zero trait.
+    static func impliedWeight(of font: NSFont) -> NSFont.Weight {
+        let variation = CTFontCopyVariation(font) as? [NSNumber: NSNumber]
+        if let axis = variation?[NSNumber(value: wghtAxis)]?.doubleValue {
+            return axisWeights.min { abs($0.axis - axis) < abs($1.axis - axis) }?.weight ?? .regular
+        }
+        let traits = font.fontDescriptor.object(forKey: .traits) as? [NSFontDescriptor.TraitKey: Any]
+        return NSFont.Weight((traits?[.weight] as? NSNumber)?.doubleValue ?? 0)
+    }
+
+    private static let wghtAxis: UInt32 = 0x7767_6874
+
+    private static let axisWeights: [(axis: Double, weight: NSFont.Weight)] = [
+        (100, .ultraLight), (200, .thin), (300, .light), (400, .regular), (510, .medium),
+        (590, .semibold), (700, .bold), (800, .heavy), (900, .black)
+    ]
+
+    private static func fontWeight(_ weight: NSFont.Weight) -> Font.Weight {
+        let weights: [(NSFont.Weight, Font.Weight)] = [
+            (.ultraLight, .ultraLight), (.thin, .thin), (.light, .light), (.regular, .regular),
+            (.medium, .medium), (.semibold, .semibold), (.bold, .bold), (.heavy, .heavy), (.black, .black)
+        ]
+        return weights.min { abs($0.0.rawValue - weight.rawValue) < abs($1.0.rawValue - weight.rawValue) }?.1
+            ?? .regular
     }
 
     private static func isInstalled(_ bundled: BundledFont) -> Bool {

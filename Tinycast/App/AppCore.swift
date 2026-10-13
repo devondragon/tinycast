@@ -43,6 +43,7 @@ final class AppCore {
     /// The last verdict `trackChatRoute` acted on; nil until it has read one.
     @ObservationIgnored private var chatsRunTheirOwnTools: Bool?
     @ObservationIgnored private let iconStyle = IconStyleMonitor()
+    @ObservationIgnored private let increaseContrast = IncreaseContrastMonitor()
     let favorites = FavoritesStore()
     let visibility = VisibilityStore()
     let aliases = AliasStore()

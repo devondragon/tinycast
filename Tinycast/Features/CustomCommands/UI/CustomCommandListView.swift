@@ -48,11 +48,6 @@ struct CustomCommandList: View {
         let selected: Bool
         @State private var hovered = false
 
-        private var fill: Color {
-            if selected { return Theme.Colors.selection }
-            return hovered ? Theme.Colors.rowHover : .clear
-        }
-
         var body: some View {
             IconCache.observeStyle()
             return HStack(spacing: metrics.spacing.lg) {
@@ -76,7 +71,7 @@ struct CustomCommandList: View {
             }
             .padding(.horizontal, metrics.spacing.md)
             .padding(.vertical, metrics.spacing.sm)
-            .background(RoundedRectangle(cornerRadius: metrics.radius.row, style: .continuous).fill(fill))
+            .background(RowHighlight(selected: selected, hovered: hovered, cornerRadius: metrics.radius.row))
             .armedHover($hovered)
         }
     }

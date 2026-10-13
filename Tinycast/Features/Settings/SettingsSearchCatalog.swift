@@ -137,8 +137,11 @@ enum SettingsSearchCatalog {
             .generalGeneral, "Auto-switch input source",
             keywords: ["keyboard", "layout", "language", "abc"]),
         .init(
+            .generalAppearance, "Appearance",
+            keywords: ["dark", "light", "mode", "system"]),
+        .init(
             .generalAppearance, "Theme",
-            keywords: ["dark", "light", "mode", "appearance"]),
+            keywords: ["tron", "color", "style", "look", "skin", "backdrop"]),
         .init(
             .generalAppearance, "Interface size",
             keywords: ["text size", "font size", "scale", "zoom", "bigger", "larger", "legible"]),

@@ -69,13 +69,6 @@ private struct UninstallRow: View {
     let onToggle: () -> Void
     @State private var hovered = false
 
-    /// Selection wins over hover when a row is both.
-    private var fill: Color {
-        if selected { return Theme.Colors.selection }
-        if hovered { return Theme.Colors.rowHover }
-        return .clear
-    }
-
     private var glyph: String {
         if candidate.isLocked { return "lock.fill" }
         return checked ? "checkmark.square.fill" : "square"
@@ -117,8 +110,7 @@ private struct UninstallRow: View {
         .padding(.horizontal, metrics.spacing.md)
         .padding(.vertical, metrics.spacing.sm)
         .background(
-            RoundedRectangle(cornerRadius: metrics.radius.row, style: .continuous)
-                .fill(fill)
+            RowHighlight(selected: selected, hovered: hovered, cornerRadius: metrics.radius.row)
         )
         .armedHover($hovered)
     }

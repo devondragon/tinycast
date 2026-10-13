@@ -104,11 +104,111 @@ struct AppearanceTests {
         check("generation starts at zero", store.generation == 0)
         dark("palette selection", store.palette.color(.selection), is: Color.white.opacity(0.10))
 
+        print("# a switch is visible to AppKit hosts")
+        let before = ThemeStore.active.generation
+        ThemeStore.active.apply(.standard)
+        check("no-op apply keeps the generation", ThemeStore.active.generation == before)
+        var builds = 0
+        var derived = ThemeDerived { builds += 1 }
+        derived.value
+        derived.value
+        check("a derived value is built once per generation", builds == 1, "built \(builds) times")
+
+        print("# Default keeps the AppKit text faces")
+        let text = InterfaceMetrics.standard.typography
+        check("body text is the text style", text.textNSFont(.body) == .preferredFont(forTextStyle: .body))
+        check(
+            "headline text is the text style",
+            text.textNSFont(.headline) == .preferredFont(forTextStyle: .headline))
+        check(
+            "a weighted text is the system face",
+            text.textNSFont(.title2, weight: .semibold) == .systemFont(ofSize: 17, weight: .semibold))
+        check(
+            "monospaced text is the system mono face",
+            text.textNSFont(.body, monospaced: true) == .monospacedSystemFont(ofSize: 13, weight: .regular))
+
+        print("# a text style's implied weight reaches a themed face")
+        let implied: [(NSFont.TextStyle, NSFont.Weight)] = [(.headline, .bold), (.caption2, .medium), (.body, .regular)]
+        for (style, weight) in implied {
+            let actual = ThemeFonts.impliedWeight(of: .preferredFont(forTextStyle: style))
+            check("\(style.rawValue) implies \(weight.rawValue)", actual == weight, "got \(actual.rawValue)")
+        }
+
         print("# Default keeps every surface on its own glass")
         for role in SurfaceRole.allCases {
             check("\(role) is glass", Theme.Surfaces.style(role) == .glass)
         }
         check("Default has no glow", Theme.Effects.glowRadius(dark: true) == 0)
+
+        print("# a custom theme still adapts to Light and Dark")
+        ThemeStore.active.apply(.tron)
+        for token in [ColorToken.textPrimary, .selection, .panelScrim, .accent] {
+            adapts("tron \(token)", ThemeStore.active.palette.color(token))
+        }
+        let plain = [NSAppearance(named: .aqua)!, NSAppearance(named: .darkAqua)!]
+        let accessible = ["NSAppearanceNameAccessibilityAqua", "NSAppearanceNameAccessibilityDarkAqua"]
+            .compactMap { NSAppearance(appearanceNamed: NSAppearance.Name($0), bundle: nil) }
+        check("both accessibility appearances build", accessible.count == 2)
+        check(
+            "an accessibility appearance raises hairlines without the flag",
+            accessible.allSatisfy { ThemePalette.raisesHairlines($0, increaseContrast: false) },
+            accessible.map {
+                let known: [NSAppearance.Name] =
+                    [.aqua, .darkAqua, .accessibilityHighContrastAqua, .accessibilityHighContrastDarkAqua]
+                return "\($0.name.rawValue) \(String(describing: $0.bestMatch(from: known)))"
+            }.joined(separator: "; "))
+        let separator = Theme.Colors.separator
+        nonisolated(unsafe) var offMain: CGFloat = 0
+        nonisolated(unsafe) var ranOffMain = false
+        let group = DispatchGroup()
+        DispatchQueue.global().async(group: group) {
+            ranOffMain = !Thread.isMainThread
+            NSAppearance(named: .darkAqua)!.performAsCurrentDrawingAppearance {
+                offMain = NSColor(separator).usingColorSpace(.sRGB)!.alphaComponent
+            }
+        }
+        group.wait()
+        check("the hairline probe ran off the main thread", ranOffMain)
+        check("a themed hairline resolves off the main thread", offMain > 0)
+        check(
+            "the flag raises hairlines on a plain appearance",
+            plain.allSatisfy { ThemePalette.raisesHairlines($0, increaseContrast: true) })
+        check(
+            "plain appearances do not raise hairlines",
+            plain.allSatisfy { !ThemePalette.raisesHairlines($0, increaseContrast: false) })
+        check(
+            "tron ramp follows the theme ink",
+            components(Theme.Colors.ramp(dark: 0.3, light: 0.2), .darkAqua)
+                != components(Color.white.opacity(0.3), .darkAqua))
+        ThemeStore.active.apply(.standard)
+        check(
+            "Default ramp is white over dark",
+            components(Theme.Colors.ramp(dark: 0.3, light: 0.2), .darkAqua)
+                == components(Color.white.opacity(0.3), .darkAqua))
+        check(
+            "Default ramp is black over light",
+            components(Theme.Colors.ramp(dark: 0.3, light: 0.2), .aqua)
+                == components(Color.black.opacity(0.2), .aqua))
+
+        let tronBackdrop = ThemeCatalog.definition(for: .tron).backdrop
+        var drawn = 0
+        var inked = false
+        for (size, time, isDark) in [
+            (CGSize(width: 720, height: 480), 0.0, true), (CGSize(width: 320, height: 200), 1234.5, false),
+            (CGSize(width: 1, height: 1), 3599.9, true),
+        ] {
+            let canvas = Canvas { context, canvasSize in
+                BackdropRenderer.draw(tronBackdrop, in: &context, size: canvasSize, time: time, dark: isDark)
+            }
+            .frame(width: size.width, height: size.height)
+            guard let image = ImageRenderer(content: canvas).cgImage else { continue }
+            drawn += 1
+            if size.width == 720, let data = image.dataProvider?.data as Data? {
+                inked = data.contains { $0 != 0 }
+            }
+        }
+        check("the grid backdrop renders at several sizes and times", drawn == 3)
+        check("the grid backdrop leaves visible pixels", inked)
 
         print("\n\(passes) passed, \(failures) failed")
         exit(failures == 0 ? 0 : 1)

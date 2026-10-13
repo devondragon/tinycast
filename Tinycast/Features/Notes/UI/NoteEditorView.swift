@@ -38,6 +38,7 @@ struct NoteEditorView: NSViewRepresentable {
         context.coordinator.parent = self
         context.coordinator.update(input)
         context.coordinator.setRendersMarkdown(rendersMarkdown)
+        context.coordinator.applyThemeIfChanged()
     }
 
     @MainActor
@@ -56,6 +57,8 @@ struct NoteEditorView: NSViewRepresentable {
         private var undoObservers: [NotificationCenter.ObservationToken] = []
         /// Held here because the layout manager keeps its delegate weakly.
         private let fragmentProvider = NoteLayoutFragmentProvider()
+        /// The theme the text storage was styled under; a new one restyles every line.
+        private var themeGeneration = ThemeStore.active.generation
 
         init(parent: NoteEditorView) {
             self.parent = parent
@@ -109,6 +112,13 @@ struct NoteEditorView: NSViewRepresentable {
             input = next
             guard authoritative else { return }
             install(next, resetUndo: true)
+        }
+
+        func applyThemeIfChanged() {
+            guard themeGeneration != ThemeStore.active.generation, let textView else { return }
+            themeGeneration = ThemeStore.active.generation
+            NoteEditorView.applyTheme(to: textView)
+            renderer.reset()
         }
 
         func setRendersMarkdown(_ rendersMarkdown: Bool) {
@@ -214,13 +224,6 @@ struct NoteEditorView: NSViewRepresentable {
             height: Theme.Size.noteEditorTopInset)
         textView.textContainer?.widthTracksTextView = true
         textView.textContainer?.lineFragmentPadding = 0
-        textView.font = NoteMarkdownTypography.body
-        textView.textColor = NSColor(Theme.Colors.noteText)
-        textView.insertionPointColor = NSColor(Theme.Colors.noteText)
-        textView.selectedTextAttributes = [
-            .backgroundColor: NSColor(Theme.Colors.selection),
-            .foregroundColor: NSColor(Theme.Colors.noteText)
-        ]
         textView.isAutomaticQuoteSubstitutionEnabled = false
         textView.isAutomaticDashSubstitutionEnabled = false
         textView.isAutomaticTextReplacementEnabled = false
@@ -229,6 +232,17 @@ struct NoteEditorView: NSViewRepresentable {
         textView.smartInsertDeleteEnabled = false
         textView.usesFindBar = true
         textView.allowsUndo = true
+        applyTheme(to: textView)
+    }
+
+    static func applyTheme(to textView: NSTextView) {
+        textView.font = NoteMarkdownTypography.body
+        textView.textColor = NSColor(Theme.Colors.noteText)
+        textView.insertionPointColor = NSColor(Theme.Colors.noteText)
+        textView.selectedTextAttributes = [
+            .backgroundColor: NSColor(Theme.Colors.selection),
+            .foregroundColor: NSColor(Theme.Colors.noteText)
+        ]
         textView.linkTextAttributes = [.foregroundColor: NSColor(Theme.Colors.link), .cursor: NSCursor.pointingHand]
         textView.typingAttributes = NoteMarkdownStyler.literal
     }

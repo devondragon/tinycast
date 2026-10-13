@@ -20,4 +20,30 @@ final class ThemeStore {
         generation &+= 1
         return true
     }
+
+    func reload() {
+        palette = ThemePalette(palette.definition)
+        generation &+= 1
+    }
+}
+
+/// A value an AppKit host derives from the active theme, rebuilt on first use after a switch.
+@MainActor
+struct ThemeDerived<Value> {
+    private let build: @MainActor () -> Value
+    private var cached: (generation: Int, value: Value)?
+
+    init(_ build: @escaping @MainActor () -> Value) {
+        self.build = build
+    }
+
+    var value: Value {
+        mutating get {
+            let generation = ThemeStore.active.generation
+            if let cached, cached.generation == generation { return cached.value }
+            let value = build()
+            cached = (generation, value)
+            return value
+        }
+    }
 }

@@ -3,12 +3,14 @@ import Foundation
 /// The built-in looks; a case lands with the PR that ships its theme.
 enum ThemeID: String, CaseIterable, Identifiable, Sendable {
     case standard
+    case tron
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
         case .standard: "Default"
+        case .tron: "Tron Legacy"
         }
     }
 }

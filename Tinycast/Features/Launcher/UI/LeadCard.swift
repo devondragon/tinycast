@@ -9,18 +9,12 @@ private struct LeadCardChrome: ViewModifier {
     func body(content: Content) -> some View {
         content
             .background(shape.fill(Theme.Colors.cardFill))
-            .background(shape.fill(fill))
+            .background(RowHighlight(selected: selected, hovered: hovered, cornerRadius: metrics.radius.card))
             .armedHover($hovered)
     }
 
     private var shape: RoundedRectangle {
         RoundedRectangle(cornerRadius: metrics.radius.card, style: .continuous)
-    }
-
-    private var fill: Color {
-        if selected { return Theme.Colors.selection }
-        if hovered { return Theme.Colors.rowHover }
-        return .clear
     }
 }
 

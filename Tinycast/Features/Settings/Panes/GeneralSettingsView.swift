@@ -68,8 +68,9 @@ struct GeneralSettingsView: View {
                         Text(appearance.title).tag(appearance)
                     }
                 } label: {
-                    SettingsRowTitle(.generalAppearance, "Theme")
+                    SettingsRowTitle(.generalAppearance, "Appearance")
                 }
+                ThemePickerRow()
                 InterfaceSizeRow()
                 WindowModeRow()
                 Toggle(isOn: $settings.showFavoritesInCompactMode) {
