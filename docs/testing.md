@@ -312,7 +312,7 @@ swiftc -O -swift-version 6 Tinycast/Features/Emoji/Model/{EmojiCatalog,EmojiData
 /tmp/emoji-search-performance --languages fr,ja
 ```
 
-`Tests/backdrop-performance.swift` renders the Tron grid, the Matrix code rain and the Synthwave sunset offscreen at palette
+`Tests/backdrop-performance.swift` renders the Tron grid, the Matrix code rain, the Synthwave sunset and the Amber scanlines offscreen at palette
 size for 300 frames and prints mean and p95 milliseconds and the implied CPU at 30 fps. Build it with
 `-O` and the sources in its `run -O index backdrop-performance` entry. `ImageRenderer` adds rasterization
 and re-resolves `Canvas` symbols each frame, so the figure is an upper bound and misleading for
