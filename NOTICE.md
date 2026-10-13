@@ -351,5 +351,5 @@ SOFTWARE.
 ## Bundled fonts
 
 Tinycast bundles these typefaces for its themes, each under the SIL Open Font License 1.1:
-Orbitron, Exo 2, Share Tech Mono, Audiowide, VT323 and IBM Plex Mono. The license texts ship in
+Orbitron, Exo 2, Share Tech Mono, Audiowide, VT323, IBM Plex Mono and Chakra Petch. The license texts ship in
 `Contents/Resources/Fonts/Licenses/`.

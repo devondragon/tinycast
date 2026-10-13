@@ -73,7 +73,7 @@ The Settings picker draws the same still frame for each card.
 
 A backdrop runs only while the palette is showing. The hard requirement is zero CPU while hidden
 (the timeline pauses on hide and occlusion). While visible the target is roughly 5% to 8% of one core
-and under 8 MB of extra resident memory; each backdrop sets its own `frameRate` (Tron 30, Matrix 24, Synthwave 30, Amber 30).
+and under 8 MB of extra resident memory; each backdrop sets its own `frameRate` (Tron 30, Matrix 24, Synthwave 30, Amber 30, Ares 30).
 
 Three kinds of figure appear below. The proxy columns come from `Tests/backdrop-performance.swift`,
 which renders `BackdropRenderer.draw` through `ImageRenderer` at the 750x475 palette size for 300
@@ -94,6 +94,8 @@ palette's cost, not the backdrop's alone; rows without a run say pending.
 | Synthwave sunset, light | 0.51, 0.57 | 1.5% | not probed | pending | pending | pending | Apple M4 Max | 2026-10-12 |
 | Amber scanlines, dark | 1.15 to 1.52, 1.60 to 2.45 over 3 runs | 3.4% to 4.6% | not probed | pending | pending | pending | Apple M4 Max | 2026-10-12 |
 | Amber scanlines, light (static) | 0.58 to 0.92, 0.65 to 1.17 over 3 runs, one frame drawn then the timeline pauses | 1.7% to 2.7%, not a running cost | not probed | pending | pending | pending | Apple M4 Max | 2026-10-12 |
+| Ares light trails, dark | 0.61, 0.74 | 1.8% | not probed | pending | pending | pending | Apple M4 Max | 2026-10-12 |
+| Ares light trails, light | 0.54, 0.65 | 1.6% | not probed | pending | pending | pending | Apple M4 Max | 2026-10-12 |
 | Code rain, dark (24 fps) | 6.59, 7.19 (5.35 is symbol resolution) | 19.8%, not representative | 2.5% to 6.4% over 4 runs, at 20 fps and fewer glyphs | pending | pending | pending | Apple M4 Max | 2026-10-12 |
 | Code rain, light (24 fps) | 6.44, 7.17 | 19.3%, not representative | 6.5% in 1 run (a second run read 0%, the timeline did not tick), at 20 fps and fewer glyphs | pending | pending | pending | Apple M4 Max | 2026-10-12 |
 

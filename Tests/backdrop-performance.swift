@@ -16,6 +16,7 @@ enum BackdropPerformance {
         for (name, theme) in [
             ("tron grid", ThemeCatalog.tron), ("matrix rain", ThemeCatalog.matrix),
             ("synthwave sunset", ThemeCatalog.synthwave), ("amber scanlines", ThemeCatalog.amber),
+            ("ares light trails", ThemeCatalog.ares),
         ] {
             let backdrop = theme.backdrop
             let blankBytes = render(size: size) { _, _ in }

@@ -1,7 +1,7 @@
 # Adding a theme
 
-A step-by-step guide for building a new built-in theme, with the problems the first four themes
-(Tron Legacy, Matrix, Synthwave, Amber CRT) ran into and how to avoid them. Read
+A step-by-step guide for building a new built-in theme, with the problems the first themes
+(Tron Legacy, Matrix, Synthwave, Amber CRT, Tron Ares) ran into and how to avoid them. Read
 [theming.md](theming.md) first for how the system works; this file is the recipe.
 
 ## What a theme is
@@ -130,7 +130,7 @@ Record the final ratios in the PR.
 
 ## Writing a backdrop renderer
 
-Shape it like the existing four in `DesignSystem/Theming/Backdrops/`:
+Shape it like the existing ones in `DesignSystem/Theming/Backdrops/`:
 
 ```swift
 import SwiftUI
