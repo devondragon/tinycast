@@ -152,7 +152,11 @@ struct AppearanceTests {
         check(
             "an accessibility appearance raises hairlines without the flag",
             accessible.allSatisfy { ThemePalette.raisesHairlines($0, increaseContrast: false) },
-            accessible.map { "\($0.name.rawValue) \(String(describing: $0.bestMatch(from: [.aqua, .darkAqua, .accessibilityHighContrastAqua, .accessibilityHighContrastDarkAqua])))" }.joined(separator: "; "))
+            accessible.map {
+                let known: [NSAppearance.Name] =
+                    [.aqua, .darkAqua, .accessibilityHighContrastAqua, .accessibilityHighContrastDarkAqua]
+                return "\($0.name.rawValue) \(String(describing: $0.bestMatch(from: known)))"
+            }.joined(separator: "; "))
         let separator = Theme.Colors.separator
         nonisolated(unsafe) var offMain: CGFloat = 0
         nonisolated(unsafe) var ranOffMain = false

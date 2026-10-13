@@ -520,6 +520,12 @@ run notes-editor-test      Tinycast/Platform/Signposts.swift \
                            Tinycast/Features/Notes/UI/NoteTextViewEditing.swift \
                            Tinycast/Features/Notes/UI/NoteTextView.swift \
                            Tinycast/Features/Notes/UI/NoteEditorView.swift
+run -O index backdrop-performance \
+                           Tinycast/Platform/Appearance.swift \
+                           Tinycast/DesignSystem/Theme.swift \
+                           Tinycast/Features/Theming/Model/*.swift Tinycast/DesignSystem/Theming/*.swift Tinycast/DesignSystem/Theming/Backdrops/*.swift Tinycast/DesignSystem/GlassEffectView.swift \
+                           Tinycast/DesignSystem/InterfaceMetrics.swift \
+                           Tinycast/Platform/NotificationToken.swift
 run -O index notes-editor-performance \
                            Tinycast/Platform/Signposts.swift \
                            Tinycast/Platform/Appearance.swift \
