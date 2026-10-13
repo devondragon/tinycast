@@ -140,28 +140,29 @@ of `themedSurface` per the extension rule. Extensions get no backdrop and no glo
 Only the `panel` role draws a backdrop. Layer order, back to front: surface fill, backdrop at
 `backdropIntensity`, the theme's `panelScrim`, content, then the clip (still last).
 
-Each kind is one view in `DesignSystem/Backdrops/`:
+Each kind is one view in `DesignSystem/Theming/Backdrops/`:
 
 - `GridBackdrop` (Tron): a perspective floor grid with a few light traces travelling along the
   lines and turning at right angles.
 - `CodeRainBackdrop` (Matrix): columns of falling katakana and digits with a bright head and a
   fading tail.
-- `SunsetGridBackdrop` (Synthwave): a banded sun above a horizon and a grid scrolling toward the
+- `SunsetBackdrop` (Synthwave): a banded sun above a horizon and a grid scrolling toward the
   viewer.
 - `ScanlineBackdrop` (Amber): fixed scanlines, a slow vignette breathing, rare faint flicker.
   The light variant is paper grain without flicker.
 
 Rules for every backdrop:
 
-- `TimelineView(.animation(minimumInterval: 1.0 / 30, paused: ...))` around a `Canvas`.
+- `TimelineView(.animation(minimumInterval: 1.0 / frameRate, paused: ...))` around a `Canvas`; the
+  frame rate is per backdrop (`Backdrop.frameRate`).
 - Paused when the window is hidden or occluded (each backdrop watches its own window's
   `didChangeOcclusionStateNotification`), and under Reduce Motion, where it draws one still
   frame.
 - Stateless per frame: every glyph, trace and column position is a pure function of time and a
   fixed integer hash, so nothing is stored or allocated between frames.
 - Glyphs are resolved once as `Canvas` symbols and reused.
-- Budget while the palette is visible: under 5% of one core on Apple silicon, under 8 MB extra
-  resident memory. Zero CPU while hidden. Measured with `Signposts` and the recipes in
+- Budget while the palette is visible: zero CPU while hidden (hard rule); roughly 5-8% of one core while visible
+  (target, Devon 2026-10-12); under 8 MB extra resident memory. Measured with `Signposts` and the recipes in
   `docs/testing.md` before a backdrop is considered done.
 
 ## Glow

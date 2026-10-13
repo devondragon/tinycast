@@ -57,11 +57,11 @@ copy, per the extension rule in `AGENTS.md`.
 
 ## Backdrops
 
-`PanelBackdrop` wraps a `Canvas` in a `TimelineView` at 30 fps and draws through `BackdropRenderer`,
+`PanelBackdrop` wraps a `Canvas` in a `TimelineView` at the backdrop's `frameRate` and draws through `BackdropRenderer`,
 with one renderer per `BackdropKind` in `DesignSystem/Theming/Backdrops/`. A renderer is stateless:
 every position is a pure function of time and a fixed integer hash, nothing is stored between frames,
 and glyphs are resolved once as `Canvas` symbols. Renderers are plain enums that carry no actor isolation and take plain
-per-appearance colors from `ThemePalette.nsColor`.
+per-appearance colors from `BackdropRenderer.color(_:dark:)`.
 
 The timeline is paused when the window is hidden or occluded (`WindowOcclusionReader`), under
 Reduce Motion (one still frame at time 0), and in Light when the backdrop's `lightIsStatic` is set.
@@ -71,7 +71,7 @@ The Settings picker draws the same still frame for each card.
 
 A backdrop runs only while the palette is showing. The hard requirement is zero CPU while hidden
 (the timeline pauses on hide and occlusion). While visible the target is roughly 5% to 8% of one core
-and under 8 MB of extra resident memory; each backdrop sets its own `frameRate` (Tron 30, Matrix 24).
+and under 8 MB of extra resident memory; each backdrop sets its own `frameRate` (Tron 30, Matrix 24, Synthwave 30).
 
 Three kinds of figure appear below. The proxy columns come from `Tests/backdrop-performance.swift`,
 which renders `BackdropRenderer.draw` through `ImageRenderer` at the 750x475 palette size for 300
@@ -87,6 +87,8 @@ are pending.
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Tron grid, dark | 0.60, 0.68 | 1.8% | 0.7% to 6.1% over 4 runs | pending | pending | pending | Apple M4 Max | 2026-10-12 |
 | Tron grid, light | 0.59, 0.70 | 1.8% | 1.7% to 5.7% over 3 runs | pending | pending | pending | Apple M4 Max | 2026-10-12 |
+| Synthwave sunset, dark | 0.62, 0.72 | 1.8% | not probed | pending | pending | pending | Apple M4 Max | 2026-10-12 |
+| Synthwave sunset, light | 0.51, 0.57 | 1.5% | not probed | pending | pending | pending | Apple M4 Max | 2026-10-12 |
 | Code rain, dark (24 fps) | 6.59, 7.19 (5.35 is symbol resolution) | 19.8%, not representative | 2.5% to 6.4% over 4 runs, at 20 fps and fewer glyphs | pending | pending | pending | Apple M4 Max | 2026-10-12 |
 | Code rain, light (24 fps) | 6.44, 7.17 | 19.3%, not representative | 6.5% in 1 run (a second run read 0%, the timeline did not tick), at 20 fps and fewer glyphs | pending | pending | pending | Apple M4 Max | 2026-10-12 |
 
@@ -110,7 +112,7 @@ bundled family is not installed, so a missing font never produces a blank label.
 2. Add `ThemeCatalog+Name.swift` with the `ThemeDefinition`, and return it from
    `ThemeCatalog.definition(for:)`.
 3. If the backdrop kind is new, add a renderer under `DesignSystem/Theming/Backdrops/`: stateless,
-   a plain enum with no actor isolation, plain per-appearance colors via `ThemePalette.nsColor`.
+   a plain enum with no actor isolation, plain per-appearance colors via `BackdropRenderer.color(_:dark:)`.
 4. Add the value to the `appearance.visualTheme` row in [settings-file.md](settings-file.md).
 5. Run `theme-test` (contrast against each surface) and `backdrop-performance` (draw cost), and fill
    the live columns of the budget table with `Scripts/measure-backdrop.sh`.

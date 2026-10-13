@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Falling columns of half-width katakana and digits; a hash picks the two thirds of columns that rain, and their pace.
+/// Falling katakana and digit columns; a hash picks which two thirds rain and how fast.
 enum CodeRainBackdrop {
     static let glyphs = Array("ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ0123456789").map(String.init)
     private static let pitch: CGFloat = 16
