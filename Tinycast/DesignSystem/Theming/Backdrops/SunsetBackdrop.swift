@@ -3,6 +3,8 @@ import SwiftUI
 /// A banded sun sitting on the horizon above the streaming floor.
 enum SunsetBackdrop {
     private static let bands = 6
+    /// Band height per band spacing of depth; puts the band at the horizon near 5 pt.
+    private static let thickening = 1.55
 
     static func draw(
         _ backdrop: Backdrop, in context: inout GraphicsContext, size: CGSize, time: Double, dark: Bool
@@ -12,22 +14,22 @@ enum SunsetBackdrop {
         let center = CGPoint(x: size.width / 2, y: horizon)
         let disc = Path(
             ellipseIn: CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2))
-        let top = BackdropRenderer.color(backdrop.tertiary, dark: dark)
-        let bottom = BackdropRenderer.color(backdrop.primary, dark: dark)
+        let sunTop = BackdropRenderer.color(backdrop.tertiary, dark: dark)
+        let sunBottom = BackdropRenderer.color(backdrop.primary, dark: dark)
         context.drawLayer { layer in
             layer.clip(to: Path(CGRect(x: 0, y: 0, width: size.width, height: horizon)))
             layer.fill(
                 disc,
                 with: .linearGradient(
-                    Gradient(colors: [top, bottom]),
+                    Gradient(colors: [sunTop, sunBottom]),
                     startPoint: CGPoint(x: center.x, y: center.y - radius), endPoint: center))
             layer.blendMode = .destinationOut
             let spacing = radius / Double(bands)
-            let top = center.y - radius * 0.55
+            let bandTop = center.y - radius * 0.55
             let drift = (time * 6).truncatingRemainder(dividingBy: spacing)
             for band in 0..<bands {
-                let y = top + Double(band) * spacing + drift
-                let height = max(0, (y - top) * 1.2 / spacing)
+                let y = bandTop + Double(band) * spacing + drift
+                let height = max(0, (y - bandTop) * thickening / spacing)
                 layer.fill(Path(CGRect(x: 0, y: y, width: size.width, height: height)), with: .color(.black))
             }
         }
