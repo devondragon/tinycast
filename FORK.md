@@ -55,6 +55,9 @@ seventy-odd PR branches stay out of `git branch -r`; tags still arrive with `--t
 - `~/Applications` leads `SearchScopes.defaults` and the Search Scopes list in Settings is
   drag-reorderable, so a wrapper bundle with a custom icon wins the scan over the app it points at
   (upstream lists `~/Applications` last).
+- Theming (`Features/Theming/`, `DesignSystem/Theming/`, the bundled fonts under
+  `Resources/Fonts/` and the picker in Settings → General) is fork-only: five themes beyond Default
+  with animated backdrops. [docs/features/theming.md](docs/features/theming.md) covers it.
 - GitHub Actions is turned off for the whole fork (repo setting, not a file change). The remaining
   `release.yml` and `website*.yml` workflows are upstream's release and website deploys, which need
   his signing secrets and hosting; they are kept only so upstream merges stay clean. Rework or delete
