@@ -29,38 +29,68 @@ real Raycast extensions**, rendered as native SwiftUI. Free, open source, and st
 
 ## Features
 
-- **App launcher** — fuzzy-search and launch anything, pin favorites, see what's running, quit an app
-  or every app at once.
-- **Global hotkey** — one shortcut summons the palette from anywhere.
-- **Per-app hotkeys** — bind a key to an app; press it to toggle (focus/hide).
-- **Search Files** — open files and folders from the folders you choose, through Spotlight, with no
+- **App launcher**: fuzzy-search and launch anything, pin favorites, see what's running, quit an app
+  or every app at once, or uninstall one along with the caches and preferences it leaves behind.
+- **Global hotkey**: one shortcut summons the palette from anywhere.
+- **Per-app hotkeys**: bind a key to an app; press it to toggle (focus/hide).
+- **Themes**: five built-in looks besides Default, each with its own colors, fonts and an animated
+  backdrop behind the palette and its panels. See [Themes](#themes) below.
+- **Search Files**: open files and folders from the folders you choose, through Spotlight, with no
   index of our own.
-- **Dictionary** — look a word up with the Define Word command, or define whatever you typed from the
+- **Dictionary**: look a word up with the Define Word command, or define whatever you typed from the
   launcher's fallbacks, read from the Mac's own dictionaries.
-- **Clipboard history** — text and images, searchable, pasted back into the app you were using.
-- **Calculator** — do math, unit, live currency and crypto conversions inline, right in the palette.
-- **Quicklinks** — turn a URL, search, file or deeplink into a command, with placeholders for typed
+- **Clipboard history**: text and images, searchable, pasted back into the app you were using.
+- **Calculator**: do math, unit, live currency and crypto conversions inline, right in the palette.
+- **Quicklinks**: turn a URL, search, file or deeplink into a command, with placeholders for typed
   input, the clipboard or the date.
-- **Apple Shortcuts** — search and run the shortcuts you built in the Shortcuts app, with aliases and
+- **Apple Shortcuts**: search and run the shortcuts you built in the Shortcuts app, with aliases and
   global hotkeys.
-- **Snippets** — reusable Markdown templates with dynamic placeholders, arguments, nested references
+- **Snippets**: reusable Markdown templates with dynamic placeholders, arguments, nested references
   and optional keyword expansion.
-- **Custom commands** — run named shell commands through fuzzy search or their own global hotkeys.
-- **Window management** — 34 Rectangle-style actions: halves, quarters, thirds, sizing, nudging,
+- **Custom commands**: run named shell commands through fuzzy search or their own global hotkeys.
+- **Window management**: 34 Rectangle-style actions: halves, quarters, thirds, sizing, nudging,
   display moves, fullscreen and Spaces.
-- **System actions** — lock, sleep, restart, empty trash, toggle appearance, Bluetooth, mute, hidden
+- **Window layouts and rooms**: save an arrangement of apps and windows and restore it in one pass,
+  or switch between rooms, named sets of windows that tile on your display while everything else
+  steps back.
+- **Switch Windows and menu search**: raise any open window of any running app, or find and press
+  any item in the front app's menu bar by name. Off out of the box.
+- **System actions**: lock, sleep, restart, empty trash, toggle appearance, Bluetooth, mute, hidden
   files, and more.
-- **Calendar and meetings** — your next meeting on the empty palette and in the menu bar, one key to
-  join it, or let it join itself.
-- **Notes** — an unlimited collection of plain Markdown files in one floating editor, searchable from
+- **Calendar and meetings**: your next meeting on the empty palette and in the menu bar, one key to
+  join it, or let it join itself, with a camera preview before you go in.
+- **Camera**: a mirrored live preview from any of the Mac's cameras, with one key to copy a photo.
+- **Notes**: an unlimited collection of plain Markdown files in one floating editor, searchable from
   the palette and rendered as you write.
-- **Emoji picker** — a searchable emoji grid, one keystroke away.
-- **AI chat** — use your own key or an installed AI account: ask Quick AI from the palette, or keep
-  longer conversations in the AI Chat window, with a searchable, pinnable history. Off out of the box,
-  like every AI feature.
-- **Quick Actions** — fix grammar, rewrite, translate or summarize the selected text in any app.
-- **Raycast extensions** — run the ones you already have natively, rendered as SwiftUI.
-- **Backup and import** — export your settings to a file, or import your setup from Raycast.
+- **Emoji picker**: a searchable emoji grid, one keystroke away.
+- **AI chat**: use your own key or an installed AI account: ask Quick AI from the palette, or keep
+  longer conversations in the AI Chat window, with a searchable, pinnable history and optional MCP
+  servers for tools. Off out of the box, like every AI feature.
+- **Quick Actions**: fix grammar, rewrite, translate or summarize the selected text in any app.
+- **Dictation** (experimental): a global shortcut records, transcribes on the Mac with a model you
+  download on request, and types the result. Off out of the box.
+- **Raycast extensions**: run the ones you already have natively, rendered as SwiftUI.
+- **Backup and import**: export your settings to a file, keep an editable `settings.json` mirror in
+  `~/.config/tinycast/`, or import your setup from Raycast.
+
+## Themes
+
+Pick a theme in **Settings → General**. Each one has a light and a dark variant and follows the
+appearance you choose there (Light, Dark or System).
+
+| Theme       | Look                                      | Backdrop                                         |
+| ----------- | ----------------------------------------- | ------------------------------------------------ |
+| Default     | macOS glass and the system accent color   | none                                             |
+| Tron Legacy | cyan neon, Orbitron and Exo 2             | a perspective grid streaming toward you          |
+| Tron Ares   | red neon, Chakra Petch                    | light cycles leaving fading ribbons on a lattice |
+| Matrix      | phosphor green, Share Tech Mono           | falling katakana code rain                       |
+| Synthwave   | hot pink and cyan, Audiowide              | a banded sun over a streaming floor              |
+| Amber CRT   | amber monochrome, VT323 and IBM Plex Mono | phosphor glow and scanlines (paper grain in Light) |
+
+Backdrops draw only while a themed window is on screen, stop completely when it is hidden, and hold
+still under **Reduce Motion**. Increase Contrast and Reduce Transparency are respected in every
+theme. The display fonts are bundled under the SIL Open Font License. To build your own, see
+[docs/features/adding-a-theme.md](docs/features/adding-a-theme.md).
 
 ## Install
 
@@ -93,8 +123,9 @@ disabled, and keystrokes are matched locally, never stored and never sent anywhe
 1. Open **Settings → General** and record a global shortcut to summon Tinycast.
 2. Press it anywhere → the palette floats in. Type to filter, **↵** to launch.
 3. **Tab** switches between Apps and Clipboard; **↑/↓** move, **Esc** dismisses.
-4. **Settings → Shortcuts** — search an app or custom command and record a global shortcut.
-5. **Settings → Snippets** — enable the feature, then create templates with expansion keywords.
+4. **Settings → General** also holds the theme picker.
+5. **Settings → Shortcuts** — search an app or custom command and record a global shortcut.
+6. **Settings → Snippets** — enable the feature, then create templates with expansion keywords.
 
 ## Building from source
 
