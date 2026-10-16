@@ -35,6 +35,10 @@ struct RGBAPair: Equatable, Sendable {
 
     static func both(_ value: RGBA) -> RGBAPair { RGBAPair(dark: value, light: value) }
 
+    static func hex(dark: UInt32, light: UInt32) -> RGBAPair {
+        RGBAPair(dark: RGBA(hex: dark), light: RGBA(hex: light))
+    }
+
     func value(dark isDark: Bool) -> RGBA { isDark ? dark : light }
 }
 

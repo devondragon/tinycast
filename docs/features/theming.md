@@ -40,6 +40,14 @@ Increase Contrast is handled by `IncreaseContrastMonitor`, owned by `AppCore`. I
 `separator`, `border` and `cardStroke` are raised to a stop floor under Increase Contrast (or a
 high-contrast appearance), because a hairline at the usual alpha disappears for those readers.
 
+## Chat text and code colors
+
+`chatText` is the ink of chat replies and their code blocks: the system label in Default, and every
+custom theme restates it as its own ink. The eleven `syntax*` tokens color a code block's tokens
+(`Theme.Colors.Syntax`). Default's are Xcode-like literals with the light branch darkened to 4.5:1;
+each custom theme states its own, and `theme-test` checks them for contrast and for telling the main
+kinds apart (the rules are in [adding-a-theme.md](adding-a-theme.md#contrast)).
+
 ## Surfaces
 
 `Theme.Surfaces` exposes a `SurfaceStyle` for each of three roles: `panel` (the palette, notes, the

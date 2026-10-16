@@ -76,11 +76,16 @@ extension ThemeCatalog {
             progress: .rgba(nameAccent),
             link: .rgba(nameAccent),
             highlight: .rgba(nameAccent)),
-        // Every custom theme so far restates these three: system window gray looks wrong on them.
+        // Every custom theme restates these: system window gray and label white look wrong on them.
         overrides: [
             .windowSurface: .surface(dark: 1, light: 1),
             .terminalSurface: .surface(dark: 1, light: 1),
             .roomCardFill: .surface(dark: 0.94, light: 0.94),
+            .chatText: .ink(dark: 1, light: 1),
+            // All eleven code colors, tuned under "Contrast"; Tron's are a good starting point.
+            .syntaxKeyword: .fixed(.hex(dark: 0x6FE3FF, light: 0x006B8F)),
+            .syntaxString: .fixed(.hex(dark: 0xFF9A3C, light: 0xA33A0A)),
+            // … syntaxNumber through syntaxDeleted, the same shape
         ],
         surfaces: ThemeSurfaces(
             panel: .solid(
@@ -127,6 +132,15 @@ fill with each backdrop color composited on top at full intensity, then the scri
 
 Secondary text in dark is usually the tightest margin (Synthwave dark is 3.30, Amber dark 3.30).
 Record the final ratios in the PR.
+
+Code colors have their own checks. Every one of the eleven `syntax*` tokens needs 4.5:1 on a code
+card over the window page and 3:1 on the worst panel pixel, the same floor as secondary text.
+Keyword, string, number, comment and type must also sit at least 15 CIE76 units from the ink and 12
+from each other, and inserted and deleted diff lines 40 apart. A one-hue theme meets that by varying
+brightness and leaning a little toward neighboring hues (Matrix's strings go yellow-green, its types
+teal). Diff lines may leave the theme's hue, since red and green carry the meaning there. When the
+worst-pixel check fails in dark, lighten the color toward white before reaching for another hue;
+Synthwave and Ares need it most, because their backdrops are the brightest.
 
 ## Writing a backdrop renderer
 
