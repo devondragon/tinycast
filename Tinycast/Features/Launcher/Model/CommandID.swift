@@ -1,6 +1,5 @@
 import Foundation
 
-/// Built-in launcher actions, surfaced alongside the user-authored ones.
 enum CommandID: String, CaseIterable, Sendable {
     /// The palette's chat keeps the id it shipped with, so its hotkeys and fallback still reach it.
     case quickAI = "command:ai-chat"
@@ -16,6 +15,7 @@ enum CommandID: String, CaseIterable, Sendable {
     case searchFiles = "command:search-files"
     case searchMenuItems = "command:search-menu-items"
     case switchWindows = "command:switch-windows"
+    case switchWindowsBackwards = "command:switch-windows-backwards"
     case openCamera = "command:open-camera"
     case openInBrowser = "command:open-in-browser"
     case runShellCommand = "command:run-shell-command"
@@ -63,6 +63,7 @@ enum CommandID: String, CaseIterable, Sendable {
         case .searchFiles: return "Search Files"
         case .searchMenuItems: return "Search Menu Bar Items"
         case .switchWindows: return "Switch Windows"
+        case .switchWindowsBackwards: return "Switch Windows Backwards"
         case .openCamera: return "Open Camera"
         case .openInBrowser: return "Open in Browser"
         case .runShellCommand: return "Run Shell Command"
@@ -111,7 +112,7 @@ enum CommandID: String, CaseIterable, Sendable {
         case .searchEmoji: return "face.smiling"
         case .searchFiles: return "doc.text.magnifyingglass"
         case .searchMenuItems: return "menubar.rectangle"
-        case .switchWindows: return "macwindow.on.rectangle"
+        case .switchWindows, .switchWindowsBackwards: return "macwindow.on.rectangle"
         case .openCamera: return "camera"
         case .openInBrowser: return "globe"
         case .runShellCommand: return "terminal"

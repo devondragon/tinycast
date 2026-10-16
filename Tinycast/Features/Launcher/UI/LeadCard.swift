@@ -25,7 +25,6 @@ extension View {
     }
 }
 
-/// One side of a two-column lead card: a value line with an optional word-name badge beneath.
 struct LeadCardColumn: View {
     @Environment(\.metrics) private var metrics
     let text: AttributedString
@@ -45,7 +44,6 @@ struct LeadCardColumn: View {
     }
 }
 
-/// The pill a lead card states its kind in — the calculator's unit, a colour's notation.
 private struct LeadCardBadge: View {
     @Environment(\.metrics) private var metrics
     let text: String

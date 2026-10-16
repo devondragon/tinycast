@@ -1,9 +1,5 @@
 #!/bin/bash
-# The test suite. There is no XCTest target: each harness compiles the shipped sources it guards,
-# so a harness that stops compiling means a decision leaked out of a pure layer. See docs/testing.md.
-#
-# Never join a compile and its run with `&&`: `set -e` ignores a failure in a non-final AND-OR list
-# member, which is how CI reported success over a harness that had not compiled since phase 10.
+# The test suite: each harness compiles the shipped sources it guards. See docs/testing.md.
 
 set -uo pipefail
 
@@ -32,7 +28,7 @@ if [ "${1:-}" = "--exec" ]; then
     fi
     { time "$BIN/$name" > "$BIN/$name.log" 2>&1; } 2> "$BIN/$name.time" &
     pid=$!
-    # macOS ships no `timeout`, so the worker polls; a wedged harness must fail, not stall the suite.
+    # macOS ships no `timeout`, so the worker polls; a wedged harness must fail, not stall.
     ticks=0
     while kill -0 "$pid" 2>/dev/null; do
         if [ "$ticks" -ge $((TINYCAST_TEST_TIMEOUT * 5)) ]; then
@@ -60,9 +56,7 @@ failed=()
 ran=0
 only="${1:-}"
 
-# `--index` merges each harness's compile command into .compile instead of running anything.
-# xcodebuild never compiles the harnesses, so without this nothing in Tests/ resolves in an editor.
-# The source lists below are the only copy, which is why this lives here rather than in its own script.
+# `--index` feeds harness compile commands to .compile, as xcodebuild never compiles Tests/.
 emit_db=0
 DB="${TMPDIR:-/tmp}/tinycast-compile-db.json"
 if [ "$only" = "--index" ]; then
@@ -71,8 +65,7 @@ if [ "$only" = "--index" ]; then
     printf '[' > "$DB"
 fi
 
-# run [slow] [-O] [index] <name> <source...> — queue the harness. `slow` dispatches it in the first
-# wave; `index` claims editor flags for a harness that is compiled by hand rather than by the suite.
+# `slow` dispatches in the first wave; `index` only claims editor flags for a hand-run harness.
 run() {
     local opt=-Onone pri=1 index_only=0
     while :; do
@@ -89,8 +82,7 @@ run() {
     if [ "$index_only" -eq 1 ] && [ "$emit_db" -eq 0 ]; then return 0; fi
     ran=$((ran + 1))
 
-    # Absolute paths throughout: sourcekit-lsp resolves the command itself and does not apply
-    # `directory` to relative arguments, so a relative path there silently yields no index.
+    # Absolute paths: sourcekit-lsp ignores `directory` for relative arguments and indexes nothing.
     if [ "$emit_db" -eq 1 ]; then
         local sources=()
         for source in "$@" "Tests/$name.swift"; do sources+=("$PWD/$source"); done
@@ -98,9 +90,7 @@ run() {
         printf '{"directory":"%s","command":"swiftc -swift-version 6 -sdk %s' \
             "$PWD" "$(xcrun --show-sdk-path --sdk macosx)" >> "$DB"
         printf ' %s' "${sources[@]}" >> "$DB"
-        # Claim every file under `Tests/`: the harness and any helper compiled beside it. A shipped
-        # source stays unclaimed, because it would get this short command instead of the app's full
-        # one and `.compile` is last-wins — but the app never compiles anything in `Tests/`.
+        # Only `Tests/` files: `.compile` is last-wins, so a shipped source keeps the app's command.
         local claimed=""
         for source in "${sources[@]}"; do
             case "$source" in *"/Tests/"*) claimed="$claimed${claimed:+,}\"$source\"";; esac
@@ -117,21 +107,17 @@ L=Tinycast/Features/Launcher/Model
 run slow -O fuzz-test      $L/SearchRelevance.swift $L/ScriptRomanization.swift \
                            $L/LauncherMatch.swift $L/EntryNaming.swift $L/LauncherOrder.swift \
                            $L/LauncherRankingStore.swift $L/LauncherSuggestions.swift
-run file-search-test       $L/SearchRelevance.swift \
-                           Tinycast/Features/FileSearch/Model/*.swift
-run file-search-session-test Tinycast/Platform/Signposts.swift \
-                             $L/SearchRelevance.swift \
-                             Tinycast/Features/FileSearch/Model/*.swift \
-                             Tinycast/Features/FileSearch/Service/*.swift
+FS=Tinycast/Features/FileSearch
+FILE_INDEX="$FS/Service/FileIndex.swift $FS/Service/FileIndexSnapshot.swift $FS/Service/FileIndexCrawler.swift"
+run file-search-test       $FS/Model/*.swift
+run file-index-test        $FS/Model/*.swift $FILE_INDEX
+run file-search-session-test $FS/Model/*.swift $FS/Service/FileSearchSession.swift $FILE_INDEX
 run menu-search-test       $L/SearchRelevance.swift \
                            Tinycast/Features/MenuSearch/Model/*.swift \
                            Tinycast/Features/MenuSearch/Service/*.swift
 run window-switch-test     $L/SearchRelevance.swift \
                            Tinycast/Features/WindowSwitcher/Model/*.swift
-run index file-search-performance Tinycast/Platform/Signposts.swift \
-                           $L/SearchRelevance.swift \
-                           Tinycast/Features/FileSearch/Model/*.swift \
-                           Tinycast/Features/FileSearch/Service/FileSearchService.swift
+run index file-search-performance $FS/Model/*.swift $FILE_INDEX
 run ranking-test           $L/SearchRelevance.swift $L/ScriptRomanization.swift \
                            $L/LauncherMatch.swift $L/LauncherRankingStore.swift
 run scopes-test            $L/SearchScopes.swift
@@ -170,22 +156,34 @@ run index calc-performance Tinycast/Features/Calculator/Model/*.swift
 run calendar-test          Tinycast/Features/Calendar/Model/*.swift \
                            Tinycast/Features/Calendar/UI/EventEditorSession.swift
 run clipboard-test         Tinycast/Features/Clipboard/Model/ClipboardStore.swift \
+                           Tinycast/Platform/Images/ImageDerivative.swift \
                            Tinycast/Features/Clipboard/Model/ClipboardFilter.swift \
                            Tinycast/Features/Clipboard/Model/ClipboardFileKind.swift \
                            Tinycast/Features/Clipboard/Model/ColorValue.swift \
                            Tinycast/Features/Clipboard/Model/ColorFormat.swift \
                            Tinycast/Features/Clipboard/Model/ColorSpaces.swift
+run clipboard-thumbnail-test Tinycast/Features/Clipboard/Model/ClipboardStore.swift \
+                           Tinycast/Platform/Images/ImageDerivative.swift \
+                           Tinycast/Features/Clipboard/Model/ClipboardFilter.swift \
+                           Tinycast/Features/Clipboard/Model/ClipboardFileKind.swift \
+                           Tinycast/Features/Clipboard/Model/ColorValue.swift \
+                           Tinycast/Features/Clipboard/Model/ColorFormat.swift \
+                           Tinycast/Features/Clipboard/Model/ColorSpaces.swift \
+                           Tinycast/Platform/ProcessExit.swift \
+                           Tinycast/Platform/Images/ImageThumbnail.swift \
+                           Tinycast/Platform/Images/ThumbnailCache.swift
 # `Q` is the URL detector a drag payload builds its link with, rather than a second one.
 Q=Tinycast/Features/Quicklinks/Model/QuicklinkDestination.swift
-run clipboard-search-test  Tinycast/Features/Clipboard/Model/*.swift $Q
-run paste-sequence-test    Tinycast/Features/Clipboard/Model/*.swift $Q
-run clipboard-text-test    Tinycast/Features/Clipboard/Model/*.swift $Q \
+run clipboard-search-test  Tinycast/Features/Clipboard/Model/*.swift Tinycast/Platform/Images/ImageDerivative.swift $Q
+run paste-sequence-test    Tinycast/Features/Clipboard/Model/*.swift Tinycast/Platform/Images/ImageDerivative.swift $Q
+run clipboard-text-test    Tinycast/Features/Clipboard/Model/*.swift Tinycast/Platform/Images/ImageDerivative.swift $Q \
                            Tinycast/Features/Clipboard/Service/ClipboardTextExtractor.swift \
                            Tinycast/Features/Clipboard/Service/ClipboardTextIndexer.swift \
                            Tinycast/Features/Clipboard/Service/ClipboardTextWorker.swift \
                            Tinycast/Platform/ProcessExit.swift
 run pasteboard-test        Tinycast/Platform/PasteboardFiles.swift \
                            Tinycast/Features/Clipboard/Model/ClipboardStore.swift \
+                           Tinycast/Platform/Images/ImageDerivative.swift \
                            Tinycast/Features/Clipboard/Model/ClipboardFilter.swift \
                            Tinycast/Features/Clipboard/Model/ClipboardFileKind.swift \
                            Tinycast/Features/Clipboard/Model/ColorValue.swift \
@@ -197,12 +195,18 @@ run pasteboard-test        Tinycast/Platform/PasteboardFiles.swift \
 run index clipboard-file-performance \
                            Tinycast/Platform/PasteboardFiles.swift \
                            Tinycast/Features/Clipboard/Model/ClipboardStore.swift \
+                           Tinycast/Platform/Images/ImageDerivative.swift \
                            Tinycast/Features/Clipboard/Model/ClipboardFilter.swift \
                            Tinycast/Features/Clipboard/Model/ClipboardFileKind.swift \
                            Tinycast/Features/Clipboard/Model/ColorValue.swift \
                            Tinycast/Features/Clipboard/Model/ColorFormat.swift \
                            Tinycast/Features/Clipboard/Model/ColorSpaces.swift \
                            Tinycast/Features/Clipboard/Service/ClipboardManager.swift
+run index clipboard-thumbnail-performance \
+                           Tinycast/Platform/ProcessExit.swift \
+                           Tinycast/Platform/Images/ImageThumbnail.swift \
+                           Tinycast/Platform/Images/ImageDerivative.swift \
+                           Tinycast/Platform/Images/ThumbnailCache.swift
 run emoji-test             Tinycast/Features/Emoji/Model/EmojiCatalog.swift \
                            Tinycast/Features/Emoji/Model/EmojiGridGeometry.swift \
                            Tinycast/Features/Emoji/Model/EmojiData.generated.swift
@@ -268,6 +272,7 @@ run palette-navigation-test Tinycast/Palette/PaletteState.swift \
                            Tinycast/Palette/HoverArming.swift \
                            Tinycast/Features/Emoji/Model/EmojiCatalog.swift \
                            Tinycast/Features/Clipboard/Model/ClipboardStore.swift \
+                           Tinycast/Platform/Images/ImageDerivative.swift \
                            Tinycast/Features/Clipboard/Model/ClipboardFilter.swift \
                            Tinycast/Features/Clipboard/Model/ClipboardFileKind.swift \
                            Tinycast/Features/FileSearch/Model/FileSearchFilter.swift \
@@ -306,6 +311,7 @@ run dictionary-test        Tinycast/Features/Dictionary/Model/DictionaryEntry.sw
                            Tinycast/Features/Dictionary/Model/DictionaryMarkup.swift
 run dictation-test         Tinycast/Features/Dictation/Model/DictationModel.swift Tinycast/Features/Dictation/Model/DictationIdleRelease.swift Tinycast/Features/Dictation/Model/DictationTextFormatter.swift
 run dictation-field-test   Tinycast/Features/Dictation/Model/DictationModel.swift \
+                           Tinycast/Features/Dictation/Model/DictationAudioChunks.swift \
                            Tinycast/Features/Dictation/Model/DictationMode.swift \
                            Tinycast/Features/Dictation/Model/DictationDestination.swift \
                            Tinycast/Features/Dictation/Model/DictationTextFormatter.swift \
@@ -559,6 +565,7 @@ run slow -O raycast-test   Tinycast/Features/Backup/Model/RaycastImportError.swi
                            Tinycast/Platform/Compression/Zlib.swift \
                            Tinycast/Features/Clipboard/Model/RaycastClipboardImport.swift \
                            Tinycast/Features/Clipboard/Model/ClipboardStore.swift \
+                           Tinycast/Platform/Images/ImageDerivative.swift \
                            Tinycast/Features/Clipboard/Model/ClipboardFilter.swift \
                            Tinycast/Features/Clipboard/Model/ClipboardFileKind.swift \
                            Tinycast/Features/Clipboard/Model/ColorValue.swift \
@@ -688,6 +695,7 @@ run ai-provider-test       Tinycast/Features/Settings/AppSettingsKey.swift \
                            Tinycast/Features/AI/Settings/AISettingsStore.swift
 run ai-chat-test           Tinycast/Features/AI/Model/AIRequest.swift \
                            Tinycast/Features/AI/Model/AIConnection.swift \
+                           Tinycast/Features/AI/Model/AIConversationOpenPolicy.swift \
                            Tinycast/Features/AI/Model/AppleIntelligence.swift \
                            Tinycast/Features/AI/Model/AIAttachmentPolicy.swift \
                            Tinycast/Features/AI/Model/AIRetention.swift \
@@ -730,12 +738,18 @@ run chat-markdown-test     Tinycast/Platform/Appearance.swift \
                            Tinycast/Features/AI/Model/MathFormula.swift \
                            Tinycast/Features/AI/Model/MathNode.swift \
                            Tinycast/Features/AI/Model/MathSymbolCatalog.swift \
+                           Tinycast/Features/AI/Model/SyntaxGrammar.swift \
+                           Tinycast/Features/AI/Model/SyntaxHighlighter.swift \
+                           Tinycast/Features/AI/Model/SyntaxStructuredLexers.swift \
                            Tinycast/Features/AI/UI/ChatTextHighlight.swift \
                            Tinycast/Features/AI/UI/ChatMarkdownRenderer.swift \
                            Tinycast/Features/AI/UI/MathAttachmentCell.swift \
                            Tinycast/Features/AI/UI/MathBox.swift \
                            Tinycast/Features/AI/UI/MathFont.swift \
                            Tinycast/Features/AI/UI/MathLayoutEngine.swift
+run syntax-highlight-test  Tinycast/Features/AI/Model/SyntaxGrammar.swift \
+                           Tinycast/Features/AI/Model/SyntaxHighlighter.swift \
+                           Tinycast/Features/AI/Model/SyntaxStructuredLexers.swift
 run mcp-test               Tinycast/Features/Settings/AppSettingsKey.swift \
                            Tinycast/Features/AI/Model/AIConnection.swift \
                            Tinycast/Features/AI/Model/AppleIntelligence.swift \
