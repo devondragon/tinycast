@@ -174,7 +174,6 @@ final class ComposerTextView: NSTextView, InjectableTextView {
     }
 }
 
-/// How a control beside the field reaches the text view the representable made.
 @MainActor
 final class ComposerTextViewHandle {
     weak var textView: ComposerTextView?
