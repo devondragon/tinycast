@@ -50,6 +50,7 @@ struct SettingsBackup: Codable {
         var fileSearchEnabled: Bool?
         var fileSearchScopes: [String]?
         var fileSearchIgnorePatterns: [String]?
+        var fileSearchShowInLauncher: Bool?
         var notesEnabled: Bool?
         var notesRendersMarkdown: Bool?
         var notesShowsFormattingBar: Bool?
@@ -94,7 +95,6 @@ struct SettingsBackup: Codable {
         var supportReminders: Bool?
     }
 
-    /// One entry per bindable action. docs/features/hotkeys.md#persistence
     struct HotkeyBackup: Codable {
         /// Named apart from `commands`: the launcher toggle is the one action with no command row.
         var togglePalette: HotKeyBinding?
@@ -110,7 +110,6 @@ struct SettingsBackup: Codable {
         var customWindowSizes: [String: HotKeyBinding]?
     }
 
-    /// A tally of what an import touched, for user-facing confirmation.
     struct ApplySummary {
         var settingsFields = 0
         var hotkeys = 0
@@ -165,6 +164,7 @@ extension SettingsBackup {
             fileSearchEnabled: s.fileSearchEnabled,
             fileSearchScopes: s.fileSearchScopes,
             fileSearchIgnorePatterns: s.fileSearchIgnorePatterns,
+            fileSearchShowInLauncher: s.fileSearchShowInLauncher,
             notesEnabled: s.notesEnabled,
             notesRendersMarkdown: s.notesRendersMarkdown,
             notesShowsFormattingBar: s.notesShowsFormattingBar,
@@ -432,6 +432,10 @@ extension SettingsBackup {
         }
         if let patterns = s.fileSearchIgnorePatterns {
             settings.fileSearchIgnorePatterns = patterns
+            count += 1
+        }
+        if let flag = s.fileSearchShowInLauncher {
+            settings.fileSearchShowInLauncher = flag
             count += 1
         }
         if let flag = s.notesEnabled {

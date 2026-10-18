@@ -1,5 +1,3 @@
-// MCP's pure half: the wire framing, the names that route a call, trust, and what a chat addresses.
-
 import Foundation
 
 @main

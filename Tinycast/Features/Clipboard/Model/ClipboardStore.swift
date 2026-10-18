@@ -167,7 +167,6 @@ enum ClipboardChord: CaseIterable, Sendable {
     }
 }
 
-/// SQLite-backed clipboard history. See docs/features/clipboard.md#store.
 @MainActor
 @Observable
 final class ClipboardStore {
@@ -336,11 +335,11 @@ final class ClipboardStore {
         sqlite3_reset(stmt)
         sqlite3_clear_bindings(stmt)
         items = loaded
+        ImageDerivative.removeOrphans(in: imagesDir)
         // Age passes while the app isn't running; insert-time pruning alone can't catch that.
         enforceLimits()
     }
 
-    /// Called on load and when the retention setting changes.
     func enforceLimits() {
         prune()
     }
@@ -394,7 +393,6 @@ final class ClipboardStore {
         return inserted
     }
 
-    /// Move an item to the top; pasting or copying it from the palette re-recencies it.
     func promote(_ item: ClipboardItem) {
         // A pinned row holds its place, so re-recencying it would rewrite for no change.
         guard !item.isPinned, items.first?.id != item.id else { return }
@@ -432,7 +430,7 @@ final class ClipboardStore {
             sqlite3_finalize(stmt)
             if !orphaned.isEmpty {
                 Task.detached(priority: .utility) {
-                    for path in orphaned { try? FileManager.default.removeItem(atPath: path) }
+                    for path in orphaned { Self.removeBlob(atPath: path) }
                 }
             }
         }
@@ -525,6 +523,11 @@ final class ClipboardStore {
         invalidateSearch(preservingMatches: true)
         searchRevision += 1
         return true
+    }
+
+    /// Only an owned blob is immutable and ours, so only it may grow downscaled copies.
+    func ownsImage(of item: ClipboardItem) -> Bool {
+        item.imagePath.map(owns) ?? false
     }
 
     func imageURL(for item: ClipboardItem) -> URL? {
@@ -869,9 +872,7 @@ final class ClipboardStore {
             // A retention cut can strand hundreds of files, so delete them off the main actor.
             if !staleOwnedPaths.isEmpty {
                 Task.detached(priority: .utility) {
-                    for path in staleOwnedPaths {
-                        try? FileManager.default.removeItem(atPath: path)
-                    }
+                    for path in staleOwnedPaths { Self.removeBlob(atPath: path) }
                 }
             }
         }
@@ -883,7 +884,13 @@ final class ClipboardStore {
 
     private func deleteBlob(_ item: ClipboardItem) {
         guard let path = item.imagePath, owns(path) else { return }
-        try? FileManager.default.removeItem(atPath: path)
+        Self.removeBlob(atPath: path)
+    }
+
+    nonisolated private static func removeBlob(atPath path: String) {
+        let url = URL(fileURLWithPath: path)
+        try? FileManager.default.removeItem(at: url)
+        ImageDerivative.removeCopies(of: url)
     }
 
     private func openDatabase() -> Bool {
@@ -951,8 +958,7 @@ final class ClipboardStore {
         db = nil
     }
 
-    /// Streams an import into the file off-main; a staged blob moves into `imagesDirectory`,
-    /// which is what makes `owns` true and lets retention reclaim it later.
+    /// A staged blob moves into `imagesDirectory`, making `owns` true so retention reclaims it.
     nonisolated static func importStoredItems(
         inDatabaseAt url: URL, adoptingImagesInto imagesDirectory: URL? = nil,
         _ items: some Sequence<ClipboardItem>
@@ -1000,8 +1006,7 @@ final class ClipboardStore {
         return hasher.finalize()
     }
 
-    /// Keeps the staged blob's name, so importing one backup twice lands on the same path — and
-    /// the row dedupes on it rather than minting a second copy of every image.
+    /// Keeps the staged name, so a backup imported twice dedupes rather than copying every image.
     nonisolated private static func adoptionTarget(
         _ item: ClipboardItem, in directory: URL?
     ) -> ClipboardItem {

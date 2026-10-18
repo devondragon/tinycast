@@ -86,7 +86,6 @@ struct ExtensionGitHubSource: Hashable, Sendable {
 
     // MARK: - Trees
 
-    /// A Git tree: what a directory holds, by sha rather than by path.
     struct Tree: Decodable, Sendable {
         let tree: [Entry]
         /// Set when GitHub gave up listing: what came back is a prefix, not the whole directory.

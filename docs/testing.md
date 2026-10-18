@@ -100,8 +100,9 @@ If a change touches anything in the right column, the harness on the left is man
 | Harness | Guards |
 | --- | --- |
 | `fuzz-test` | `Launcher/Model/LauncherMatch.swift`, `LauncherOrder.swift`, `LauncherSuggestions.swift`, `EntryNaming.swift`, `ScriptRomanization.swift`, `SearchRelevance.swift`, `LauncherRankingStore.swift` — **a new ranking complaint is a new case in its `denseIndex`** |
-| `file-search-test` | `FileSearch/Model/`, plus the shared `FuzzyMatch` scorer |
-| `file-search-session-test` | serialized query execution, debounce coalescing and cancellation |
+| `file-search-test` | `FileSearch/Model/`: folding, masks, scoring, ignore rules, priors, scopes |
+| `file-index-test` | `FileIndexCrawler`, `FileIndexSnapshot`, `FileIndex`: a real fixture crawled, written, mapped, searched and live-updated |
+| `file-search-session-test` | serialized query execution, coalescing, cancellation and refresh |
 | `menu-search-test` | `MenuSearch/Model/` decisions, `MenuSearch/Service/` session filtering, the shared `FuzzyMatch` scorer |
 | `action-menu-search-test` | Action-menu query normalization and shared fuzzy matching |
 | `ranking-test` | `Launcher/Model/LauncherRankingStore.swift` |
@@ -113,7 +114,8 @@ If a change touches anything in the right column, the harness on the left is man
 | `clipboard-text-test` | Apple Vision/PDF extraction, scheduling, retry backoff and recovery |
 | `paste-sequence-test` | `Clipboard/Model/PasteSequence.swift` — the walk's order, its end, and what starts it over |
 | `clipboard-test` | `Clipboard/Model/ClipboardStore.swift`, `ClipboardFilter.swift`, `ClipboardFileKind.swift`, the colour trio |
-| `pasteboard-test` | `Clipboard/Service/ClipboardManager.swift` capture and `Paster.write` — what a Finder copy reads as, and what a file entry writes back |
+| `clipboard-thumbnail-test` | `Platform/Images/ImageThumbnail.swift` copies against the real store — a remove or clear mid-copy leaves none, same-named JPEG/PNG copies stay apart, a timeout or cancel frees the queue, and a failed or unreadable copy falls back to the original; a stand-in script plays the helper |
+| `pasteboard-test` | `Clipboard/Service/ClipboardManager.swift` capture and `Paster.write` — what a Finder copy reads as, and what a file or image entry writes back |
 | `emoji-test` | `Emoji/Model/EmojiCatalog.swift`, `EmojiGridGeometry.swift`, the generated data and keyword packs |
 | `emoji-search-test` | `Emoji/Service/EmojiIndex.swift`, `FrequentEmojiStore.swift`, `Scripts/gen-emoji.js`'s keyword format, multilingual search |
 | `palette-navigation-test` | `Palette/PaletteState.swift`'s screen motions — `prepare`, `replace`, `push`, `pop` — and hover arming, pointer drift, scroll disarming and highlight tokens |
@@ -170,6 +172,7 @@ If a change touches anything in the right column, the harness on the left is man
 | `support-test` | `Support/Model/` — when the support reminder comes due, and a clock moved backwards |
 | `ai-provider-test` | `AI/Model/` and `AISettingsStore` — instruction composition, provider requests and streams, route settings, protocol framing and CLI launch encodings |
 | `apple-intelligence-test` | On-device status, snapshot deltas, transcript assembly and error mapping; real generation is opt-in |
+| `syntax-highlight-test` | `AI/Model/SyntaxGrammar.swift`, `SyntaxHighlighter.swift`, `SyntaxStructuredLexers.swift` — every grammar's tokens, language aliases, the size limit and streaming prefixes |
 | `mcp-test` | `MCP/Model/` and `MCPSettingsStore` — JSON-RPC framing, handles, tool names, output flattening, trust, `@server` addressing, the shape a vendor CLI is handed, and which servers Tinycast leaves to that CLI |
 | `mcp-stdio-test` | `MCP/Service/` against a stub server — handshake, listing, calling, and every way one can go away |
 | `mcp-oauth-test` | OAuth parsing, RFC 7636 PKCE, discovery and resource binding, loopback callback validation/cancellation, dynamic registration, supplied client credentials and their token-endpoint authentication, Keychain token rotation, concurrent refresh, the wider margin for a token lent to a CLI, redirects and one-retry 401 handling |
@@ -247,27 +250,28 @@ search result that navigates and then sits there.
 ## Performance measurement
 
 `Platform/Signposts.swift` emits eight intervals on the `com.tinycast.perf` subsystem: `AppCore.start`,
-`AppIndex.scan`, `AppIndex.rank`, `PaletteWindowController.show`, `UninstallScanner.discover` and
-`UninstallScanner.measure`, `FileSearchService.search`, and `Notes.search`. Open the Time Profiler or
+`AppIndex.scan`, `AppIndex.rank`, `PaletteWindowController.show`, `UninstallScanner.discover`,
+`UninstallScanner.measure`, `Notes.search` and `FileIndexer.update`. Open the Time Profiler or
 `os_signpost` instrument in Instruments and filter to that subsystem; nothing needs recompiling.
 
 None of the benchmarks below join the suite, so each is registered in `run-tests.sh` as `run index`
 instead: `--index` hands it editor flags without queueing it, and without that entry nothing in the
 file resolves. Keep the entry's source list matching the command beside it.
 
-Run the real Spotlight-backed file-search benchmark separately from the deterministic harnesses:
+Run the file-index benchmark separately from the deterministic harnesses. With no arguments it crawls
+`/System /Applications /Library /usr`, which never raise a privacy prompt; pass other roots to measure
+them:
 
 ```sh
-swiftc -O -swift-version 6 Tinycast/Platform/Signposts.swift \
-    Tinycast/Features/Launcher/Model/SearchRelevance.swift \
-    Tinycast/Features/FileSearch/Model/*.swift \
-    Tinycast/Features/FileSearch/Service/FileSearchService.swift \
+swiftc -O -wmo -swift-version 6 Tinycast/Features/FileSearch/Model/*.swift \
+    Tinycast/Features/FileSearch/Service/FileIndex.swift \
+    Tinycast/Features/FileSearch/Service/FileIndexSnapshot.swift \
+    Tinycast/Features/FileSearch/Service/FileIndexCrawler.swift \
     Tests/file-search-performance.swift -o /tmp/file-search-performance
 /tmp/file-search-performance
 ```
 
-Every query runs twice: once on the shipped rules and once with five extra user patterns, so the output
-says what the ignore list itself costs rather than only what Spotlight does.
+It prints the crawl and write times, the index size, and first and median latency per query.
 
 The calculator benchmark is deterministic — an injected clock, calendar and rate table — so it is a
 timing harness rather than an assertion one, and stays out of `run-tests.sh` for that reason:
@@ -296,6 +300,26 @@ swiftc -O -swift-version 6 Tinycast/Platform/PasteboardFiles.swift \
     Tinycast/Features/Clipboard/Service/ClipboardManager.swift \
     Tests/clipboard-file-performance.swift -o /tmp/clipboard-file-performance
 /tmp/clipboard-file-performance
+```
+
+`Tests/clipboard-thumbnail-performance.swift` draws 10 image rows at once, then 10 previews one by one,
+as Clipboard History does, and prints the times with the footprint and its peak as JSON. `--fixtures`
+writes 10 seeded synthetic Display P3 screenshots up to 3456 × 2234, so no real clipboard is needed.
+`--original` decodes the blobs as before the copies existed; `--copies` makes and reads the
+`ImageDerivative` copies, so its first run measures a first view and later runs every other one. The
+helper must sit at `Contents/Helpers` beside the benchmark:
+
+```sh
+D=/tmp/clipboard-thumbnail-performance; mkdir -p $D/Contents/Helpers
+swiftc -O -swift-version 6 -parse-as-library \
+    Tinycast/Features/Clipboard/Service/{ClipboardTextExtractor,ClipboardTextHelper}.swift \
+    -o $D/Contents/Helpers/ClipboardTextHelper
+swiftc -O -swift-version 6 Tinycast/Platform/ProcessExit.swift \
+    Tinycast/Platform/Images/{ImageThumbnail,ImageDerivative,ThumbnailCache}.swift \
+    Tests/clipboard-thumbnail-performance.swift -o $D/clipboard-thumbnail-performance
+$D/clipboard-thumbnail-performance /tmp/ctp --fixtures
+$D/clipboard-thumbnail-performance /tmp/ctp --original
+$D/clipboard-thumbnail-performance /tmp/ctp --copies
 ```
 
 `Tests/emoji-search-performance.swift` times uncached queries, typing prefixes and memo hits against
@@ -498,6 +522,8 @@ caches, TCC grants and login item, so this cannot disturb an installed copy.
 - Remap Caps Lock in Keyboard ▸ Modifier Keys: Diagnostics… reports it with the keyboard's name
 - In a password field, Hyper with Caps Lock shows the Secure Input HUD. Turn on Secure Input
   Compatibility: a Hyper shortcut now fires there, and Diagnostics… names the Secure Input holder
+- With Secure Input held, record Hyper+J with and without Secure Input Compatibility: both save ✦J,
+  never F18 or ⌃J, and a quick Hyper+J leaves Caps Lock off
 - Quit Tinycast: Caps Lock types capitals again on every keyboard, the built-in one included
 - 🎤 records in a recorder and fires its binding; unbound, it starts macOS Dictation again
 - With Karabiner-Elements running and Caps Lock left alone there, Hyper with Caps Lock still works;
@@ -546,27 +572,41 @@ caches, TCC grants and login item, so this cannot disturb an installed copy.
 
 ### File Search
 
-- With File Search **off**: Search Files is absent, its shortcut no-ops, and no permission appears
+- With File Search **off**: Search Files is absent, its shortcut no-ops, and no index folder exists
+- Without Full Disk Access the pane shows **Required** with the hint, the palette says so, and ↵ and the
+  button both open Privacy & Security › Full Disk Access; granting it starts a build with no relaunch
+- The first build shows a rising item count in Settings and the palette, then a final count and date;
+  Activity Monitor shows the helper's memory, and Tinycast's own footprint is back at its baseline after
 - Enabling in Settings exposes Search Files immediately; it persists across relaunch and backup import
-- Disabling during a query cancels it and returns the open screen to the launcher
+- Disabling during a query cancels it, returns the open screen to the launcher and deletes the index
 - File Search and Quicklinks remain independently visible in all four enabled/disabled combinations
-- An empty query performs no search; a filename query returns only files and folders beneath the scopes
-- Library internals, generated trees, application bundles and hidden paths do not appear
-- Visible custom top-level home folders and cloud-drive files remain searchable
+- An empty query lists recent files under home; a filename query returns only entries beneath the scopes
+- Files under home rank above system, hidden and bundle files with the same name
+- Creating, renaming and deleting a file in `~/Desktop` shows in results within a second
+- **Rebuild Index** rebuilds while the old index keeps answering
 - Return opens, Command-Return reveals in Finder, and Copy Path keeps the palette open with a HUD
 - A file and a folder drag into Finder as copies and into a browser's upload field; a cancelled drag
   flies back and leaves the palette up, a landed one hides it
 - Replacing a query quickly never lets an older result list overwrite the current query
 - A broad `.` search can be scrolled end to end; leaving it releases its fitted icons, and repeating the
   cycle does not raise the post-close memory floor
-- Removing home and adding one folder narrows results to it; restoring the default brings them back
-- A cleared scope list returns nothing rather than falling back to home, and never hangs
-- A missing scope shows the warning triangle without failing the rest of the search
-- Adding `*.log` takes effect on the next query with no relaunch; removing it restores those results
+- Replacing the whole disk with one folder narrows results to it after the rebuild; restoring the default
+  brings them back
+- A cleared scope list returns nothing and never hangs
+- A missing scope shows the warning triangle without failing the rest of the index
+- The pattern field takes a click; **Add** and Return add `*.log`, which takes effect after the rebuild
+- **Add Folder…** adds a `~/…` pattern, and that folder's files leave the results after the rebuild
 - Built-in ignore rows carry no remove button; user rows do, and a duplicate or blank is refused
 - Recording a shortcut opens the palette straight into File Search, hidden from the launcher or not
 - Search Files is absent from Settings ▸ Commands, and `Enable Commands` off leaves its shortcut live
 - Export, clear both lists and the shortcut, re-import: all three return, defaults undo not duplicated
+- **Show in launcher** off (the default): a typed filename lists no Files section
+- **Show in launcher** on: three or more characters list up to five files between Results and the
+  fallbacks; two do not. ↵ opens, ⌘↵ reveals, the copy, paste and ⌃X chords act
+  on the row, and a row drags out as a copy
+- Choosing the Search Files fallback right after opens on the same results without a pause
+- With Pop to Root Search delayed, close and reopen before the timeout: the launcher keeps its query
+  and file results. Let the timeout expire, or use Immediately: reopening starts with an empty query
 
 ### Notes
 

@@ -60,7 +60,8 @@ final class AppCore {
     let pinnedEmoji = PinnedEmojiStore()
     let runningApps = RunningAppsMonitor()
     let palette = PaletteState()
-    let fileSearch = FileSearchSession()
+    let fileIndexer = FileIndexer()
+    @ObservationIgnored private(set) lazy var fileSearch = FileSearchSession(index: fileIndexer.index)
     let dictionary = DictionarySession()
     let menuSearch = MenuSearchSession()
     let windowSwitch = WindowSwitchSession()
@@ -202,8 +203,9 @@ final class AppCore {
         store: calendarStore, clock: meetingClock, appIndex: appIndex, settings: settings,
         paletteCoordinator: paletteCoordinator, core: self)
     @ObservationIgnored private(set) lazy var fileSearchCoordinator = FileSearchCoordinator(
-        settings: settings, appIndex: appIndex, session: fileSearch, palette: palette,
-        paletteCoordinator: paletteCoordinator, windowController: windowController, core: self)
+        settings: settings, appIndex: appIndex, session: fileSearch, indexer: fileIndexer,
+        palette: palette, paletteCoordinator: paletteCoordinator,
+        windowController: windowController, core: self)
     @ObservationIgnored private(set) lazy var menuSearchCoordinator = MenuSearchCoordinator(
         settings: settings, appIndex: appIndex, session: menuSearch, palette: palette,
         paletteCoordinator: paletteCoordinator, core: self)
@@ -237,7 +239,6 @@ final class AppCore {
     @ObservationIgnored private lazy var messageHUD = MessageHUDController(settings: settings)
     private(set) var isShowingDialog = false
     var isDimmingPaletteForDialog: Bool { isShowingDialog && windowController.isVisible }
-    /// Every confirmation, report and prompt; it also stops a held hotkey stacking them.
     @ObservationIgnored private lazy var dialogs = DialogController(
         settings: settings,
         onPresentationChanged: { [weak self] isPresenting in
@@ -471,7 +472,6 @@ final class AppCore {
         }
     }
 
-    /// Clicking the Dock icon: raise whichever window is already open, else summon the launcher.
     func handleReopen() {
         if settingsCoordinator.focusExisting() { return }
         if aiChatCoordinator.focusExisting() { return }
@@ -676,6 +676,9 @@ final class AppCore {
         track(
             { _ = $0.clipboardTextSearchEnabled }, reproject: { $0.applyClipboardTextSearch() })
         track({ _ = $0.fileSearchEnabled }, reproject: { $0.fileSearchCoordinator.applyEnabled() })
+        track(
+            { _ = $0.fileSearchShowInLauncher },
+            reproject: { $0.fileSearchCoordinator.applyLauncherFiles() })
         // Two features, one switch: each coordinator gates only its own command and mode.
         track(
             { _ = $0.navigationEnabled },
@@ -876,7 +879,6 @@ final class AppCore {
 
     // MARK: - Interruption
 
-    /// What the app is in the middle of; the update prompt and the support reminder both ask first.
     var currentActivity: UpdateActivity {
         UpdateActivity(
             isExpandingSnippet: textInjector.isDelivering,
@@ -887,7 +889,6 @@ final class AppCore {
             isPaletteVisible: paletteCoordinator.isVisible)
     }
 
-    /// Whether a window may take focus without interrupting something the user started.
     var canInterruptUser: Bool { UpdateReadiness.evaluate(currentActivity) == nil }
 
     // MARK: - Dialogs, routed here so `dialogs` stays the single owner
@@ -941,12 +942,10 @@ final class AppCore {
         messageHUD.dismiss()
     }
 
-    /// The volume slider, so `dialogs` stays the single owner of every prompt in the app.
     func pickVolume(current: Float32) async -> Float32? {
         await dialogs.pickVolume(current: current)
     }
 
-    /// The snippet argument prompt, for the same reason.
     func fillSnippetArguments(
         snippetName: String, arguments: [SnippetTemplateEngine.MissingArgument]
     ) async -> [String: String]? {

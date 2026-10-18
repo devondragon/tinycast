@@ -35,8 +35,8 @@ real Raycast extensions**, rendered as native SwiftUI. Free, open source, and st
 - **Per-app hotkeys**: bind a key to an app; press it to toggle (focus/hide).
 - **Themes**: five built-in looks besides Default, each with its own colors, fonts and an animated
   backdrop behind the palette and its panels. See [Themes](#themes) below.
-- **Search Files**: open files and folders from the folders you choose, through Spotlight, with no
-  index of our own.
+- **Search Files**: open files and folders from the folders you choose, through Tinycast's own disk
+  index kept current from FSEvents, with an optional Files section in the launcher's root search.
 - **Dictionary**: look a word up with the Define Word command, or define whatever you typed from the
   launcher's fallbacks, read from the Mac's own dictionaries.
 - **Clipboard history**: text and images, searchable, pasted back into the app you were using.
