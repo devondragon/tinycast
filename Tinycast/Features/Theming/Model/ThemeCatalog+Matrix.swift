@@ -21,6 +21,18 @@ extension ThemeCatalog {
             .windowSurface: .surface(dark: 1, light: 1),
             .terminalSurface: .surface(dark: 1, light: 1),
             .roomCardFill: .surface(dark: 0.94, light: 0.94),
+            .chatText: .ink(dark: 1, light: 1),
+            .syntaxKeyword: .fixed(.hex(dark: 0x00FF41, light: 0x006B24)),
+            .syntaxString: .fixed(.hex(dark: 0xC8FF6A, light: 0x4F6B00)),
+            .syntaxNumber: .fixed(.hex(dark: 0xFFE66B, light: 0x7A5A00)),
+            .syntaxComment: .fixed(.hex(dark: 0x65A773, light: 0x4F7357)),
+            .syntaxType: .fixed(.hex(dark: 0x4DFFD2, light: 0x006B5E)),
+            .syntaxFunction: .fixed(.hex(dark: 0x8CFFA8, light: 0x1F5C2B)),
+            .syntaxConstant: .fixed(.hex(dark: 0xE6FF4F, light: 0x5E6000)),
+            .syntaxAttribute: .fixed(.hex(dark: 0x7DFFB8, light: 0x2E6B4A)),
+            .syntaxProperty: .fixed(.hex(dark: 0xA6E8B4, light: 0x2F5F3A)),
+            .syntaxInserted: .fixed(.hex(dark: 0x00FF41, light: 0x006B24)),
+            .syntaxDeleted: .fixed(.hex(dark: 0xFF675E, light: 0xB91C1C)),
         ],
         surfaces: ThemeSurfaces(
             panel: .solid(

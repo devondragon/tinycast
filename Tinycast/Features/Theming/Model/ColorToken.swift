@@ -23,6 +23,9 @@ enum ColorToken: String, CaseIterable, Sendable {
     case searchFlash, checkerLight, checkerDark, brand, dropGuide, dropGuideArmed
     case primaryAction, destructive, success, warning, composerSend, composerSendInk
     case windowSurface, dropTarget, progress, terminalSurface, accent, onAccent, link
+    case chatText
+    case syntaxKeyword, syntaxString, syntaxNumber, syntaxComment, syntaxType, syntaxFunction
+    case syntaxConstant, syntaxAttribute, syntaxProperty, syntaxInserted, syntaxDeleted
 
     var baseRecipe: ColorRecipe {
         switch self {
@@ -82,6 +85,23 @@ enum ColorToken: String, CaseIterable, Sendable {
         case .terminalSurface: .fixed(RGBAPair(dark: .gray(0.07), light: .gray(0.99)))
         case .onAccent: .role(.onAccent, dark: 1, light: 1)
         case .link: .role(.link, dark: 1, light: 1)
+        case .chatText: .system(.label, dark: 1, light: 1)
+        case .syntaxKeyword: .fixed(.hex(dark: 0xFC5FA3, light: 0x9F3897))
+        case .syntaxString: .fixed(.hex(dark: 0xFC6A5D, light: 0xBE2B19))
+        case .syntaxNumber: .fixed(.hex(dark: 0xD0BF69, light: 0x272AD8))
+        case .syntaxComment: .fixed(.hex(dark: 0x87939E, light: 0x576672))
+        case .syntaxType: .fixed(.hex(dark: 0x5DD8FF, light: 0x1C6E78))
+        case .syntaxFunction: .fixed(.hex(dark: 0x67B7A4, light: 0x2B6A72))
+        case .syntaxConstant: .fixed(.hex(dark: 0xD0A8FF, light: 0x6C36A9))
+        case .syntaxAttribute: .fixed(.hex(dark: 0xFD8F3F, light: 0x78492A))
+        case .syntaxProperty: .fixed(.hex(dark: 0x6BBCDD, light: 0x0F68A0))
+        case .syntaxInserted: .fixed(.hex(dark: 0x67D97E, light: 0x1C7234))
+        case .syntaxDeleted: .fixed(.hex(dark: 0xFC6A5D, light: 0xBA2F1E))
         }
     }
+
+    static let syntax: [ColorToken] = [
+        .syntaxKeyword, .syntaxString, .syntaxNumber, .syntaxComment, .syntaxType, .syntaxFunction,
+        .syntaxConstant, .syntaxAttribute, .syntaxProperty, .syntaxInserted, .syntaxDeleted,
+    ]
 }

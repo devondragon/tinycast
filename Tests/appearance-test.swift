@@ -77,6 +77,27 @@ struct AppearanceTests {
         dark("findCurrent", c.findCurrent, is: Color(nsColor: NSColor.systemYellow.withAlphaComponent(0.9)))
         adapts("findMatch", c.findMatch)
         adapts("findCurrent", c.findCurrent)
+        dark("chatText", c.chatText, is: Color(nsColor: .labelColor))
+
+        print("# code colors keep upstream's dark inks")
+        func hex(_ value: UInt32) -> Color {
+            Color(nsColor: NSColor(
+                srgbRed: CGFloat((value >> 16) & 0xFF) / 255, green: CGFloat((value >> 8) & 0xFF) / 255,
+                blue: CGFloat(value & 0xFF) / 255, alpha: 1))
+        }
+        let s = c.Syntax.self
+        dark("syntax keyword", s.keyword, is: hex(0xFC5FA3))
+        dark("syntax string", s.string, is: hex(0xFC6A5D))
+        dark("syntax number", s.number, is: hex(0xD0BF69))
+        dark("syntax comment", s.comment, is: hex(0x87939E))
+        dark("syntax type", s.type, is: hex(0x5DD8FF))
+        dark("syntax function", s.function, is: hex(0x67B7A4))
+        dark("syntax constant", s.constant, is: hex(0xD0A8FF))
+        dark("syntax attribute", s.attribute, is: hex(0xFD8F3F))
+        dark("syntax property", s.property, is: hex(0x6BBCDD))
+        dark("syntax inserted", s.inserted, is: hex(0x67D97E))
+        dark("syntax deleted", s.deleted, is: hex(0xFC6A5D))
+        adapts("syntax keyword", s.keyword)
 
         print("# every surface token resolves per appearance")
         for (label, token) in [

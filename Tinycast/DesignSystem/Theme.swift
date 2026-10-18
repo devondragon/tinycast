@@ -533,29 +533,23 @@ enum Theme {
         /// The command output window's page: a flat surface the log sits directly on.
         static var terminalSurface: Color { ThemeStore.active.palette.color(.terminalSurface) }
 
+        /// Chat replies and their code: the system label in Default, the theme's ink elsewhere.
+        static var chatText: Color { ThemeStore.active.palette.color(.chatText) }
+
+        /// Code-block token inks; a mono theme varies brightness where Default varies hue.
         @MainActor
         enum Syntax {
-            static let keyword = pair(dark: 0xFC5FA3, light: 0xAD3DA4)
-            static let string = pair(dark: 0xFC6A5D, light: 0xD12F1B)
-            static let number = pair(dark: 0xD0BF69, light: 0x272AD8)
-            static let comment = pair(dark: 0x7F8C98, light: 0x5D6C79)
-            static let type = pair(dark: 0x5DD8FF, light: 0x1F7A85)
-            static let function = pair(dark: 0x67B7A4, light: 0x2B6A72)
-            static let constant = pair(dark: 0xD0A8FF, light: 0x6C36A9)
-            static let attribute = pair(dark: 0xFD8F3F, light: 0x78492A)
-            static let property = pair(dark: 0x6BBCDD, light: 0x0F68A0)
-            static let inserted = pair(dark: 0x67D97E, light: 0x1F7F3A)
-            static let deleted = pair(dark: 0xFC6A5D, light: 0xC0301F)
-
-            private static func pair(dark: UInt32, light: UInt32) -> Color {
-                adaptive(dark: rgb(dark), light: rgb(light))
-            }
-
-            private static func rgb(_ hex: UInt32) -> NSColor {
-                NSColor(
-                    srgbRed: CGFloat((hex >> 16) & 0xFF) / 255, green: CGFloat((hex >> 8) & 0xFF) / 255,
-                    blue: CGFloat(hex & 0xFF) / 255, alpha: 1)
-            }
+            static var keyword: Color { ThemeStore.active.palette.color(.syntaxKeyword) }
+            static var string: Color { ThemeStore.active.palette.color(.syntaxString) }
+            static var number: Color { ThemeStore.active.palette.color(.syntaxNumber) }
+            static var comment: Color { ThemeStore.active.palette.color(.syntaxComment) }
+            static var type: Color { ThemeStore.active.palette.color(.syntaxType) }
+            static var function: Color { ThemeStore.active.palette.color(.syntaxFunction) }
+            static var constant: Color { ThemeStore.active.palette.color(.syntaxConstant) }
+            static var attribute: Color { ThemeStore.active.palette.color(.syntaxAttribute) }
+            static var property: Color { ThemeStore.active.palette.color(.syntaxProperty) }
+            static var inserted: Color { ThemeStore.active.palette.color(.syntaxInserted) }
+            static var deleted: Color { ThemeStore.active.palette.color(.syntaxDeleted) }
         }
     }
 

@@ -92,7 +92,7 @@ struct ChatMarkdownRenderer {
 
     private func textColor(_ context: Context) -> NSColor {
         if context.failed { return NSColor(Theme.Colors.destructive) }
-        return context.secondary ? NSColor(Theme.Colors.textSecondary) : .labelColor
+        return context.secondary ? NSColor(Theme.Colors.textSecondary) : NSColor(Theme.Colors.chatText)
     }
 
     /// `first` numbers the blocks when a list item renders its later blocks one at a time.

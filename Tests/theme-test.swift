@@ -55,6 +55,47 @@ struct ThemeTests {
             }
         }
 
+        print("# code colors are legible and tell the main kinds apart")
+        let major: [ColorToken] = [.syntaxKeyword, .syntaxString, .syntaxNumber, .syntaxComment, .syntaxType]
+        for id in ThemeID.allCases where id != .standard {
+            let theme = ThemeCatalog.definition(for: id)
+            for dark in [true, false] {
+                let mode = dark ? "dark" : "light"
+                let ink = theme.ink.value(dark: dark)
+                let card = ContrastPolicy.over(
+                    ink.with(alpha: theme.inkAlpha(.cardFill, dark: dark)), theme.surface.value(dark: dark))
+                func value(_ token: ColorToken) -> RGBA? {
+                    guard case .fixed(let pair) = theme.recipe(for: token) else { return nil }
+                    return pair.value(dark: dark)
+                }
+                for token in ColorToken.syntax {
+                    guard let color = value(token) else {
+                        check("\(id) states \(token)", false)
+                        continue
+                    }
+                    let page = ContrastPolicy.ratio(color, card)
+                    let worst = ContrastPolicy.minimumCardContrast(color, theme, dark: dark)
+                    check("\(id) \(mode) \(token) ≥ 4.5 on a card", page >= 4.5, String(format: "%.2f", page))
+                    check("\(id) \(mode) \(token) ≥ 3 on the worst pixel", worst >= 3, String(format: "%.2f", worst))
+                }
+                for token in major {
+                    guard let color = value(token) else { continue }
+                    let fromInk = ContrastPolicy.distance(color, ink)
+                    check("\(id) \(mode) \(token) stands apart from plain code", fromInk >= 15,
+                          String(format: "%.1f", fromInk))
+                    for other in major where other.rawValue > token.rawValue {
+                        guard let peer = value(other) else { continue }
+                        let apart = ContrastPolicy.distance(color, peer)
+                        check("\(id) \(mode) \(token) and \(other) differ", apart >= 12, String(format: "%.1f", apart))
+                    }
+                }
+                if let inserted = value(.syntaxInserted), let deleted = value(.syntaxDeleted) {
+                    let apart = ContrastPolicy.distance(inserted, deleted)
+                    check("\(id) \(mode) diff lines differ", apart >= 40, String(format: "%.1f", apart))
+                }
+            }
+        }
+
         print("# every bundled font ships with its file and license")
         let fonts = URL(fileURLWithPath: "Tinycast/Resources/Fonts")
         for font in BundledFont.allCases {

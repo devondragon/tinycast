@@ -88,6 +88,7 @@ struct ThemePalette {
         case .orange: .orange
         case .yellow: Color(nsColor: .systemYellow)
         case .link: Color(nsColor: .linkColor)
+        case .label: Color(nsColor: .labelColor)
         case .windowBackground: Color(nsColor: .windowBackgroundColor)
         case .white: .white
         }

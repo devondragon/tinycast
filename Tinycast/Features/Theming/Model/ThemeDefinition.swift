@@ -25,7 +25,7 @@ enum ThemeID: String, CaseIterable, Identifiable, Sendable {
 
 /// A macOS color named rather than copied, so it follows the system accent and appearance.
 enum SystemColor: Sendable {
-    case accent, blue, red, green, orange, yellow, link, windowBackground, white
+    case accent, blue, red, green, orange, yellow, link, label, windowBackground, white
 }
 
 enum ThemeColor: Equatable, Sendable {
