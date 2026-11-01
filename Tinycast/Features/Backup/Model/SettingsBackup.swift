@@ -37,23 +37,27 @@ struct SettingsBackup: Codable {
         var escapeKeyBehavior: String?
         var appearance: String?
         var visualTheme: String?
+        var language: String?
         var calcNumberStyle: String?
         var interfaceSize: String?
         var compactMode: Bool?
-        var showFavoritesInCompactMode: Bool?
+        var compactBarCommands: [String]?
         var searchScopes: [String]?
         var launcherShowsSuggestions: Bool?
         var rootSearchSensitivity: String?
         var openOnCursorScreen: Bool?
         // Safe to carry: it grants no permission class, just repositions the window.
         var paletteDraggable: Bool?
+        var animationsEnabled: Bool?
         var fileSearchEnabled: Bool?
         var fileSearchScopes: [String]?
         var fileSearchIgnorePatterns: [String]?
+        var fileSearchRemovedDefaultPatterns: [String]?
         var fileSearchShowInLauncher: Bool?
         var notesEnabled: Bool?
         var notesRendersMarkdown: Bool?
         var notesShowsFormattingBar: Bool?
+        var notesShowsInMenuBar: Bool?
         // `snippetsEnabled` is absent: an import must not enable keystroke listening.
         var customCommandsEnabled: Bool?
         var customCommandsShowInLauncher: Bool?
@@ -152,22 +156,26 @@ extension SettingsBackup {
             escapeKeyBehavior: s.escapeKeyBehavior.rawValue,
             appearance: s.appearance.rawValue,
             visualTheme: s.theme.rawValue,
+            language: s.language.rawValue,
             calcNumberStyle: s.calcNumberStyle.rawValue,
             interfaceSize: s.interfaceSize.rawValue,
             compactMode: s.compactMode,
-            showFavoritesInCompactMode: s.showFavoritesInCompactMode,
+            compactBarCommands: s.compactBarCommands.map(\.rawValue),
             searchScopes: s.searchScopes,
             launcherShowsSuggestions: s.launcherShowsSuggestions,
             rootSearchSensitivity: s.rootSearchSensitivity.rawValue,
             openOnCursorScreen: s.openOnCursorScreen,
             paletteDraggable: s.paletteDraggable,
+            animationsEnabled: s.animationsEnabled,
             fileSearchEnabled: s.fileSearchEnabled,
             fileSearchScopes: s.fileSearchScopes,
             fileSearchIgnorePatterns: s.fileSearchIgnorePatterns,
+            fileSearchRemovedDefaultPatterns: s.fileSearchRemovedDefaultPatterns,
             fileSearchShowInLauncher: s.fileSearchShowInLauncher,
             notesEnabled: s.notesEnabled,
             notesRendersMarkdown: s.notesRendersMarkdown,
             notesShowsFormattingBar: s.notesShowsFormattingBar,
+            notesShowsInMenuBar: s.notesShowsInMenuBar,
             customCommandsEnabled: s.customCommandsEnabled,
             customCommandsShowInLauncher: s.customCommandsShowInLauncher,
             snippetsShowInLauncher: s.snippetsShowInLauncher,
@@ -268,7 +276,7 @@ extension SettingsBackup {
                 summary.customCommands =
                     core.customCommandCoordinator.replaceCustomCommands(customCommands)
             } else {
-                summary.notRestored.append("custom commands")
+                summary.notRestored.append(String(localized: "custom commands"))
             }
         }
         // Before the hotkeys, so a restored binding has its quicklink to attach to.
@@ -281,7 +289,7 @@ extension SettingsBackup {
                 summary.windowLayouts =
                     core.windowLayoutCoordinator.replaceWindowLayouts(windowLayouts)
             } else {
-                summary.notRestored.append("window layouts")
+                summary.notRestored.append(String(localized: "window layouts"))
             }
         }
         if let windowRooms {
@@ -389,6 +397,10 @@ extension SettingsBackup {
             settings.theme = theme
             count += 1
         }
+        if let raw = s.language, let language = AppLanguage(rawValue: raw) {
+            settings.language = language
+            count += 1
+        }
         if let raw = s.calcNumberStyle, let style = CalcNumberStyle(rawValue: raw) {
             settings.calcNumberStyle = style
             count += 1
@@ -397,8 +409,10 @@ extension SettingsBackup {
             settings.compactMode = flag
             count += 1
         }
-        if let flag = s.showFavoritesInCompactMode {
-            settings.showFavoritesInCompactMode = flag
+        if let identifiers = s.compactBarCommands,
+            let commands = CommandID.compactBarCommands(from: identifiers)
+        {
+            settings.compactBarCommands = commands
             count += 1
         }
         if let scopes = s.searchScopes {
@@ -421,6 +435,10 @@ extension SettingsBackup {
             settings.paletteDraggable = flag
             count += 1
         }
+        if let flag = s.animationsEnabled {
+            settings.animationsEnabled = flag
+            count += 1
+        }
         // Writing through AppSettings is enough; AppCore's sinks re-project the rest.
         if let flag = s.fileSearchEnabled {
             settings.fileSearchEnabled = flag
@@ -432,6 +450,10 @@ extension SettingsBackup {
         }
         if let patterns = s.fileSearchIgnorePatterns {
             settings.fileSearchIgnorePatterns = patterns
+            count += 1
+        }
+        if let patterns = s.fileSearchRemovedDefaultPatterns {
+            settings.fileSearchRemovedDefaultPatterns = patterns
             count += 1
         }
         if let flag = s.fileSearchShowInLauncher {
@@ -448,6 +470,10 @@ extension SettingsBackup {
         }
         if let flag = s.notesShowsFormattingBar {
             settings.notesShowsFormattingBar = flag
+            count += 1
+        }
+        if let flag = s.notesShowsInMenuBar {
+            settings.notesShowsInMenuBar = flag
             count += 1
         }
         if let flag = s.customCommandsEnabled {

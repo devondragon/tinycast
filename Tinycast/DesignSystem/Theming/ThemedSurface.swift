@@ -6,9 +6,9 @@ extension View {
         modifier(ThemedSurfaceModifier(role: role, shape: shape, glass: glass))
     }
 
-    /// A borderless window's body: scrim over glass in Default, fill and backdrop in a theme.
-    func themedPanel(in shape: some Shape, scrim: Color = Theme.Colors.panelScrim) -> some View {
-        modifier(ThemedPanelModifier(shape: shape, scrim: scrim))
+    /// A borderless window's body: bare glass in Default, scrim, fill and backdrop in a theme.
+    func themedPanel(in shape: some Shape, scrim: Color? = nil, isVisible: Bool = true) -> some View {
+        modifier(ThemedPanelModifier(shape: shape, scrim: scrim, isVisible: isVisible))
     }
 }
 
@@ -37,35 +37,51 @@ private struct ThemedSurfaceModifier<S: Shape>: ViewModifier {
 
 private struct ThemedPanelModifier<S: Shape>: ViewModifier {
     let shape: S
-    let scrim: Color
+    let scrim: Color?
+    let isVisible: Bool
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     @ViewBuilder
     func body(content: Content) -> some View {
+        if case .glass = Theme.Surfaces.style(.panel) {
+            content.background { surface.opacity(isVisible ? 1 : 0) }
+        } else {
+            content
+                .foregroundStyle(Theme.Colors.textPrimary)
+                .background { surface.opacity(isVisible ? 1 : 0) }
+        }
+    }
+
+    /// Bottom layer first; a hidden panel drops its backdrop so the animation stops with it.
+    @ViewBuilder
+    private var surface: some View {
+        let backdrop = PanelBackdrop(backdrop: ThemeStore.active.palette.definition.backdrop)
+        let themedScrim = scrim ?? Theme.Colors.panelScrim
         switch Theme.Surfaces.style(.panel) {
         case .glass:
-            content
-                .background(scrim)
-                .background(GlassEffectView())
+            ZStack {
+                GlassEffectView()
+                if let scrim { scrim }
+            }
         case .tintedGlass(let tint) where reduceTransparency:
-            content
-                .foregroundStyle(Theme.Colors.textPrimary)
-                .background(scrim)
-                .background(PanelBackdrop(backdrop: ThemeStore.active.palette.definition.backdrop))
-                .background { SolidSurface(fill: .color(tint.opaque), stroke: nil, glows: false, shape: shape) }
+            ZStack {
+                SolidSurface(fill: .color(tint.opaque), stroke: nil, glows: false, shape: shape)
+                if isVisible { backdrop }
+                themedScrim
+            }
         case .tintedGlass(let tint):
-            content
-                .foregroundStyle(Theme.Colors.textPrimary)
-                .background(scrim)
-                .background(PanelBackdrop(backdrop: ThemeStore.active.palette.definition.backdrop))
-                .background(ThemePalette.color(tint))
-                .background(GlassEffectView())
+            ZStack {
+                GlassEffectView()
+                ThemePalette.color(tint)
+                if isVisible { backdrop }
+                themedScrim
+            }
         case .solid(let fill, let stroke, let glows):
-            content
-                .foregroundStyle(Theme.Colors.textPrimary)
-                .background(scrim)
-                .background(PanelBackdrop(backdrop: ThemeStore.active.palette.definition.backdrop))
-                .background { SolidSurface(fill: fill, stroke: stroke, glows: glows, shape: shape) }
+            ZStack {
+                SolidSurface(fill: fill, stroke: stroke, glows: glows, shape: shape)
+                if isVisible { backdrop }
+                themedScrim
+            }
         }
     }
 }

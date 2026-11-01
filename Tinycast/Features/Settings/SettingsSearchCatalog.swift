@@ -16,13 +16,14 @@ struct SettingsSearchEntry: Identifiable, Hashable, Sendable {
     }
 
     /// One setting, which its pane marks with a matching `SettingsRowTitle`.
-    init(_ anchor: SettingsAnchor, _ title: String, keywords: [String] = []) {
-        self.init(.row(anchor, title), title, keywords)
+    init(_ anchor: SettingsAnchor, _ title: LocalizedStringResource, keywords: [String] = []) {
+        let localized = title.resolved()
+        self.init(.row(anchor, localized), localized, keywords + [title.key])
     }
 
     /// A whole group, for a result no single row answers — a list, or a section's master switch.
-    init(group anchor: SettingsAnchor, _ title: String, keywords: [String] = []) {
-        self.init(.section(anchor), title, keywords)
+    init(group anchor: SettingsAnchor, _ title: LocalizedStringResource, keywords: [String] = []) {
+        self.init(.section(anchor), title.resolved(), keywords + [title.key])
     }
 
     init(pane: SettingsTab, keywords: [String] = []) {
@@ -113,8 +114,11 @@ enum SettingsSearchCatalog {
     private static let general: [SettingsSearchEntry] = [
         .init(pane: .general, keywords: ["preferences", "settings"]),
         .init(
-            .generalGlobalShortcuts, "App Launcher",
+            .generalGlobalShortcuts, "Show Launcher",
             keywords: ["hotkey", "shortcut", "summon", "palette"]),
+        .init(
+            .generalGeneral, "Language",
+            keywords: ["localization", "translation", "locale", "region"]),
         .init(
             .generalGeneral, "Launch at login",
             keywords: ["startup", "login item", "start", "boot"]),
@@ -140,19 +144,22 @@ enum SettingsSearchCatalog {
             .generalAppearance, "Theme",
             keywords: ["tron", "color", "style", "look", "skin", "backdrop"]),
         .init(
+            .generalAppearance, "Show animations",
+            keywords: ["motion", "transitions", "reduce motion", "effects", "instant"]),
+        .init(
             .generalAppearance, "Interface size",
             keywords: ["text size", "font size", "scale", "zoom", "bigger", "larger", "legible"]),
         .init(
             .generalAppearance, "Window mode",
             keywords: ["compact", "expanded", "slim", "search bar", "small"]),
         .init(
-            .generalAppearance, "Show favorites in compact mode",
-            keywords: ["pinned", "apps", "compact"]),
+            group: .generalCompactShortcuts, "Compact Shortcuts",
+            keywords: ["slots", "buttons", "reorder", "clipboard", "emoji", "notes", "schedule", "quick ai"]),
         .init(
             .generalAppearance, "Follow the cursor across displays",
             keywords: ["monitor", "screen", "pointer", "multi display"]),
         .init(
-            .generalAppearance, "Drag to reposition",
+            .generalAppearance, "Drag to move the launcher",
             keywords: ["move", "position", "window"]),
         .init(
             .generalHyperKey, "Hyper Key",
@@ -338,6 +345,7 @@ enum SettingsSearchCatalog {
         .init(.dictationDictation, "Enable Dictation"),
         .init(.dictationCommands, "Shortcut behavior"),
         .init(.dictationCommands, "Shortcut"),
+        .init(.dictationCommands, "Play sounds", keywords: ["sound", "chime", "beep", "audio", "feedback"]),
         .init(.dictationModel, "Model"),
         .init(.dictationModel, "Engine", keywords: ["parakeet", "redux", "ultra", "qwen"]),
         .init(.dictationModel, "Language"),
@@ -384,6 +392,9 @@ enum SettingsSearchCatalog {
             .notesOptions, "Show Formatting Bar",
             keywords: ["toolbar", "format bar", "buttons", "bold", "heading", "markdown"]),
         .init(
+            .notesOptions, "Show in Menu Bar",
+            keywords: ["status bar", "menu bar icon", "status item", "toolbar icon"]),
+        .init(
             .notesOptions, "Notes Folder",
             keywords: ["location", "path", "dotfiles", "files", "markdown"]),
         .init(
@@ -423,7 +434,7 @@ enum SettingsSearchCatalog {
             .navigationMenuSearch, "Show Apple menu items",
             keywords: ["apple menu", "about this mac", "recent items", "sleep", "logo"]),
         .init(
-            .navigationMenuSearch, "Disabled Applications",
+            .navigationMenuSearch, "Excluded Applications",
             keywords: ["exclude", "password manager", "ignore", "privacy", "menu bar"])
     ]
 
@@ -506,7 +517,7 @@ enum SettingsSearchCatalog {
             .clipboardHistory, "Default action",
             keywords: ["enter", "return", "paste", "copy", "primary"]),
         .init(
-            group: .clipboardDisabledApplications, "Disabled Applications",
+            group: .clipboardDisabledApplications, "Excluded Applications",
             keywords: ["exclude", "password manager", "ignore", "privacy"]),
         .init(
             .clipboardDisabledApplications, "Clear history",
@@ -539,7 +550,7 @@ enum SettingsSearchCatalog {
             .calendarCalendar, "Upcoming meetings in launcher",
             keywords: ["count", "limit", "events"]),
         .init(
-            .calendarJoining, "Show the join card",
+            .calendarJoining, "Show the meeting card",
             keywords: ["hud", "timing", "early", "reminder"]),
         .init(
             .calendarJoining, "Auto Join Meetings",
@@ -621,6 +632,9 @@ enum SettingsSearchCatalog {
         .init(
             .permissionsAccessibility, "Accessibility",
             keywords: ["paste", "keystrokes", "privacy", "grant"]),
+        .init(
+            .permissionsFullDiskAccess, "Full Disk Access",
+            keywords: ["files", "folders", "uninstall", "leftovers", "privacy", "grant", "fda"]),
         .init(
             .permissionsCalendars, "Calendars",
             keywords: ["events", "privacy", "grant", "eventkit"]),

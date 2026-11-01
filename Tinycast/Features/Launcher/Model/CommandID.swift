@@ -48,14 +48,40 @@ enum CommandID: String, CaseIterable, Sendable {
     case about = "command:about"
     case quit = "command:quit"
 
-    var name: String {
+    static let defaultCompactBarCommands: [CommandID] = [
+        .clipboardHistory, .searchEmoji, .searchFiles, .searchQuicklinks
+    ]
+
+    static let compactBarOptions: [CommandID] =
+        defaultCompactBarCommands + [
+            .searchSnippets, .showNotes, .mySchedule, .quickAI
+        ]
+
+    static let compactBarLimit = 4
+
+    static func validCompactBarCommands(_ commands: [CommandID]) -> Bool {
+        commands.count <= compactBarLimit && Set(commands).count == commands.count
+            && commands.allSatisfy(compactBarOptions.contains)
+    }
+
+    static func compactBarCommands(from identifiers: [String]) -> [CommandID]? {
+        let commands = identifiers.compactMap(CommandID.init(rawValue:))
+        guard commands.count == identifiers.count, validCompactBarCommands(commands) else { return nil }
+        return commands
+    }
+
+    var name: String { nameResource.resolved() }
+
+    var englishName: String { nameResource.key }
+
+    private var nameResource: LocalizedStringResource {
         switch self {
         case .quickAI: return "Quick AI"
         case .aiChat: return "AI Chat"
-        case .fixGrammar: return BuiltInQuickAction.fixGrammar.title
-        case .rewrite: return BuiltInQuickAction.rewrite.title
-        case .translate: return BuiltInQuickAction.translate.title
-        case .summarize: return BuiltInQuickAction.summarize.title
+        case .fixGrammar: return BuiltInQuickAction.fixGrammar.titleResource
+        case .rewrite: return BuiltInQuickAction.rewrite.titleResource
+        case .translate: return BuiltInQuickAction.translate.titleResource
+        case .summarize: return BuiltInQuickAction.summarize.titleResource
         case .calculatorHistory: return "Calculator History"
         case .clipboardHistory: return "Clipboard History"
         case .pasteSequentially: return "Paste Sequentially"

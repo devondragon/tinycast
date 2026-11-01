@@ -53,8 +53,9 @@ struct MCPSettingsSection: View {
             MCPServerEditor(target: target, onSave: save, onCancel: { editor = nil })
         }
         .confirmationDialog(
-            "Remove \(pendingRemoval?.title ?? "this server")?", isPresented: removalBinding,
-            presenting: pendingRemoval
+            pendingRemoval.map { String(localized: "Remove \($0.title)?") }
+                ?? String(localized: "Remove this server?"),
+            isPresented: removalBinding, presenting: pendingRemoval
         ) { server in
             Button("Remove", role: .destructive) { remove(server) }
         } message: { _ in
@@ -73,7 +74,7 @@ struct MCPSettingsSection: View {
         } catch MCPSettingsStore.StorageError.unavailable {
             return "The saved MCP servers couldn't be read, so Tinycast won't save over them."
         } catch {
-            return "The credentials could not be saved to your login Keychain."
+            return String(localized: "The credentials could not be saved to your login Keychain.")
         }
         editor = nil
         return nil
@@ -85,8 +86,11 @@ struct MCPSettingsSection: View {
             try coordinator.remove(server.id)
             removalError = nil
         } catch {
-            removalError =
-                "\(server.title) was kept: its credentials could not be removed from your login Keychain."
+            removalError = String(
+                localized: """
+                    \(server.title) was kept: its credentials could not be removed from your login \
+                    Keychain.
+                    """)
         }
     }
 }
@@ -117,7 +121,7 @@ private struct MCPServerRow: View {
 
     /// The slug leads, because it is the half a reader has to type into the composer.
     private var subtitle: String {
-        let state = server.isEnabled ? status.label : "Disabled"
+        let state = server.isEnabled ? status.label : String(localized: "Disabled")
         return "@\(server.slug) · \(state) · \(server.transport.summary)"
     }
 }

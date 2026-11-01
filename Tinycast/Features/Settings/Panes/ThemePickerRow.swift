@@ -45,7 +45,7 @@ private struct ThemeCard: View {
                         .opacity(definition.backdrop.intensity.value(dark: dark))
                         .clipShape(shape)
                     }
-                    Text("Aa")
+                    Text(verbatim: "Aa")
                         .font(.title3.weight(.semibold))
                         .foregroundStyle(ThemePalette.color(definition.ink))
                         .padding(Theme.Spacing.md)

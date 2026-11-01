@@ -231,11 +231,12 @@ struct ExtensionManifest: Sendable, Hashable {
         var errorDescription: String? {
             switch self {
             case .unreadable(let url):
-                return "Couldn't read \(url.lastPathComponent)."
+                return String(localized: "Couldn't read \(url.lastPathComponent).")
             case .notAnExtension(let url):
-                return "\(url.lastPathComponent) doesn't contain a Raycast extension manifest."
+                return String(
+                    localized: "\(url.lastPathComponent) doesn't contain a Raycast extension manifest.")
             case .invalidName(let name):
-                return "“\(name)” isn't a valid extension name."
+                return String(localized: "“\(name)” isn't a valid extension name.")
             }
         }
     }
