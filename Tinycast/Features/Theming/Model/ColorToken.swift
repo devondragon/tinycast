@@ -16,6 +16,7 @@ enum ColorToken: String, CaseIterable, Sendable {
     case panelScrim, dialogDimming, findMatch, findCurrent, findCurrentInk, tooltipShadow
     case selection, rowHover, emojiCell, emojiHoverBorder, emojiSelectionBorder, emojiInnerBorder
     case menuHover, separator, controlSurface, controlHover, controlPressed, border
+    case compactShortcutSelectionTint, compactShortcutSelectedInk
     case textPrimary, textSecondary, textTertiary, menuSymbol, noteText, iconPlaceholder, sheen
     case cardFill, cardStroke
     case layoutPreviewWindow, layoutPreviewWindowSelected, layoutPreviewGround
@@ -46,6 +47,9 @@ enum ColorToken: String, CaseIterable, Sendable {
         case .controlSurface: .ink(dark: 0.10, light: 0.08)
         case .controlHover: .ink(dark: 0.16, light: 0.14)
         case .controlPressed: .ink(dark: 0.24, light: 0.20)
+        case .compactShortcutSelectionTint:
+            .fixed(RGBAPair(dark: .gray(0.55), light: .gray(0, alpha: 0.40)))
+        case .compactShortcutSelectedInk: .fixed(.both(.gray(1)))
         case .border: .ink(dark: 0.20, light: 0.18)
         case .textPrimary: .ink(dark: 1.0, light: 1.0)
         case .textSecondary: .ink(dark: 0.60, light: 0.60)

@@ -44,7 +44,7 @@ private struct WindowSwitchRow: View {
     @State private var hovered = false
 
     private var trailing: String {
-        entry.isMinimized ? "\(entry.appName) · Minimized" : entry.appName
+        entry.isMinimized ? String(localized: "\(entry.appName) · Minimized") : entry.appName
     }
 
     var body: some View {

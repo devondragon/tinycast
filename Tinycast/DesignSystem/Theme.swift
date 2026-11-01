@@ -1,4 +1,3 @@
-import QuartzCore
 import SwiftUI
 
 /// Central design tokens; every dark colour is the literal the forced-dark build shipped.
@@ -87,7 +86,8 @@ enum Theme {
         static let noteTrafficLightInset: CGFloat = 20
         /// Fraction of visible height above the palette's top edge; it grows downward.
         static let paletteTopMarginFraction: CGFloat = 0.18
-        static let headerHeight: CGFloat = 44
+        /// The search row; padded alike above and below, it is the compact bar's whole height.
+        static let headerHeight: CGFloat = 36
         /// Fixed slot for the header glyph, so the field starts at one x in every mode.
         static let headerIconSlot: CGFloat = 22
         /// The narrowest a strip squeezes the search field to: the caret and a few characters.
@@ -95,6 +95,8 @@ enum Theme {
         /// Room above the search row, constant so typing never shifts the bar.
         static let headerPadding: CGFloat = 10
         static let compactHeight: CGFloat = headerHeight + headerPadding * 2
+        /// Native glass contours and interaction effects draw outside their layout bounds.
+        static let paletteGlassOutset: CGFloat = 4
         /// How close a dragged palette must be to the invisible vertical centre line.
         static let paletteSnapDistance: CGFloat = 8
         /// A restored position needs this much bar on a display to still be grabbable.
@@ -106,6 +108,8 @@ enum Theme {
         static let dropGuideFadeThreshold: CGFloat = 36
         static let dropGuideFadeDistance: CGFloat = 180
         static let bottomBarHeight: CGFloat = 52
+        /// The unit a form's text area counts its minimum height in, so it scales with the interface.
+        static let textAreaUnit: CGFloat = 44
         static let barButtonHeight: CGFloat = 28
         static let rowIcon: CGFloat = 24
         static let resultRowIcon: CGFloat = 26
@@ -119,8 +123,8 @@ enum Theme {
         static let shortcutPopoverLine: CGFloat = 14
         /// Summed from the laid-out bands; the width is pinned by `callout-test`.
         static let shortcutPopover = CGSize(
-            width: 132,
-            height: Spacing.sm * 2 + heroKeyCap + Spacing.sm + shortcutPopoverLine + Spacing.sm
+            width: 176,
+            height: Spacing.sm * 2 + heroKeyCap + Spacing.sm + shortcutPopoverLine * 2 + Spacing.sm
                 + compactKeyCap + calloutCaretHeight)
         static let calloutCaretWidth: CGFloat = 15
         static let calloutCaretHeight: CGFloat = 7
@@ -193,6 +197,7 @@ enum Theme {
         /// The narrowest the pane column may get before a grouped row's control starts colliding.
         static let settingsDetailMinimum: CGFloat = 420
         static let settingsRowIcon: CGFloat = 20
+        static let settingsRowButton: CGFloat = 24
         /// Inside its tinted tile, whose inset brings it to the row icon's size.
         static let settingsSidebarGlyph: CGFloat = 14
         /// AI Chat's opening size; the user owns it from there, autosaved.
@@ -257,6 +262,7 @@ enum Theme {
         static let dialogCompactWidth: CGFloat = 290
         /// Tinycast's own control dialog: fixed width, height measured from its SwiftUI content.
         static let dialogWidth: CGFloat = 420
+        static let dialogTextHeight: CGFloat = 180
         static let dialogButtonHeight: CGFloat = menuButton - 2
         static let dialogSymbol: CGFloat = 28
         static let dialogSymbolContainer: CGFloat = 52
@@ -329,23 +335,28 @@ enum Theme {
         static let glide = Animation.timingCurve(0.2, 0, 0, 1, duration: Theme.Duration.roomGlide)
     }
 
-    enum DialogMotion {
-        static let offset: CGFloat = 3
-        static let initialOpacity: CGFloat = 0.08
+    enum CompactBarMotion {
+        /// Under the 10pt gap, so resting buttons stand apart and only moving ones fuse.
+        static let blend: CGFloat = 8
+        /// Parked inside the capsule's end this small, so each button pinches out of it.
+        static let parkedScale: CGFloat = 0.36
+        /// One button after another, beaded off the capsule.
+        static let stagger: TimeInterval = 0.055
+        /// A summon lands first; the buttons extrude once the window has arrived.
+        static let revealDelay: TimeInterval = 0.12
+        /// The glyph surfaces once its glass has formed, and blurs in rather than popping.
+        static let glyphDelay: TimeInterval = 0.24
+        static let glyphFade: TimeInterval = 0.16
+        static let glyphBlur: CGFloat = 4
+        /// Past the window's own close animation, so parking the buttons is never seen.
+        static let parkAfterHide: TimeInterval = 0.3
+        /// The capsule undershoots as it shortens, then settles.
+        static let capsule = Animation.spring(response: 0.44, dampingFraction: 0.62)
+        /// The buttons barely overshoot: the last rests on the window's edge, which would clip it.
+        static let button = Animation.spring(response: 0.44, dampingFraction: 0.86)
     }
 
-    /// Motion owned by Tinycast's menus; extension-provided panels keep their own behavior.
-    @MainActor
     enum MenuMotion {
-        static let entryScale: CGFloat = 0.94
-        static let maximumScale: CGFloat = 1.003
-        static let exitScaleDelta: CGFloat = 0.04
-        static let expansionDuration: TimeInterval = 0.10
-        static let settleDuration: TimeInterval = 0.05
-        static let exitDuration: TimeInterval = 0.18
-        static let expansionTiming = CAMediaTimingFunction(controlPoints: 0.2, 0.7, 0.2, 1)
-        static let settleTiming = CAMediaTimingFunction(controlPoints: 0.42, 0, 0.58, 1)
-        static let exitTiming = CAMediaTimingFunction(controlPoints: 0.4, 0, 1, 1)
         /// Starts promptly and eases gently into the chevron's final direction.
         static let chevronAnimation = Animation.timingCurve(
             0.16, 1, 0.3, 1, duration: Theme.Duration.menuChevron)
@@ -364,7 +375,8 @@ enum Theme {
         static var searchFieldNSFont: NSFont {
             ThemeFonts.nsFont(.display, base: .systemFont(ofSize: searchFieldSize, weight: .regular))
         }
-        static let headerIcon = Font.system(size: 18, weight: .medium)
+        static let headerIconSize: CGFloat = 18
+        static let headerIcon = Font.system(size: headerIconSize, weight: .medium)
         static var rowTitle: Font { ThemeFonts.font(.body, base: .body, style: .body) }
         static var rowTrailing: Font { ThemeFonts.font(.body, base: .callout, style: .callout) }
         static var sectionHeader: Font {
@@ -469,6 +481,12 @@ enum Theme {
         static var controlHover: Color { ThemeStore.active.palette.color(.controlHover) }
         /// A held control is stronger than hover, so mouse-down always reads.
         static var controlPressed: Color { ThemeStore.active.palette.color(.controlPressed) }
+        static var compactShortcutSelectionTint: Color {
+            ThemeStore.active.palette.color(.compactShortcutSelectionTint)
+        }
+        static var compactShortcutSelectedInk: Color {
+            ThemeStore.active.palette.color(.compactShortcutSelectedInk)
+        }
         /// Control borders: outlined kbd chips.
         static var border: Color { ThemeStore.active.palette.color(.border) }
         /// Alpha 1, so a call site can dim it with `.opacity` and land on the value it replaced.

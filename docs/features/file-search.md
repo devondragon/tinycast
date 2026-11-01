@@ -1,8 +1,8 @@
 # Search Files
 
 Search Files is a palette screen for opening any file or folder on the disk. It searches Tinycast's own
-filename index, built from a whole-disk crawl and kept current from FSEvents. Spotlight is not involved.
-It is reached from the built-in Search Files launcher command, or its own global shortcut, after the
+filename index, built by crawling the search scopes and kept current from FSEvents. Spotlight is not
+involved. It is reached from the built-in Search Files launcher command, or its own global shortcut, after the
 feature is enabled in Settings; with **Show in launcher** on, root search lists the top hits too. The
 design follows [fsearch](https://github.com/noahdunnagan/fsearch).
 
@@ -14,7 +14,9 @@ design follows [fsearch](https://github.com/noahdunnagan/fsearch).
 - **Full Disk Access is required, and nothing is indexed without it.** `Permissions.hasFullDiskAccess()`
   probes a TCC-guarded file, which never prompts. The pane and the palette both say how to grant it.
 - **Scopes are the crawl roots.** Only what lies under a scope is indexed or searched; a scope inside
-  another folds into it, and a cleared list indexes nothing. The default is the whole disk (`/`).
+  another stays listed but folds into it at crawl time, and a cleared list indexes nothing. The default
+  is home (`~`): dotfiles are user files, the rest of the disk is the system's, and apps are the
+  launcher's.
 - **A matching ignore pattern skips a folder and everything in it at crawl time.** Changing either list
   rebuilds the index, debounced by a second; the old index serves until the new one maps.
 - **Hidden files and bundle contents are indexed.** They rank last instead (see Ranking), and the ignore
@@ -26,10 +28,14 @@ design follows [fsearch](https://github.com/noahdunnagan/fsearch).
   duplicate or an event that races a rebuild changes nothing twice.
 - **File Search is off by default, and off means no index on disk.** Disabling stops the watcher, cancels
   any build and deletes `Application Support/<bundle id>/FileIndex/`.
-- **The shipped ignore rules are compiled in and never persisted.** `fileSearchIgnorePatterns` stores only
-  what the user added, so changing `FileSearchIgnoreList.defaults` reaches installs that already ran.
-- **The launcher's Files section is off by default, and off costs nothing.** With it off a keystroke never
-  reaches the index, and `LauncherScreen` reads the switch before the session, so it observes nothing.
+- **The shipped ignore rules are compiled in and never persisted.** `fileSearchIgnorePatterns` stores
+  only what the user added and `fileSearchRemovedDefaultPatterns` only the shipped rules they removed,
+  so changing `FileSearchIgnoreList.defaults` reaches installs that already ran. Every row can be
+  removed, and **Restore Defaults** clears both lists. Scopes are one stored list that `defaultScopes`
+  only seeds.
+- **Indexed hits in the launcher are off by default.** With **Show in launcher** off, a keystroke
+  never reaches the index or observes the session. Explicit file favorites still answer by filename
+  from their saved paths, while disabling File Search hides them too.
 - **A superseded query never publishes.** The session runs one search at a time, keeps only the newest
   pending request, and checks its revision before publishing.
 - **Share is the one system popover, and the palette stays up under it.** `AGENTS.md` keeps Tinycast's
@@ -154,9 +160,18 @@ somewhere on another; `/` is shown as the startup volume's name. The helper reso
 | no `/`, has `*` `?` `[` | the entry name, via `fnmatch` | `*.tmp` |
 | contains `/`, or starts with `~/` | the whole absolute path, via `fnmatch` | `~/Movies`, `**/[Cc]ache/**` |
 
-The shipped rules also skip `.next`, `~/Library/Caches`, `/Library/Caches` and `/private/var/folders`.
-They are the busiest folders on a disk — one browser's cache alone holds tens of thousands of files
-rewritten on every page load — and never what a search is for.
+The defaults skip what a search for one's own files never wants: build output and dependency
+folders (`node_modules`, `.git`, `build`, `DerivedData`, `.venv`, …), the Photos library, the Trash,
+the `~/.cache` and `~/.npm` caches, and the noisy parts of `~/Library` — `Application Support`,
+`Caches`, `Containers`, `Developer`, `Group Containers` and `Mail`. Together they hold most of a home
+folder's entries and most of its churn: one browser's cache alone rewrites tens of thousands of files
+on every page load. `Preferences`, `LaunchAgents` and the cloud drives stay indexed. `/Library/Caches`
+and `/private/var/folders` cover a scope added outside home.
+
+The pane lists `FileSearchIgnoreList.patterns(added:removedDefaults:)`: the defaults the user kept,
+then what they added. Adding a removed default takes it off the removed list rather than storing it
+twice, and a default repeated in `fileSearchIgnorePatterns` is ignored, so a shipped rule has one
+switch.
 
 `fnmatch` runs with `FNM_CASEFOLD` and without `FNM_PATHNAME`, so `*` spans `/`. Name patterns read the
 NUL-terminated name straight out of the `getattrlistbulk` buffer. Literal path patterns first check the
@@ -225,6 +240,7 @@ its default app. A system `QLPreviewPanel` would take key, and the palette hides
 | Copy Name | ⌥⌘C | through `Paster`, palette stays open |
 | Copy Path | ⌃⌘C | the standardized path, palette stays open |
 | Paste File to … | ⇧⌘V | `Paster.pasteFile` into the app the palette was summoned over, named by `PasteTarget` |
+| Add / Remove from Favorites | ⇧⌘F | saves the file or folder in the launcher’s shared Favorites order |
 | Move to Trash | ⌃X | `FileManager.trashItem` off the main actor, then the row leaves the session |
 
 None of the copies is marked with `ClipboardManager.internalType`, so a copied file enters clipboard
@@ -265,7 +281,12 @@ keystroke and when the launcher becomes the mode, and `applyLauncherFiles` re-ru
 changes. `cancel()` returns early on an idle session, so with the section off a keystroke publishes
 nothing.
 
-A Files row is not an `AppEntry`: no `Kind`, no ranking, favorite, alias or Hide from Search. It is
+A Files row is not an `AppEntry`: no `Kind`, ranking, alias or Hide from Search. Files and folders
+can be favorited through ⌘K or ⇧⌘F in either screen; their saved paths join the launcher’s Favorites
+section, share its reordering and ⌘-digit slots, and survive relaunch and settings backups. Explicit
+favorites remain searchable by filename at any query length with **Show in launcher** off. Matching
+favorites lead indexed file hits in the Files section, with repeated paths removed and the same
+five-row cap. Disabling File Search hides file favorites without deleting them. It is
 `LauncherScreen.Row.file`, id-prefixed `file-` because an application's entry id is its bundle path. It
 draws `FileSearchRow` with its location — name, dimmed parent path, then File or Folder — and answers
 the screen's own row actions: ↵ opens, ⌘↵ reveals, the copy, paste and trash chords run

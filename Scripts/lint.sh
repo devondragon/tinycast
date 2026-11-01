@@ -19,5 +19,13 @@ fi
 if ! node Scripts/check-settings-search.js; then
     exit 1
 fi
+# An untranslated string still builds and runs, in English, inside a translated window.
+if ! node Scripts/check-localizations.js; then
+    exit 1
+fi
+# A migration that a stable release has shipped is dead code, and only this notices.
+if ! Scripts/check-migrations.sh; then
+    exit 1
+fi
 
 echo "✓ lint-clean"

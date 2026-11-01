@@ -59,8 +59,10 @@ fill, stroke and optional glow. Views never branch on the theme.
 
 - `themedSurface(_ role:, in:glass:)` styles a view's background. Reduce Transparency turns tinted
   glass into a solid fill.
-- `themedPanel(in:scrim:)` is a borderless window's body: scrim over glass in Default, fill, backdrop
-  and scrim in a theme.
+- `themedPanel(in:scrim:isVisible:)` is a borderless window's body: bare glass in Default (plus a
+  scrim only when the call site passes one, as the HUD pill does on hover), fill, backdrop and
+  `panelScrim` in a theme. `isVisible: false` hides the surface without unmounting its glass and drops
+  the backdrop, so compact mode's animation stops with it.
 
 Only the `panel` role draws a backdrop. Extensions read `Theme.Surfaces` as data and draw their own
 copy, per the extension rule in `AGENTS.md`.
