@@ -45,7 +45,7 @@ high-contrast appearance), because a hairline at the usual alpha disappears for 
 `chatText` is the ink of chat replies and their code blocks: the system label in Default, and every
 custom theme restates it as its own ink. The eleven `syntax*` tokens color a code block's tokens
 (`Theme.Colors.Syntax`). Default's are Xcode-like literals with the light branch darkened to 4.5:1;
-each custom theme states its own, and `theme-test` checks them for contrast and for telling the main
+each custom theme states its own, and `ThemeTests` checks them for contrast and for telling the main
 kinds apart (the rules are in [adding-a-theme.md](adding-a-theme.md#contrast)).
 
 ## Surfaces
@@ -59,10 +59,11 @@ fill, stroke and optional glow. Views never branch on the theme.
 
 - `themedSurface(_ role:, in:glass:)` styles a view's background. Reduce Transparency turns tinted
   glass into a solid fill.
-- `themedPanel(in:scrim:isVisible:)` is a borderless window's body: bare glass in Default (plus a
-  scrim only when the call site passes one, as the HUD pill does on hover), fill, backdrop and
-  `panelScrim` in a theme. `isVisible: false` hides the surface without unmounting its glass and drops
-  the backdrop, so compact mode's animation stops with it.
+- `themedPanel(in:scrim:isVisible:squareGlass:)` is a borderless window's body: glass and
+  `panelScrim` in Default, fill, backdrop and `panelScrim` in a theme. A call site may pass its own
+  scrim, as the HUD pill does on hover. `isVisible: false` hides the surface without unmounting its
+  glass and drops the backdrop, so compact mode's animation stops with it. `squareGlass` is the
+  palette's: in Default it draws SwiftUI glass in a square that the root clip rounds.
 
 Only the `panel` role draws a backdrop. Extensions read `Theme.Surfaces` as data and draw their own
 copy, per the extension rule in `AGENTS.md`.
@@ -85,7 +86,7 @@ A backdrop runs only while the palette is showing. The hard requirement is zero 
 (the timeline pauses on hide and occlusion). While visible the target is roughly 5% to 8% of one core
 and under 8 MB of extra resident memory; each backdrop sets its own `frameRate` (Tron 30, Matrix 24, Synthwave 30, Amber 30, Ares 30).
 
-Three kinds of figure appear below. The proxy columns come from `Tests/backdrop-performance.swift`,
+Three kinds of figure appear below. The proxy columns come from `Tests/BackdropPerformanceTests.swift`,
 which renders `BackdropRenderer.draw` through `ImageRenderer` at the 750x475 palette size for 300
 frames. `ImageRenderer` rasterizes and reads back each frame and rebuilds the view every frame, so it
 re-resolves `Canvas` symbols each time (the "symbols" row). That makes the proxy an upper bound and
@@ -126,7 +127,7 @@ resolves). Typography tokens go through `ThemeFonts`, which returns the token's 
 when the theme's face for that role (`display`, `body`, `mono`) equals Default's, and also when a
 bundled family is not installed, so a missing font never produces a blank label. Custom faces use
 `Font.custom(_:size:relativeTo:)` so Dynamic Type still scales them. IBM Plex Mono ships four static
-files (Regular, Medium, SemiBold, Bold) under one family name; `appearance-test` checks that each weight
+files (Regular, Medium, SemiBold, Bold) under one family name; `AppearanceTests` checks that each weight
 resolves to its own face.
 
 ## Adding a theme
