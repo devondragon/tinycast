@@ -40,7 +40,7 @@ echo "Building Tinycast $VERSION ($BUILD_NUMBER) from $(git rev-parse --short HE
 xcodebuild -project Tinycast.xcodeproj -scheme Tinycast -configuration Release \
     -derivedDataPath build/dd -quiet \
     MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$BUILD_NUMBER" build
-./Scripts/verify-signature.sh "$BUILT"
+SELF_SIGNED_IDENTITY="$IDENTITY" ./Scripts/verify-signature.sh "$BUILT"
 
 # Staged beside the target and verified before the old copy goes, so a failed copy installs nothing.
 rm -rf "$STAGED"

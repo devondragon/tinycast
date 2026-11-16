@@ -33,17 +33,27 @@ seventy-odd PR branches stay out of `git branch -r`; tags still arrive with `--t
   release. The fork publishes no releases, so `automaticallyCheckForUpdates` defaults off here
   (`AppSettings`); Check Now in Settings → General still works and finds nothing.
 - `Tinycast/Palette/RootPaletteView.swift`: the "releases" link points at this fork.
+- The bundle id stays `com.tinycast.app` (`.dev` for Debug). Upstream moved to
+  `com.abueammar.tinycast` on 2026-11-13 (#1910) and has since deleted the migration that carried
+  data across (#1931), so taking its id would leave the installed app with empty preferences, data
+  folders and Keychain items. On every merge, replace each `com.abueammar.tinycast` outside
+  `website/` and `.github/` with `com.tinycast.app`, set `bundleIdPrefix` in `project.yml` back to
+  `com.tinycast`, and keep `AppIndex.ownBundlePrefix` at `com.tinycast.`.
+- `Scripts/verify-signature.sh` requires a timestamped Developer ID unless `SELF_SIGNED_IDENTITY`
+  names the identity to expect instead; `install-fork.sh` passes `Tinycast Self-Signed`.
 - The in-app donation prompt is off: `AppCore` no longer starts the Support reminder, and the
-  menu bar, palette menu, launcher command (`CommandID.support`) and the Settings → About card are
-  gone. About links to this fork and to upstream, and its footer credits the fork. The
+  menu bar, palette menu, launcher command (`CommandID.support`, also left out of
+  `DeepLinkConsentPolicy`) and the Settings → About card are gone. About links to this fork and to upstream, and its footer credits the fork. The
   `Features/Support/` code and its settings key remain, unused, to keep merges small.
 - `Scripts/install-fork.sh`: build and install, described below.
 - `README.md`: fork notice and build-from-source install; upstream's private email, tip/support
   links, Discord, star history and Contributing section are removed. Expect conflicts here when
   merging upstream; keep the fork's version of those parts.
 - Upstream's contribution process is removed: `CONTRIBUTING.md`, the contributor agreement,
-  `.github/FUNDING.yml`, `.coderabbit.yaml`, `docs/support-button.svg`, and the `triage.yml` and
-  `coauthors.yml` workflows are deleted; the PR template, issue templates and `docs/release.md`'s
+  `.github/FUNDING.yml`, `.coderabbit.yaml`, `docs/support-button.svg`, `.github/DISCUSSION_TEMPLATE/`,
+  upstream's `ISSUE_TEMPLATE/issue.yml`, and the `triage.yml`, `issue-link.yml` and `coauthors.yml`
+  workflows are deleted, and the fork keeps its own `bug_report`, `extension_bug` and
+  `feature_request` issue templates; the PR template, issue templates and `docs/release.md`'s
   review section are simplified. A merge that touches a deleted file shows a modify/delete
   conflict; keep it deleted.
 - Hardening from the 2026-10-04 review, kept on merge: extension and command names are
@@ -57,7 +67,9 @@ seventy-odd PR branches stay out of `git branch -r`; tags still arrive with `--t
   (upstream lists `~/Applications` last).
 - Theming (`Features/Theming/`, `DesignSystem/Theming/`, the bundled fonts under
   `Resources/Fonts/` and the picker in Settings → General) is fork-only: five themes beyond Default
-  with animated backdrops. [docs/features/theming.md](docs/features/theming.md) covers it.
+  with animated backdrops. [docs/features/theming.md](docs/features/theming.md) covers it. Fork-only
+  strings (the theme picker, the fork footer and the hardening messages) are inserted into upstream's
+  `Localizable.xcstrings` on merge; strings for UI the fork removed are deleted from it.
 - GitHub Actions is turned off for the whole fork (repo setting, not a file change). The remaining
   `release.yml` and `website*.yml` workflows are upstream's release and website deploys, which need
   his signing secrets and hosting; they are kept only so upstream merges stay clean. Rework or delete

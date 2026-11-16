@@ -37,6 +37,7 @@ struct AISettingsView: View {
                 chatSection
                 conversationsSection
                 systemPromptSection
+                ChatPresetsSection()
                 MCPSettingsSection()
             }
             .settingsEnabled(appSettings.aiEnabled)
@@ -136,6 +137,10 @@ struct AISettingsView: View {
             Toggle(isOn: $settings.choicesEnabled) {
                 SettingsRowTitle(.aiChat, "Suggested replies")
                 Text("Next steps the model offers as buttons after a reply.")
+            }
+            Toggle(isOn: $settings.expandsReasoning) {
+                SettingsRowTitle(.aiChat, "Expand thinking")
+                Text("Thinking blocks start expanded instead of collapsed.")
             }
             Picker(selection: $settings.toolRounds) {
                 ForEach(AIToolRounds.allCases) { Text($0.title).tag($0) }

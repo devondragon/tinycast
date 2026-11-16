@@ -129,6 +129,7 @@ struct PopoverMenu: View {
         surfaceContent
             .frame(width: width ?? metrics.size.actionMenuWidth)
             .themedSurface(.overlay, in: shape)
+            .clipShape(shape)
     }
 
     private var surfaceContent: some View {

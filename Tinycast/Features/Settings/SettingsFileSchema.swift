@@ -78,6 +78,7 @@ enum SettingsFileSchema {
         case .aiEnabled: return bind(settings, \.aiEnabled)
         case .aiWebSearch: return bind(ai, \.webSearchEnabled)
         case .aiChoices: return bind(ai, \.choicesEnabled)
+        case .aiExpandsReasoning: return bind(ai, \.expandsReasoning)
         case .aiSystemPrompt: return bind(ai, \.systemPrompt)
         case .aiSystemPromptEnabled: return bind(ai, \.systemPromptEnabled)
         case .aiRetention: return bind(ai, \.retention)
@@ -117,6 +118,7 @@ enum SettingsFileSchema {
             }
         case .snippetsShowInLauncher: return bind(settings, \.snippetsShowInLauncher)
         case .snippetsFolder: return bind(settings, \.snippetsFolder, accept: folder)
+        case .snippetDefaultAction: return bind(settings, \.snippetDefaultAction)
         case .snippetsCommands: return launcher.commandsBinding(for: key, owner: .snippets)
         case .navigationEnabled: return bind(settings, \.navigationEnabled)
         case .menuSearchShowsAppleMenu: return bind(settings, \.menuSearchShowsAppleMenu)
@@ -130,6 +132,8 @@ enum SettingsFileSchema {
                 WindowPlacementEngine.gapRange.contains($0) ? $0 : nil
             }
         case .windowCycle: return bind(settings, \.windowCycle)
+        case .windowWrapsDisplays: return bind(settings, \.windowWrapsDisplays)
+        case .windowKeepsProportions: return bind(settings, \.windowKeepsProportions)
         case .windowLayoutsShowInLauncher: return bind(settings, \.windowLayoutsShowInLauncher)
         case .windowRoomsShowInLauncher: return bind(settings, \.windowRoomsShowInLauncher)
         case .windowShortcuts: return windowManagement.commandShortcutsBinding(for: key)
@@ -184,6 +188,7 @@ extension CalcNumberStyle: SettingsFileRawValue {}
 extension SearchSensitivity: SettingsFileRawValue {}
 extension WindowCycle: SettingsFileRawValue {}
 extension ClipboardDefaultAction: SettingsFileRawValue {}
+extension SnippetDefaultAction: SettingsFileRawValue {}
 extension EmojiSkinTone: SettingsFileRawValue {}
 extension EmojiGridColumns: SettingsFileRawValue {}
 extension DictationModel: SettingsFileRawValue {}

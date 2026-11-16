@@ -122,6 +122,7 @@ private struct ChatHistoryRow: View {
 struct ChatHistoryPreview: View {
     let history: ChatHistoryStore
     let chat: AIChatState
+    let settings: AISettingsStore
     let conversationID: UUID?
     @State private var session: ChatSession?
 
@@ -142,6 +143,7 @@ struct ChatHistoryPreview: View {
                 Color.clear
             }
         }
+        .environment(\.chatExpandsReasoning, settings.expandsReasoning)
         .task(id: conversationID) {
             session = nil
             guard let conversationID else { return }

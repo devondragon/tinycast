@@ -91,6 +91,7 @@ struct ExtensionActionsPanel: View {
         }
         .frame(width: panel.width)
         .extensionSurface(.overlay, in: shape, glass: .regular)
+        .clipShape(shape)
     }
 
     @ViewBuilder

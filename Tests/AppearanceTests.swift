@@ -1,0 +1,304 @@
+import AppKit
+import SwiftUI
+
+/// Pins `AGENTS.md`: a token's dark branch is the literal the forced-dark build shipped.
+@main
+@MainActor
+struct AppearanceTests {
+    static var failures = 0
+    static var passes = 0
+
+    static func check(_ label: String, _ ok: Bool, _ detail: String = "") {
+        if ok {
+            passes += 1
+        } else {
+            failures += 1
+            print("FAIL  \(label)\(detail.isEmpty ? "" : ": \(detail)")")
+        }
+    }
+
+    /// Quantized to the 8 bits that reach the framebuffer: `CGFloat`s carry Float error.
+    static func components(_ color: Color, _ name: NSAppearance.Name) -> [Int] {
+        var out: [Int] = []
+        NSAppearance(named: name)!.performAsCurrentDrawingAppearance {
+            let ns = NSColor(color).usingColorSpace(.sRGB)!
+            out = [ns.redComponent, ns.greenComponent, ns.blueComponent, ns.alphaComponent]
+                .map { Int(($0 * 255).rounded()) }
+        }
+        return out
+    }
+
+    static func dark(_ label: String, _ token: Color, is expected: Color) {
+        let actual = components(token, .darkAqua)
+        let wanted = components(expected, .darkAqua)
+        check("dark \(label)", actual == wanted, "\(actual) != \(wanted)")
+    }
+
+    /// A token that resolves identically in both never adapted at all.
+    static func adapts(_ label: String, _ token: Color) {
+        check(
+            "\(label) adapts", components(token, .darkAqua) != components(token, .aqua),
+            "light resolves identically to dark")
+    }
+
+    static func main() {
+        let c = Theme.Colors.self
+
+        print("# dark branches are the shipped literals")
+        dark("panelScrim", c.panelScrim, is: Color.black.opacity(0.4))
+        dark("dialogDimming", c.dialogDimming, is: Color.black.opacity(0.34))
+        dark("tooltipShadow", c.tooltipShadow, is: Color.black.opacity(0.18))
+        dark("selection", c.selection, is: Color.white.opacity(0.10))
+        dark("rowHover", c.rowHover, is: Color.white.opacity(0.05))
+        dark("menuHover", c.menuHover, is: Color.white.opacity(0.10))
+        dark("separator", c.separator, is: Color.white.opacity(0.10))
+        dark("controlSurface", c.controlSurface, is: Color.white.opacity(0.10))
+        dark("border", c.border, is: Color.white.opacity(0.20))
+        dark("textSecondary", c.textSecondary, is: Color.white.opacity(0.60))
+        dark("textTertiary", c.textTertiary, is: Color.white.opacity(0.40))
+        dark("noteText", c.noteText, is: Color.white.opacity(0.90))
+        dark("cardFill", c.cardFill, is: Color.white.opacity(0.05))
+        dark("cardStroke", c.cardStroke, is: Color.white.opacity(0.10))
+        dark("dropGuide", c.dropGuide, is: Color.white.opacity(0.35))
+        dark("brand", c.brand, is: Color(red: 0.525, green: 0.231, blue: 1.0))
+
+        print("# tokens that absorbed a literal duplicated across views")
+        dark("iconPlaceholder", c.iconPlaceholder, is: Color.white.opacity(0.06))
+        dark("sheen", c.sheen, is: Color.white.opacity(0.04))
+        dark("textPrimary", c.textPrimary, is: Color.white)
+        // VolumeHUDView draws white 0.85; textPrimary is alpha 1, so opacity must reproduce it.
+        dark("textPrimary at 0.85", c.textPrimary.opacity(0.85), is: Color.white.opacity(0.85))
+
+        print("# tokens that absorbed a system color from a view")
+        dark("accent", c.accent, is: Color.accentColor)
+        dark("onAccent", c.onAccent, is: Color.white)
+        dark("link", c.link, is: Color(nsColor: .linkColor))
+        dark("findMatch", c.findMatch, is: Color(nsColor: NSColor.systemYellow.withAlphaComponent(0.32)))
+        dark("findCurrent", c.findCurrent, is: Color(nsColor: NSColor.systemYellow.withAlphaComponent(0.9)))
+        adapts("findMatch", c.findMatch)
+        adapts("findCurrent", c.findCurrent)
+        dark("chatText", c.chatText, is: Color(nsColor: .labelColor))
+
+        print("# code colors keep upstream's dark inks")
+        func hex(_ value: UInt32) -> Color {
+            Color(nsColor: NSColor(
+                srgbRed: CGFloat((value >> 16) & 0xFF) / 255, green: CGFloat((value >> 8) & 0xFF) / 255,
+                blue: CGFloat(value & 0xFF) / 255, alpha: 1))
+        }
+        let s = c.Syntax.self
+        dark("syntax keyword", s.keyword, is: hex(0xFC5FA3))
+        dark("syntax string", s.string, is: hex(0xFC6A5D))
+        dark("syntax number", s.number, is: hex(0xD0BF69))
+        dark("syntax comment", s.comment, is: hex(0x87939E))
+        dark("syntax type", s.type, is: hex(0x5DD8FF))
+        dark("syntax function", s.function, is: hex(0x67B7A4))
+        dark("syntax constant", s.constant, is: hex(0xD0A8FF))
+        dark("syntax attribute", s.attribute, is: hex(0xFD8F3F))
+        dark("syntax property", s.property, is: hex(0x6BBCDD))
+        dark("syntax inserted", s.inserted, is: hex(0x67D97E))
+        dark("syntax deleted", s.deleted, is: hex(0xFC6A5D))
+        adapts("syntax keyword", s.keyword)
+
+        print("# every surface token resolves per appearance")
+        for (label, token) in [
+            ("panelScrim", c.panelScrim), ("selection", c.selection), ("rowHover", c.rowHover),
+            ("menuHover", c.menuHover), ("separator", c.separator),
+            ("controlSurface", c.controlSurface), ("border", c.border),
+            ("textPrimary", c.textPrimary), ("textSecondary", c.textSecondary),
+            ("textTertiary", c.textTertiary), ("noteText", c.noteText), ("cardFill", c.cardFill),
+            ("cardStroke", c.cardStroke), ("dropGuide", c.dropGuide),
+            ("iconPlaceholder", c.iconPlaceholder), ("sheen", c.sheen)
+        ] {
+            adapts(label, token)
+        }
+
+        print("# the scrim inverts rather than ramping: it lightens the light surface")
+        check("light scrim is white", components(c.panelScrim, .aqua)[0] == 255)
+        check("dark scrim is black", components(c.panelScrim, .darkAqua)[0] == 0)
+
+        print("# .system hands the choice back to AppKit")
+        check("system is nil", AppAppearance.system.nsAppearance == nil)
+        check("light is aqua", AppAppearance.light.nsAppearance?.isDark == false)
+        check("dark is darkAqua", AppAppearance.dark.nsAppearance?.isDark == true)
+        check("an unknown stored value is rejected", AppAppearance(rawValue: "sepia") == nil)
+
+        print("# the store resolves Default from the catalog")
+        let store = ThemeStore.active
+        check("active theme is Default", store.id == .standard)
+        check("re-applying Default is not a change", store.apply(.standard) == false)
+        check("generation starts at zero", store.generation == 0)
+        dark("palette selection", store.palette.color(.selection), is: Color.white.opacity(0.10))
+
+        print("# a switch is visible to AppKit hosts")
+        let before = ThemeStore.active.generation
+        ThemeStore.active.apply(.standard)
+        check("no-op apply keeps the generation", ThemeStore.active.generation == before)
+        var builds = 0
+        var derived = ThemeDerived { builds += 1 }
+        derived.value
+        derived.value
+        check("a derived value is built once per generation", builds == 1, "built \(builds) times")
+
+        print("# Default keeps the AppKit text faces")
+        let text = InterfaceMetrics.standard.typography
+        check("body text is the text style", text.textNSFont(.body) == .preferredFont(forTextStyle: .body))
+        check(
+            "headline text is the text style",
+            text.textNSFont(.headline) == .preferredFont(forTextStyle: .headline))
+        check(
+            "a weighted text is the system face",
+            text.textNSFont(.title2, weight: .semibold) == .systemFont(ofSize: 17, weight: .semibold))
+        check(
+            "monospaced text is the system mono face",
+            text.textNSFont(.body, monospaced: true) == .monospacedSystemFont(ofSize: 13, weight: .regular))
+
+        print("# a text style's implied weight reaches a themed face")
+        let implied: [(NSFont.TextStyle, NSFont.Weight)] = [(.headline, .bold), (.caption2, .medium), (.body, .regular)]
+        for (style, weight) in implied {
+            let actual = ThemeFonts.impliedWeight(of: .preferredFont(forTextStyle: style))
+            check("\(style.rawValue) implies \(weight.rawValue)", actual == weight, "got \(actual.rawValue)")
+        }
+
+        print("# Default keeps every surface on its own glass")
+        for role in SurfaceRole.allCases {
+            check("\(role) is glass", Theme.Surfaces.style(role) == .glass)
+        }
+        check("Default has no glow", Theme.Effects.glowRadius(dark: true) == 0)
+
+        print("# a custom theme still adapts to Light and Dark")
+        ThemeStore.active.apply(.tron)
+        for token in [ColorToken.textPrimary, .selection, .panelScrim, .accent] {
+            adapts("tron \(token)", ThemeStore.active.palette.color(token))
+        }
+        ThemeStore.active.apply(.matrix)
+        for token in [ColorToken.textPrimary, .selection, .panelScrim, .accent] {
+            adapts("matrix \(token)", ThemeStore.active.palette.color(token))
+        }
+        ThemeStore.active.apply(.synthwave)
+        for token in [ColorToken.textPrimary, .selection, .panelScrim, .accent] {
+            adapts("synthwave \(token)", ThemeStore.active.palette.color(token))
+        }
+        ThemeStore.active.apply(.amber)
+        for token in [ColorToken.textPrimary, .selection, .panelScrim, .accent] {
+            adapts("amber \(token)", ThemeStore.active.palette.color(token))
+        }
+        ThemeStore.active.apply(.ares)
+        for token in [ColorToken.textPrimary, .selection, .panelScrim, .accent] {
+            adapts("ares \(token)", ThemeStore.active.palette.color(token))
+        }
+        ThemeStore.active.apply(.tron)
+        let plain = [NSAppearance(named: .aqua)!, NSAppearance(named: .darkAqua)!]
+        let accessible = ["NSAppearanceNameAccessibilityAqua", "NSAppearanceNameAccessibilityDarkAqua"]
+            .compactMap { NSAppearance(appearanceNamed: NSAppearance.Name($0), bundle: nil) }
+        check("both accessibility appearances build", accessible.count == 2)
+        check(
+            "an accessibility appearance raises hairlines without the flag",
+            accessible.allSatisfy { ThemePalette.raisesHairlines($0, increaseContrast: false) },
+            accessible.map {
+                let known: [NSAppearance.Name] =
+                    [.aqua, .darkAqua, .accessibilityHighContrastAqua, .accessibilityHighContrastDarkAqua]
+                return "\($0.name.rawValue) \(String(describing: $0.bestMatch(from: known)))"
+            }.joined(separator: "; "))
+        let separator = Theme.Colors.separator
+        nonisolated(unsafe) var offMain: CGFloat = 0
+        nonisolated(unsafe) var ranOffMain = false
+        let group = DispatchGroup()
+        DispatchQueue.global().async(group: group) {
+            ranOffMain = !Thread.isMainThread
+            NSAppearance(named: .darkAqua)!.performAsCurrentDrawingAppearance {
+                offMain = NSColor(separator).usingColorSpace(.sRGB)!.alphaComponent
+            }
+        }
+        group.wait()
+        check("the hairline probe ran off the main thread", ranOffMain)
+        check("a themed hairline resolves off the main thread", offMain > 0)
+        check(
+            "the flag raises hairlines on a plain appearance",
+            plain.allSatisfy { ThemePalette.raisesHairlines($0, increaseContrast: true) })
+        check(
+            "plain appearances do not raise hairlines",
+            plain.allSatisfy { !ThemePalette.raisesHairlines($0, increaseContrast: false) })
+        check(
+            "tron ramp follows the theme ink",
+            components(Theme.Colors.ramp(dark: 0.3, light: 0.2), .darkAqua)
+                != components(Color.white.opacity(0.3), .darkAqua))
+        ThemeStore.active.apply(.standard)
+        check(
+            "Default ramp is white over dark",
+            components(Theme.Colors.ramp(dark: 0.3, light: 0.2), .darkAqua)
+                == components(Color.white.opacity(0.3), .darkAqua))
+        check(
+            "Default ramp is black over light",
+            components(Theme.Colors.ramp(dark: 0.3, light: 0.2), .aqua)
+                == components(Color.black.opacity(0.2), .aqua))
+
+        for (name, id, label) in [
+            ("tron", ThemeID.tron, "grid"), ("matrix", .matrix, "code rain"), ("synthwave", .synthwave, "sunset grid"),
+            ("amber", .amber, "scanlines"), ("ares", .ares, "light trails"),
+        ] {
+            let backdrop = ThemeCatalog.definition(for: id).backdrop
+            var drawn = 0
+            var inked = false
+            var inkedLight = false
+            for (size, time, isDark) in [
+                (CGSize(width: 720, height: 480), 0.0, true), (CGSize(width: 320, height: 200), 1234.5, false),
+                (CGSize(width: 1, height: 1), 3599.9, true), (CGSize(width: 720, height: 480), 0.0, false),
+            ] {
+                let canvas = Canvas { context, canvasSize in
+                    BackdropRenderer.draw(backdrop, in: &context, size: canvasSize, time: time, dark: isDark)
+                } symbols: {
+                    BackdropRenderer.symbols(for: backdrop, dark: isDark)
+                }
+                .frame(width: size.width, height: size.height)
+                guard let image = ImageRenderer(content: canvas).cgImage else { continue }
+                drawn += 1
+                if size.width == 720, let data = image.dataProvider?.data as Data? {
+                    if isDark { inked = data.contains { $0 != 0 } } else { inkedLight = data.contains { $0 != 0 } }
+                }
+            }
+            check("the \(name) \(label) backdrop renders at several sizes and times", drawn == 4)
+            check("the \(name) \(label) backdrop leaves visible pixels in Dark", inked)
+            if id == .amber || id == .ares { check("the \(name) \(label) backdrop leaves visible pixels in Light", inkedLight) }
+        }
+
+        for file in BundledFont.ibmPlexMono.files {
+            let url = URL(fileURLWithPath: "Tinycast/Resources/Fonts/\(file)") as CFURL
+            CTFontManagerRegisterFontsForURL(url, .process, nil)
+        }
+        ThemeStore.active.apply(.amber)
+        let plexNames: [(NSFont.Weight, String)] = [
+            (.regular, "IBMPlexMono-Regular"), (.medium, "IBMPlexMono-Medium"),
+            (.semibold, "IBMPlexMono-SemiBold"), (.bold, "IBMPlexMono-Bold"),
+        ]
+        for (weight, name) in plexNames {
+            let resolved = ThemeFonts.nsFont(.body, base: .systemFont(ofSize: 13, weight: weight))
+            check("Amber body \(weight.rawValue) resolves to \(name)", resolved.fontName == name, resolved.fontName)
+        }
+        let bodyFont = { ThemeFonts.font(.body, base: .body, style: .body, weight: .medium) }
+        let first = bodyFont()
+        check("Amber body font reads equal twice", first == bodyFont())
+        let base = NSFont.systemFont(ofSize: 13, weight: .medium)
+        check("Amber body NSFont reads equal twice", ThemeFonts.nsFont(.body, base: base) == ThemeFonts.nsFont(.body, base: base))
+        ThemeStore.active.apply(.synthwave)
+        check("a theme switch drops the cached font", bodyFont() != first)
+        ThemeStore.active.apply(.standard)
+        check("Default font is base", ThemeFonts.font(.body, base: .caption, style: .body) == .caption)
+        check("Default NSFont is base", ThemeFonts.nsFont(.body, base: base) === base)
+        ThemeStore.active.apply(.amber)
+        let plexInk = [Font.Weight.regular, .medium, .semibold, .bold].map { weight -> Int in
+            let font = ThemeFonts.font(.body, base: .body, style: .body, weight: weight, fixedSize: 16)
+            let label = Text("Hamburgefonstiv mmmm").font(font).foregroundStyle(.white)
+                .frame(width: 300, height: 30).background(.black)
+            let renderer = ImageRenderer(content: label)
+            renderer.scale = 2
+            let data = renderer.cgImage?.dataProvider?.data as Data? ?? Data()
+            return data.reduce(0) { $0 + Int($1) }
+        }
+        check(
+            "Amber body weights render progressively heavier",
+            zip(plexInk, plexInk.dropFirst()).allSatisfy { $0 < $1 }, "\(plexInk)")
+
+        print("\n\(passes) passed, \(failures) failed")
+        exit(failures == 0 ? 0 : 1)
+    }
+}

@@ -30,10 +30,18 @@ codesign -d --entitlements - --xml "$APP" > "$ENTITLEMENTS" 2>/dev/null
 
 # The helper is signed by its own embed phase, which is where the runtime flag goes missing.
 HELPER="$APP/Contents/Helpers/Tinycast Dictation.app"
-for BIN in "$APP/Contents/MacOS/$NAME" "$APP/Contents/Helpers/ClipboardTextHelper" "$HELPER/Contents/MacOS/Tinycast Dictation"; do
+for BIN in "$APP/Contents/MacOS/$NAME" "$APP/Contents/Helpers/ClipboardTextHelper" "$APP/Contents/Helpers/FileIndexHelper" "$HELPER/Contents/MacOS/Tinycast Dictation"; do
     INFO="$(codesign -dv --verbose=2 "$BIN" 2>&1)"
     [[ "$INFO" =~ flags=0x[0-9a-f]+\([^\)]*runtime ]] ||
         fail "${BIN##*/}: hardened runtime not enabled"
+    # Fork: install-fork.sh names its self-signed identity, which can never notarize.
+    if [ -n "${SELF_SIGNED_IDENTITY:-}" ]; then
+        [[ "$INFO" == *$'\nAuthority='"$SELF_SIGNED_IDENTITY"$'\n'* ]] ||
+            fail "${BIN##*/}: not signed with $SELF_SIGNED_IDENTITY"
+    else
+        [[ "$INFO" == *$'\nAuthority=Developer ID Application: '* && "$INFO" == *$'\nTimestamp='* ]] ||
+            fail "${BIN##*/}: not signed with a timestamped Developer ID"
+    fi
 done
 
 APP_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP/Contents/Info.plist")"
@@ -57,7 +65,9 @@ for PAIR in "${RESOURCE_ENTITLEMENTS[@]}"; do
         fail "$NAME.app: $USAGE is declared but $ENTITLEMENT is not"
 done
 
-if [ "$STATUS" -eq 0 ]; then
+if [ "$STATUS" -eq 0 ] && [ -n "${SELF_SIGNED_IDENTITY:-}" ]; then
+    echo "✓ $NAME.app is signed by $SELF_SIGNED_IDENTITY and its prompts are entitled"
+elif [ "$STATUS" -eq 0 ]; then
     echo "✓ $NAME.app is notarizable and its prompts are entitled"
 fi
 exit "$STATUS"
